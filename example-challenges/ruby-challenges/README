@@ -1,0 +1,9 @@
+1. Requirements
+- bundle 
+
+2. Install dependencies
+bundle install
+
+3. Run the example
+ruby median_test.rb
+

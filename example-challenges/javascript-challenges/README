@@ -1,0 +1,9 @@
+1. Requirements
+- npm 
+
+2. Install dependencies
+npm install
+
+3. Run the example
+npm run test
+
