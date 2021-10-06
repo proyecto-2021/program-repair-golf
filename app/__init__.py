@@ -20,6 +20,11 @@ def create_app(config_name='development'):
 
     from .auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
+
     from .javascript import javascript as javascript_blueprint
-    app.register_blueprint(javascript_blueprint, url_prefix='/javascript')
-    return app  
+    app.register_blueprint(javascript_blueprint, url_prefix='/javascript')  
+
+    from .java import java as java_blueprint
+    app.register_blueprint(java_blueprint)
+
+    return app
