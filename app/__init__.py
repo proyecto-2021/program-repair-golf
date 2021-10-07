@@ -30,4 +30,7 @@ def create_app(config_name='development'):
     from .ruby import ruby as ruby_blueprint
     app.register_blueprint(ruby_blueprint, url_prefix='/ruby')
 
+    from .go import go as go_blueprint
+    app.register_blueprint(go_blueprint, url_prefix='/go')
+
     return app
