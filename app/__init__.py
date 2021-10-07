@@ -27,4 +27,7 @@ def create_app(config_name='development'):
     from .java import java as java_blueprint
     app.register_blueprint(java_blueprint)
 
+    from .ruby import ruby as ruby_blueprint
+    app.register_blueprint(ruby_blueprint, url_prefix='/ruby')
+
     return app
