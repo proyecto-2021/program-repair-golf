@@ -14,6 +14,7 @@ def create_app(config_name='development'):
     config[config_name].init_app(app)
 
     from .models import User, Role
+    from .ruby.models import RubyChallenge
 
     db.init_app(app)
     migrate.init_app(app, db)
