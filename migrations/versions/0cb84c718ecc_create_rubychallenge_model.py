@@ -1,8 +1,8 @@
-"""Create RubyChallenge table
+"""Create RubyChallenge Model
 
-Revision ID: 7150ebef1581
-Revises: d5821416f325
-Create Date: 2021-10-07 17:36:04.191799
+Revision ID: 0cb84c718ecc
+Revises: 8813889e1194
+Create Date: 2021-10-07 20:44:49.320433
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '7150ebef1581'
-down_revision = 'd5821416f325'
+revision = '0cb84c718ecc'
+down_revision = '8813889e1194'
 branch_labels = None
 depends_on = None
 
