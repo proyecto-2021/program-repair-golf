@@ -35,4 +35,7 @@ def create_app(config_name='development'):
     from .go import go as go_blueprint
     app.register_blueprint(go_blueprint, url_prefix='/go')
 
+    from .python import python as python_blueprint
+    app.register_blueprint(python_blueprint, url_prefix='/python')
+
     return app
