@@ -8,15 +8,16 @@ migrate = Migrate()
 
 def create_app(config_name='development'):
     app = Flask(__name__)
-
     app.config.from_object(config[config_name])
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     config[config_name].init_app(app)
 
     from .models import User, Role
+    from .javascript.models_js import JavaScriptChallenge 
     from .ruby.models import RubyChallenge
     from .java.models_java import Challenge_java
     from .cSharp.models import CSharp_Challenge
+    from .go.models_go import GoChallenge
 
     db.init_app(app)
     migrate.init_app(app, db)
