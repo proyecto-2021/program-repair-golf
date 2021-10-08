@@ -16,6 +16,7 @@ def create_app(config_name='development'):
     from .javascript.models_js import JavaScriptChallenge 
     from .ruby.models import RubyChallenge
     from .java.models_java import Challenge_java
+    from .go.models_go import GoChallenge
 
 
     db.init_app(app)
