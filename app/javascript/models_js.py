@@ -1,4 +1,3 @@
-from _typeshed import StrPath, SupportsRDivMod
 from .. import db
 from dataclasses import dataclass
 
@@ -10,7 +9,6 @@ class JavaScriptChallenge(db.Model):
     repair_objective: str
     complexity: int
     best_score: int
-
 
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(256))
