@@ -34,5 +34,8 @@ def create_app(config_name='development'):
 
     from .go import go as go_blueprint
     app.register_blueprint(go_blueprint, url_prefix='/go')
-
+    
+    from .cSharp import cSharp as cSharp_blueprint
+    app.register_blueprint(cSharp_blueprint, url_prefix='/go')
+    
     return app
