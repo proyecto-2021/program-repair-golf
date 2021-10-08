@@ -14,6 +14,7 @@ def create_app(config_name='development'):
     config[config_name].init_app(app)
 
     from .models import User, Role
+    from .java.models_java import Challenge_java
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -25,7 +26,7 @@ def create_app(config_name='development'):
     app.register_blueprint(javascript_blueprint, url_prefix='/javascript')  
 
     from .java import java as java_blueprint
-    app.register_blueprint(java_blueprint)
+    app.register_blueprint(java_blueprint, url_prefix='/java')
 
     from .ruby import ruby as ruby_blueprint
     app.register_blueprint(ruby_blueprint, url_prefix='/ruby')
