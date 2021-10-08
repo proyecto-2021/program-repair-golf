@@ -14,6 +14,7 @@ def create_app(config_name='development'):
     config[config_name].init_app(app)
 
     from .models import User, Role
+    from .ruby.models import RubyChallenge
     from .java.models_java import Challenge_java
 
     db.init_app(app)
