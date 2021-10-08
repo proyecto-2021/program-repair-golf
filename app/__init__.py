@@ -36,6 +36,6 @@ def create_app(config_name='development'):
     app.register_blueprint(go_blueprint, url_prefix='/go')
     
     from .cSharp import cSharp as cSharp_blueprint
-    app.register_blueprint(cSharp_blueprint, url_prefix='/go')
+    app.register_blueprint(cSharp_blueprint, url_prefix='/cSharp')
     
     return app

@@ -1,9 +1,5 @@
-import os
-from app import create_app
+from . import cSharp
 
-app = create_app(os.getenv('FLASK_CONFIG') or 'default')
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
-
+@cSharp.route('/login')
+def login():
+    return { 'result': 'ok' }
