@@ -16,6 +16,7 @@ def create_app(config_name='development'):
     from .models import User, Role
     from .ruby.models import RubyChallenge
     from .java.models_java import Challenge_java
+    from .cSharp.models import CSharp_Challenge
 
     db.init_app(app)
     migrate.init_app(app, db)
