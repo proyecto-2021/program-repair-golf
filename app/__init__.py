@@ -38,4 +38,7 @@ def create_app(config_name='development'):
     from .python import python as python_blueprint
     app.register_blueprint(python_blueprint, url_prefix='/python')
 
+    from .cSharp import cSharp as cSharp_blueprint
+    app.register_blueprint(cSharp_blueprint, url_prefix='/cSharp')
+
     return app
