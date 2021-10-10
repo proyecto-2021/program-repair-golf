@@ -14,5 +14,5 @@ class JavaScriptChallenge(db.Model):
     code = db.Column(db.String(256))
     tests_code = db.Column(db.String(256))
     repair_objective = db.Column(db.String(128))
-    complexity = db.Column(db.String(3))
+    complexity = db.Column(db.Integer)
     best_score =  db.Column(db.Integer)
