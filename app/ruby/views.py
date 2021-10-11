@@ -61,6 +61,13 @@ def get_ruby_challenge(id):
 		challenge = get_challenge(id).get_dict()
 		del challenge['id']
 		return jsonify({'challenge': challenge})
+		
+@ruby.route('/challenges', methods=['GET'])
+def get_all_ruby_challenges():
+		challenges = get_all_challenges_dict()
+		for c in challenges: 
+			del c['tests_code']
+		return jsonify({'challenges': challenges})
 
 def get_challenge(id):
     return db.session.query(RubyChallenge).filter_by(id=id).first()
