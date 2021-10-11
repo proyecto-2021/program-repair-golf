@@ -44,3 +44,6 @@ def get_challenge(id):
 
 def get_challenges():
     return db.session.query(RubyChallenge).all()
+
+def exists(id):
+    return get_challenge(id) is not None
