@@ -8,6 +8,25 @@ from json import loads
 def login():
     return { 'result': 'ok' }
 
+@python.route('/api/v1/python-challenges', methods=['GET'])
+def return_challenges(): 
+    all_challenges = PythonChallenge.query.all()
+    challenge_list = []
+    for challenge in all_challenges:
+        aux_dict = PythonChallenge.to_dict(challenge)
+        aux_dict.pop('tests_code', None)
+        challenge_list.append(aux_dict)
+    return jsonify({"challenges": challenge_list})
+
+@python.route('/api/v1/python-challenges/<id>', methods=['GET'])
+def return_challange_id(id):
+    challenge = PythonChallenge.query.filter_by(id = id).first()
+    if challenge is None:
+        return make_response(jsonify({"Challenge": "Not found"}), 404)
+    aux_dict = PythonChallenge.to_dict(challenge)
+    aux_dict.pop('id', None)
+    return jsonify({"Challenge": aux_dict}) 
+
 @python.route('/api/v1/python-challenges', methods=['POST'])
 def create_new_challenge():
     challenge_data = loads(request.form.get('challenge'))['challenge']
@@ -42,6 +61,8 @@ def update_challenge(id):
     else:
         db.session.query(PythonChallenge).filter_by(id=id).update(dict( complexity = challenge_data['complexity']))
         db.session.commit()
-        dictionary = PythonChallenge.query.filter_by(id=id).first()
-        return jsonify({"challenge" : PythonChallenge.to_dict(dictionary)})
+        req_challenge = PythonChallenge.query.filter_by(id=id).first()
+        dictionary =  PythonChallenge.to_dict(req_challenge)
+        dictionary.pop('id', None)
+        return jsonify({"challenge" : dictionary})
 
