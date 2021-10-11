@@ -56,11 +56,11 @@ def post_repair(id):
 
 @ruby.route('/challenge/<int:id>', methods=['GET'])
 def get_ruby_challenge(id):
-		if not exists(id):
-			return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
-		challenge = get_challenge(id).get_dict()
-		del challenge['id']
-		return jsonify({'challenge': challenge})
+    if not exists(id):
+        return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
+    challenge = get_challenge(id).get_dict()
+    del challenge['id']
+    return jsonify({'challenge': challenge})
 
 def get_challenge(id):
     return db.session.query(RubyChallenge).filter_by(id=id).first()
@@ -76,5 +76,5 @@ def exists(id):
 
 
 def create_challenge(challenge):
-	db.session.add(challenge)
-	db.session.commit()
+    db.session.add(challenge)
+    db.session.commit()
