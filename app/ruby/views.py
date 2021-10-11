@@ -24,16 +24,23 @@ def post_repair(id):
     new_challenge = RubyChallenge(
         code='code',
         tests_code='tests_code',
-        repair_objetive='repair_objetive',
+        repair_objective='repair_objective',
         complexity='complexity',
         best_score='best_score'
     )
     #check if the posted code has not sintax errors
-    #challenge = get_by_id(id)
-    #challege.get_test_suite()
+    challenge = get_challenge(id)
+    if challenge is not None:
+        test_suite = challege.test_code
     #run the posted code with the test suite
     #compute the score
     #if the score < challenge.score()
     #update score
     #return
     return new_challenge.get_dict()
+
+def get_challenge(id):
+    return db.session.query(RubyChallenge).filter_by(id=id).first()
+
+def get_challenges():
+    return db.session.query(RubyChallenge).all()
