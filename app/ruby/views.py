@@ -45,5 +45,8 @@ def get_challenge(id):
 def get_challenges():
     return db.session.query(RubyChallenge).all()
 
+def get_all_challenges_dict():
+    return list(map(lambda x: x.get_dict(), get_challenges()))
+
 def exists(id):
     return get_challenge(id) is not None
