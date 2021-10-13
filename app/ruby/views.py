@@ -58,8 +58,19 @@ def post_repair(id):
 def get_ruby_challenge(id):
     if not exists(id):
         return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
+
     challenge = get_challenge(id).get_dict()
     del challenge['id']
+
+    code_path = challenge['code']
+    tests_code_path = challenge['tests_code']
+
+    with open(code_path) as f:
+        challenge['code'] = f.read()
+        
+    with open(tests_code_path) as f:
+        challenge['tests_code'] = f.read()
+
     return jsonify({'challenge': challenge})
 
 @ruby.route('/challenges', methods=['GET'])
