@@ -76,11 +76,13 @@ def get_ruby_challenge(id):
 @ruby.route('/challenges', methods=['GET'])
 def get_all_ruby_challenges():
     challenges = get_all_challenges_dict()
+    
     for c in challenges:
         del c['tests_code']
         code_path = c['code']
         with open(code_path) as f:
             c['code'] = f.read()
+    
     return jsonify({'challenges': challenges})
 
 def get_challenge(id):
