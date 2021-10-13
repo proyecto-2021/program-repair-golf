@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from werkzeug.datastructures import FileStorage
 import json
+import os.path
 
 @ruby.route('/challenge', methods=['POST'])
 def create_ruby_challenge():
@@ -90,3 +91,8 @@ def save(key, file_name):
     path = 'public/challenges/' + file_name + '.rb'
     file.save(dst=path)
     return path
+
+def file_exists(f, persistent=True):
+    if not persistent:
+        return request.file[f] is not None
+    return os.path.isfile(f)
