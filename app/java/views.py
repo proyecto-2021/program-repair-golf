@@ -9,6 +9,18 @@ import os
 def login():
     return { 'result': 'funciona' }
 
+# GET 'http://localhost:4000/api/v1/java-challenges'
+@java.route('/java-challenges',methods=['GET'])
+def ViewAllChallenges():
+    challenge = {"challenges":[]}
+    challenge ['challenges'] = Challenge_java.query.all()
+    all_challenges=[]
+    for i in challenge['challenges']:
+        aux_challenge = Challenge_java.__repr__(i)
+        #aux_challenge.pop('tests_code',None)
+        all_challenges.append(aux_challenge)
+    return make_response(jsonify({"challenges":all_challenges}))
+
 @java.route('/java-challenges/<int:id>', methods=['PUT'])
 def UpdateChallenge(id):
     challenge= Challenge_java.query.filter_by(id=id).first()
