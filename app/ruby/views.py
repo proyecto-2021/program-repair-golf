@@ -4,38 +4,38 @@ from app import db
 from flask import Flask, jsonify, request, make_response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
+from werkzeug.datastructures import FileStorage
 import json
 
-@ruby.route('/ruby-challenges', methods=['POST'])
+@ruby.route('/challenge', methods=['POST'])
 def create_ruby_challenge():
 
-	#load the ruby ​​challenge
-	aux_challenge = json.loads(request.form.get('challenge'))
-	aux_dict = aux_challenge['challenge']
-	new_challenge = RubyChallenge(
-		code = request.form.get('source_code_file'),
-		tests_code = request.form.get('test_suite_file'),
-		#code_name = aux_dict['source_code_file_name'],
-		#tests_code_name = aux_dict['test_suite_file_name'],
-		repair_objective = aux_dict['repair_objective'],
-		complexity = aux_dict['complexity'],
-		best_score = 0
-	)
-	create_challenge(new_challenge)
-	return jsonify({'challenge': new_challenge.get_dict()})
+    input_challenge = json.loads(request.form.get('challenge'))
+    dictionary = input_challenge['challenge']
 
-	#verify existence in the database and add the challenge
-'''
-	existence_of_code = RubyChallenge.query.filter_by(code_name = aux_dict['source_code_file_name']).first()
-	existence_of_test = RubyChallenge.query.filter_by(test_suite_name = aux_dict['test_suite_file_name']).first()
-	if existence_of_code is None and existence_of_test is None:
-'''
-	#output
-	#return make_response(jsonify({'challenge': 'the source-code and/or the test-suite have already been created'}),409)
+    code_path = save('source_code_file', dictionary['source_code_file_name'])
+    test_code_path = save('test_suite_file', dictionary['test_suite_file_name'])
 
+    new_challenge = RubyChallenge(
+        code = code_path,
+        tests_code = test_code_path,
+        repair_objective = dictionary['repair_objective'],
+        complexity = dictionary['complexity'],
+        best_score = 0
+    )
+
+    create_challenge(new_challenge)
+    return jsonify({'challenge': new_challenge.get_dict()})
 
 @ruby.route('/challenge/<int:id>/repair', methods=['POST'])
 def post_repair(id):
+    if not exists(id):
+        return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
+
+    file = request.files['source_code_file']
+
+    file.save(dst='public/challenges/median2.rb')
+
     new_challenge = RubyChallenge(
         code='code',
         tests_code='tests_code',
@@ -46,7 +46,7 @@ def post_repair(id):
     #check if the posted code has not sintax errors
     challenge = get_challenge(id)
     if challenge is not None:
-        test_suite = challege.test_code
+        test_suite = challenge.tests_code
     #run the posted code with the test suite
     #compute the score
     #if the score < challenge.score()
@@ -62,6 +62,13 @@ def get_ruby_challenge(id):
     del challenge['id']
     return jsonify({'challenge': challenge})
 
+@ruby.route('/challenges', methods=['GET'])
+def get_all_ruby_challenges():
+    challenges = get_all_challenges_dict()
+    for c in challenges:
+        del c['tests_code']
+    return jsonify({'challenges': challenges})
+
 def get_challenge(id):
     return db.session.query(RubyChallenge).filter_by(id=id).first()
 
@@ -74,7 +81,12 @@ def get_all_challenges_dict():
 def exists(id):
     return get_challenge(id) is not None
 
-
 def create_challenge(challenge):
     db.session.add(challenge)
     db.session.commit()
+
+def save(key, file_name):
+    file = request.files[key]
+    path = 'public/challenges/' + file_name + '.rb'
+    file.save(dst=path)
+    return path
