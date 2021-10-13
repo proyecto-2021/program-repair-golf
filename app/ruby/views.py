@@ -7,42 +7,25 @@ from sqlalchemy import create_engine
 from werkzeug.datastructures import FileStorage
 import json
 
-@ruby.route('/ruby-challenges', methods=['POST'])
+@ruby.route('/challenge', methods=['POST'])
 def create_ruby_challenge():
 
-    #load the ruby ​​challenge
-    aux_challenge = json.loads(request.form.get('challenge'))
-    aux_dict = aux_challenge['challenge']
+    input_challenge = json.loads(request.form.get('challenge'))
+    dictionary = input_challenge['challenge']
 
-    code_file = request.files['source_code_file']
-    path_code_file = 'public/challenges/' + aux_dict['source_code_file_name'] + '.rb'
-    code_file.save(dst=path_code_file)
-
-    test_suite_file = request.files['test_suite_file']
-    path_test_code_file = 'public/challenges/' + aux_dict['test_suite_file_name'] + '.rb'
-    test_suite_file.save(dst=path_test_code_file)
-
-
+    code_path = save('source_code_file', dictionary['source_code_file_name'])
+    test_code_path = save('test_suite_file', dictionary['test_suite_file_name'])
 
     new_challenge = RubyChallenge(
-        code = path_code_file,
-        tests_code = path_test_code_file,
-        repair_objective = aux_dict['repair_objective'],
-        complexity = aux_dict['complexity'],
+        code = code_path,
+        tests_code = test_code_path,
+        repair_objective = dictionary['repair_objective'],
+        complexity = dictionary['complexity'],
         best_score = 0
     )
+
     create_challenge(new_challenge)
     return jsonify({'challenge': new_challenge.get_dict()})
-
-#verify existence in the database and add the challenge
-'''
-        existence_of_code = RubyChallenge.query.filter_by(code_name = aux_dict['source_code_file_name']).first()
-        existence_of_test = RubyChallenge.query.filter_by(test_suite_name = aux_dict['test_suite_file_name']).first()
-        if existence_of_code is None and existence_of_test is None:
-'''
-#output
-#return make_response(jsonify({'challenge': 'the source-code and/or the test-suite have already been created'}),409)
-
 
 @ruby.route('/challenge/<int:id>/repair', methods=['POST'])
 def post_repair(id):
@@ -98,7 +81,12 @@ def get_all_challenges_dict():
 def exists(id):
     return get_challenge(id) is not None
 
-
 def create_challenge(challenge):
     db.session.add(challenge)
     db.session.commit()
+
+def save(key, file_name):
+    file = request.files[key]
+    path = 'public/challenges/' + file_name + '.rb'
+    file.save(dst=path)
+    return path
