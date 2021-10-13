@@ -1,3 +1,5 @@
+from app.java.models_java import Challenge_java
+from flask import jsonify, make_response
 from . import java
 from .. import db
 from flask import request, make_response, jsonify
@@ -8,6 +10,19 @@ import os
 @java.route('/prueba')
 def login():
     return { 'result': 'funciona' }
+
+
+@java.route('/java-challenges',methods=['GET'])
+def ViewAllChallenges():
+    challenge = {"challenges":[]}
+    challenge ['challenges'] = Challenge_java.query.all()
+    all_challenges=[]
+    for i in challenge['challenges']:
+        aux_challenge = Challenge_java.__repr__(i)
+        #aux_challenge.pop('tests_code',None)
+        all_challenges.append(aux_challenge)
+    return make_response(jsonify({"challenges":all_challenges}))
+    
 
 @java.route('/java-challenges/<int:id>', methods=['PUT'])
 def UpdateChallenge(id):
@@ -38,4 +53,4 @@ def UpdateChallenge(id):
         db.session.commit()
         return jsonify({"challenge":Challenge_java.__repr__(challenge)})
 
-        
+       
