@@ -7,7 +7,7 @@ def login():
     return { 'result': 'funciona' }
 
 # GET 'http://localhost:4000/api/v1/java-challenges'
-@java.route('/api/v1/java-challenges',methods=['GET'])
+@java.route('/java-challenges',methods=['GET'])
 def ViewAllChallenges():
     challenge = {"challenges":[]}
     challenge ['challenges'] = Challenge_java.query.all()
