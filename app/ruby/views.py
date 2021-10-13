@@ -13,11 +13,20 @@ def create_ruby_challenge():
     #load the ruby ​​challenge
     aux_challenge = json.loads(request.form.get('challenge'))
     aux_dict = aux_challenge['challenge']
+
+    code_file = request.files['source_code_file']
+    path_code_file = 'public/challenges/' + aux_dict['source_code_file_name'] + '.rb'
+    code_file.save(dst=path_code_file)
+
+    test_suite_file = request.files['test_suite_file']
+    path_test_code_file = 'public/challenges/' + aux_dict['test_suite_file_name'] + '.rb'
+    test_suite_file.save(dst=path_test_code_file)
+
+
+
     new_challenge = RubyChallenge(
-        code = request.form.get('source_code_file'),
-        tests_code = request.form.get('test_suite_file'),
-        #code_name = aux_dict['source_code_file_name'],
-        #tests_code_name = aux_dict['test_suite_file_name'],
+        code = path_code_file,
+        tests_code = path_test_code_file,
         repair_objective = aux_dict['repair_objective'],
         complexity = aux_dict['complexity'],
         best_score = 0
