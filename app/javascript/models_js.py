@@ -2,7 +2,7 @@ from .. import db
 from dataclasses import dataclass
 
 @dataclass
-class Javascript_Challenge(db.Model):
+class JavascriptChallenge(db.Model):
     id: int
     code: str
     tests_code: str 
