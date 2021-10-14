@@ -46,9 +46,10 @@ def post_repair(id):
     if not compiles(file_name):
         return make_response(jsonify({'challenge': {'repair_code': 'is erroneous'}}),400)
 
-    copy(challenge['tests_code'],'public/repair_executions/tmp_test.rb')
+    test_file_name = 'public/repair_executions/tmp_test.rb'
+    copy(challenge['tests_code'], test_file_name)
 
-    if (subprocess.call('ruby public/repair_executions/tmp_test.rb', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)) != 0:
+    if tests_fail(test_file_name):
         return make_response(jsonify({'challenge': {'tests_code': 'fails'}}),200)
 
     #compute the score
@@ -113,3 +114,7 @@ def save(key, file_name):
 def compiles(file_name):
     command = 'ruby -c ' + file_name
     return (subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0)
+
+def tests_fail(test_file_name):
+    command = 'ruby ' + test_file_name
+    return (subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) != 0)
