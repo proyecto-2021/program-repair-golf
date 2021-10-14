@@ -27,6 +27,17 @@ def ViewAllChallenges():
         #aux_challenge.pop('tests_code',None)
         all_challenges.append(aux_challenge)
     return make_response(jsonify({"challenges":all_challenges}))
+  
+
+# Get Assignment by ID
+@java.route('/java-challenges/<int:id>',methods=['GET'])
+def View_Challenges(id):
+    challenge=Challenge_java.query.filter_by(id=id).first()
+    if (challenge is None):
+        return make_response(jsonify({"challenge":"Not found prueba"}),404)   
+    else: 
+        return make_response(jsonify({"challenge":[Challenge_java.__repr__(challenge)]}))
+      
 
 @java.route('/java-challenges/<int:id>', methods=['PUT'])
 def UpdateChallenge(id):
@@ -122,3 +133,4 @@ def upload_file(file, test_suite):
      #       db.session.commit()
     #else:
      #   return make_response(jsonify("Error al seleccionar archivo"))
+
