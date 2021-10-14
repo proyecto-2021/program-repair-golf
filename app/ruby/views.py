@@ -5,8 +5,10 @@ from flask import Flask, jsonify, request, make_response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from werkzeug.datastructures import FileStorage
+from shutil import copy
 import subprocess
 import json
+import os
 
 @ruby.route('/challenge', methods=['POST'])
 def create_ruby_challenge():
@@ -33,21 +35,25 @@ def post_repair(id):
     if not exists(id):
         return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
 
+    challenge = get_challenge(id).get_dict()
+    
     file = request.files['source_code_file']
-    file.save(dst='public/challenges/tmp.rb')
+    #The file must be saved with the same name has the original code, else the test suite will not work
+    #file_name = 'public/challenges/' + + '.rb'
+    file_name = 'public/repair_executions/' + os.path.basename(challenge['code'])
+    file.save(dst=file_name)
 
-    #Sintax check
-    if (subprocess.call('ruby -c public/challenges/tmp.rb', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)) is not 0:
+    if not compiles(file_name):
         return make_response(jsonify({'challenge': {'repair_code': 'is erroneous'}}),400)
 
-    #check if the posted code has not sintax errors
-    challenge = get_challenge(id)
+    copy(challenge['tests_code'],'public/repair_executions/tmp_test.rb')
+
     #run the posted code with the test suite
     #compute the score
     #if the score < challenge.score()
     #update score
     #return
-    return challenge.get_dict()
+    return challenge
 
 @ruby.route('/challenge/<int:id>', methods=['GET'])
 def get_ruby_challenge(id):
@@ -62,7 +68,7 @@ def get_ruby_challenge(id):
 
     with open(code_path) as f:
         challenge['code'] = f.read()
-        
+
     with open(tests_code_path) as f:
         challenge['tests_code'] = f.read()
 
@@ -77,7 +83,7 @@ def get_all_ruby_challenges():
         code_path = c['code']
         with open(code_path) as f:
             c['code'] = f.read()
-    
+
     return jsonify({'challenges': challenges})
 
 def get_challenge(id):
@@ -101,3 +107,7 @@ def save(key, file_name):
     path = 'public/challenges/' + file_name + '.rb'
     file.save(dst=path)
     return path
+
+def compiles(file_name):
+    command = 'ruby -c ' + file_name
+    return (subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0)
