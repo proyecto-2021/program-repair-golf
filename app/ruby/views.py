@@ -89,6 +89,25 @@ def get_all_ruby_challenges():
 
     return jsonify({'challenges': challenges})
 
+@ruby.route('/challenge/<int:id>', methods=['PUT'])
+def update_ruby_challenge(id):
+    if not exists(id):
+        return make_response(jsonify({'challenge': 'NOT FOUND'}), 404)
+    update_data = json.loads(request.form.get('challenge'))['challenge']
+    objective_challenge = get_challenge(id).get_dict()
+    
+    update_file(objective_challenge, 'code', update_data)
+    update_file(objective_challenge, 'tests_code', update_data)
+    
+    # Default value needed for this parameters. It must take the current file name.
+    del update_data['source_code_file_name'] # This keys are no longer needed for updating the challenge.
+    del update_data['test_suite_file_name']
+
+    update_challenge(id, update_data)
+    updated_challenge = get_challenge(id).get_dict()
+    del updated_challenge['id']
+    return jsonify({'challenge': updated_challenge})
+
 def get_challenge(id):
     return db.session.query(RubyChallenge).filter_by(id=id).first()
 
@@ -105,11 +124,31 @@ def create_challenge(challenge):
     db.session.add(challenge)
     db.session.commit()
 
+def update_challenge(id, changes):
+    db.session.query(RubyChallenge).filter_by(id=id).update(changes)
+    db.session.commit()
+
 def save(key, file_name):
     file = request.files[key]
     path = 'public/challenges/' + file_name + '.rb'
     file.save(dst=path)
     return path
+
+def update_file(challenge, file_type, data):
+    source_file = ''
+    if file_type == 'code':
+        source_file = 'source_code_file'
+    else:
+        source_file = 'test_suite_file'
+    source_file_name = f"{source_file}_name"
+
+    if file_exists(source_file, persistent=False):
+        os.remove(challenge[file_type])
+        data[file_type] = save(source_file, data[source_file_name])
+    elif (os.path.basename(challenge[file_type]).split('.')[0] != data[source_file_name]):
+        new_path = f"public/challenges/{data[source_file_name]}.rb"
+        os.rename(challenge[file_type], new_path)
+        data[file_type] = new_path
 
 def compiles(file_name):
     command = 'ruby -c ' + file_name
@@ -118,3 +157,7 @@ def compiles(file_name):
 def tests_fail(test_file_name):
     command = 'ruby ' + test_file_name
     return (subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) != 0)
+def file_exists(f, persistent=True):
+    if not persistent:
+        return (f in request.files)
+    return os.path.isfile(f)
