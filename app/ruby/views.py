@@ -48,7 +48,9 @@ def post_repair(id):
 
     copy(challenge['tests_code'],'public/repair_executions/tmp_test.rb')
 
-    #run the posted code with the test suite
+    if (subprocess.call('ruby public/repair_executions/tmp_test.rb', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)) != 0:
+        return make_response(jsonify({'challenge': {'tests_code': 'fails'}}),200)
+
     #compute the score
     #if the score < challenge.score()
     #update score
