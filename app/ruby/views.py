@@ -96,15 +96,19 @@ def update_ruby_challenge(id):
     
     if file_exists('source_code_file', persistent=False):
         os.remove(challenge['code'])
-        update_code_path = save('source_code_file', update_data['source_code_file_name'])
-        update_challenge(id, {'code': update_code_path})
+        update_data['code'] = save('source_code_file', update_data['source_code_file_name'])
+    elif (os.path.basename(challenge['code']).split('.')[0] != update_data['source_code_file_name']):
+        os.rename(challenge['code'], f"public/challenges/{update_data['source_code_file_name']}.rb")
+        update_data['code'] = f"public/challenges/{update_data['source_code_file_name']}.rb"
+        
     if file_exists('test_suite_file', persistent=False):
         os.remove(challenge['tests_code'])
-        update_test_path = save('test_suite_file', update_data['test_suite_file_name'])
-        update_challenge(id, {'tests_code': update_test_path})
-        
+        update_data['tests_code'] = save('test_suite_file', update_data['test_suite_file_name'])
+    elif (os.path.basename(challenge['tests_code']).split('.') != update_data['test_suite_file_name']):
+        os.rename(challenge['tests_code'], f"public/challenges/{update_data['test_suite_file_name']}.rb")
+        update_data['tests_code'] = f"public/challenges/{update_data['test_suite_file_name']}.rb"
     
-    # Actualizar los nombres de los archivos
+    # Default value needed for this parameters. It must take the current file name.
     del update_data['source_code_file_name']
     del update_data['test_suite_file_name']
 
@@ -141,5 +145,5 @@ def save(key, file_name):
 
 def file_exists(f, persistent=True):
     if not persistent:
-        return request.files[f] is not None
+        return (f in request.files)
     return os.path.isfile(f)
