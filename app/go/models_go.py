@@ -7,3 +7,11 @@ class GoChallenge(db.Model):
     repair_objetive = db.Column(db.String(128))
     complexity = db.Column(db.String(3))
     best_score = db.Column(db.Integer())
+
+    def convert_dict(self):
+        return {"id": self.id,
+                "code": self.code,
+                "tests_code": self.tests_code,
+                "repair_objetive": self.repair_objetive,
+                "complexity": self.complexity,
+                "best_score": self.best_score}
