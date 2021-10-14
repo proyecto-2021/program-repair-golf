@@ -30,16 +30,18 @@ def return_challange_id(id):
 
 @python.route('/api/v1/python-challenges', methods=['POST'])
 def create_new_challenge():
+    #we get the dict with keys "source_code_file_name", "test_suite_file_name", "repair_objective", "complexity"
     challenge_data = loads(request.form.get('challenge'))['challenge']
-    save_path = path.dirname('public/challenges/')
+    save_path = path.dirname('public/challenges/')  #general path were code is saved
     
-    challenge_file = request.files.get('source_code_file')
-    challenge_source_code = challenge_file.read()
-    challenge_full_path = path.join(save_path, challenge_data['source_code_file_name'])
-    saved_challenge = open(challenge_full_path, "wb")
-    saved_challenge.write(challenge_source_code)
-    saved_challenge.close()
+    challenge_file = request.files.get('source_code_file')  #obtain the binary
+    challenge_source_code = challenge_file.read()   #read it, and store its content
+    challenge_full_path = path.join(save_path, challenge_data['source_code_file_name']) #save_path + file_name
+    saved_challenge = open(challenge_full_path, "wb")   #creating a new file in new location
+    saved_challenge.write(challenge_source_code)    #write the binary we got
+    saved_challenge.close()                         #save it
 
+    #same as above
     tests_file = request.files.get('test_suite_file')
     tests_source_code = tests_file.read()
     tests_full_path = path.join(save_path, challenge_data['test_suite_file_name'])
@@ -49,7 +51,8 @@ def create_new_challenge():
     
     #if the challenge is invalid, an error will be returned
     #valid_python_challenge(challenge_data, path_to_code, path_to_tests)
-        
+    
+    #create row for database with the new challenge
     new_challenge = PythonChallenge(code=challenge_full_path,
         tests_code=tests_full_path,
         repair_objective=challenge_data['repair_objective'],
@@ -59,6 +62,7 @@ def create_new_challenge():
     db.session.add(new_challenge)
     db.session.commit()
 
+    #create response
     req_challenge = PythonChallenge.query.filter_by(id=new_challenge.id).first()
     return jsonify({"challenge" : PythonChallenge.to_dict(req_challenge)})
 
