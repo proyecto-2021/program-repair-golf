@@ -37,7 +37,8 @@ def post_repair(id):
     file.save(dst='public/challenges/tmp.rb')
 
     #Sintax check
-    print(subprocess.call('ruby -c public/challenges/tmp.rb', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT))
+    if (subprocess.call('ruby -c public/challenges/tmp.rb', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)) is not 0:
+        return make_response(jsonify({'challenge': {'repair_code': 'is erroneous'}}),400)
 
     #check if the posted code has not sintax errors
     challenge = get_challenge(id)
