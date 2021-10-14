@@ -92,30 +92,19 @@ def update_ruby_challenge(id):
     if not exists(id):
         return make_response(jsonify({'challenge': 'NOT FOUND'}), 404)
     update_data = json.loads(request.form.get('challenge'))['challenge']
-    challenge = get_challenge(id).get_dict()
+    objective_challenge = get_challenge(id).get_dict()
     
-    if file_exists('source_code_file', persistent=False):
-        os.remove(challenge['code'])
-        update_data['code'] = save('source_code_file', update_data['source_code_file_name'])
-    elif (os.path.basename(challenge['code']).split('.')[0] != update_data['source_code_file_name']):
-        os.rename(challenge['code'], f"public/challenges/{update_data['source_code_file_name']}.rb")
-        update_data['code'] = f"public/challenges/{update_data['source_code_file_name']}.rb"
-        
-    if file_exists('test_suite_file', persistent=False):
-        os.remove(challenge['tests_code'])
-        update_data['tests_code'] = save('test_suite_file', update_data['test_suite_file_name'])
-    elif (os.path.basename(challenge['tests_code']).split('.') != update_data['test_suite_file_name']):
-        os.rename(challenge['tests_code'], f"public/challenges/{update_data['test_suite_file_name']}.rb")
-        update_data['tests_code'] = f"public/challenges/{update_data['test_suite_file_name']}.rb"
+    update_file(objective_challenge, 'code', update_data)
+    update_file(objective_challenge, 'tests_code', update_data)
     
     # Default value needed for this parameters. It must take the current file name.
-    del update_data['source_code_file_name']
+    del update_data['source_code_file_name'] # This keys are no longer needed for updating the challenge.
     del update_data['test_suite_file_name']
 
     update_challenge(id, update_data)
-    challenge = get_challenge(id).get_dict()
-    del challenge['id']
-    return jsonify({'challenge': challenge})
+    updated_challenge = get_challenge(id).get_dict()
+    del updated_challenge['id']
+    return jsonify({'challenge': updated_challenge})
 
 def get_challenge(id):
     return db.session.query(RubyChallenge).filter_by(id=id).first()
@@ -147,3 +136,19 @@ def file_exists(f, persistent=True):
     if not persistent:
         return (f in request.files)
     return os.path.isfile(f)
+
+def update_file(challenge, file_type, data):
+    source_file = ''
+    if file_type == 'code':
+        source_file = 'source_code_file'
+    else:
+        source_file = 'test_suite_file'
+    source_file_name = f"{source_file}_name"
+
+    if file_exists(source_file, persistent=False):
+        os.remove(challenge[file_type])
+        data[file_type] = save(source_file, data[source_file_name])
+    elif (os.path.basename(challenge[file_type]).split('.')[0] != data[source_file_name]):
+        new_path = f"public/challenges/{data[source_file_name]}.rb"
+        os.rename(challenge[file_type], new_path)
+        data[file_type] = new_path
