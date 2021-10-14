@@ -13,7 +13,7 @@ def create_app(config_name='development'):
     config[config_name].init_app(app)
 
     from .models import User, Role
-    from .javascript.models_js import JavaScriptChallenge 
+    from .javascript.models_js import JavascriptChallenge 
     from .ruby.models import RubyChallenge
     from .java.models_java import Challenge_java
     from .cSharp.models import CSharp_Challenge
