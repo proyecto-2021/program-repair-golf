@@ -64,7 +64,11 @@ def create_new_challenge():
 
     #create response
     req_challenge = PythonChallenge.query.filter_by(id=new_challenge.id).first()
-    return jsonify({"challenge" : PythonChallenge.to_dict(req_challenge)})
+    response = PythonChallenge.to_dict(req_challenge)
+    #adding source codes to response
+    response['code'] = challenge_source_code.decode()
+    response['tests_code'] = tests_source_code.decode()
+    return jsonify({"challenge" : response})
 
 
 @python.route('api/v1/python-challenges/<id>', methods=['PUT'])
