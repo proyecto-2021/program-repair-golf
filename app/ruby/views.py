@@ -134,6 +134,11 @@ def save(key, file_name):
     file.save(dst=path)
     return path
 
+def file_exists(f, persistent=True):
+    if not persistent:
+        return (f in request.files)
+    return os.path.isfile(f)
+
 def update_file(challenge, file_type, data):
     source_file = ''
     if file_type == 'code':
@@ -157,7 +162,3 @@ def compiles(file_name):
 def tests_fail(test_file_name):
     command = 'ruby ' + test_file_name
     return (subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) != 0)
-def file_exists(f, persistent=True):
-    if not persistent:
-        return (f in request.files)
-    return os.path.isfile(f)
