@@ -5,6 +5,7 @@ from flask import Flask, jsonify, request, make_response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from werkzeug.datastructures import FileStorage
+import subprocess
 import json
 
 @ruby.route('/challenge', methods=['POST'])
@@ -33,26 +34,19 @@ def post_repair(id):
         return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
 
     file = request.files['source_code_file']
+    file.save(dst='public/challenges/tmp.rb')
 
-    file.save(dst='public/challenges/median2.rb')
+    #Sintax check
+    print(subprocess.call('ruby -c public/challenges/tmp.rb', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT))
 
-    new_challenge = RubyChallenge(
-        code='code',
-        tests_code='tests_code',
-        repair_objective='repair_objective',
-        complexity='complexity',
-        best_score='best_score'
-    )
     #check if the posted code has not sintax errors
     challenge = get_challenge(id)
-    if challenge is not None:
-        test_suite = challenge.tests_code
     #run the posted code with the test suite
     #compute the score
     #if the score < challenge.score()
     #update score
     #return
-    return new_challenge.get_dict()
+    return challenge.get_dict()
 
 @ruby.route('/challenge/<int:id>', methods=['GET'])
 def get_ruby_challenge(id):
