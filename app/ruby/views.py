@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from werkzeug.datastructures import FileStorage
 import json
 import os.path
+import os
 
 @ruby.route('/challenge', methods=['POST'])
 def create_ruby_challenge():
@@ -91,14 +92,17 @@ def update_ruby_challenge(id):
     if not exists(id):
         return make_response(jsonify({'challenge': 'NOT FOUND'}), 404)
     update_data = json.loads(request.form.get('challenge'))['challenge']
-    
     challenge = get_challenge(id).get_dict()
-    # eliminar este archivo challenge['code']
-
+    
     if file_exists('source_code_file', persistent=False):
-        save('source_code_file', update_data['source_code_file_name'])
+        os.remove(challenge['code'])
+        update_code_path = save('source_code_file', update_data['source_code_file_name'])
+        update_challenge(id, {'code': update_code_path})
     if file_exists('test_suite_file', persistent=False):
-        save('test_suite_file', update_data['test_suite_file_name'])
+        os.remove(challenge['tests_code'])
+        update_test_path = save('test_suite_file', update_data['test_suite_file_name'])
+        update_challenge(id, {'tests_code': update_test_path})
+        
     
     # Actualizar los nombres de los archivos
     del update_data['source_code_file_name']
