@@ -14,7 +14,12 @@ def return_challenges():
     all_challenges = PythonChallenge.query.all()
     challenge_list = []
     for challenge in all_challenges:
+        
         aux_dict = PythonChallenge.to_dict(challenge)
+        saved_challenge = open(aux_dict['code'], "r")
+        challenge_code = saved_challenge.read()
+        saved_challenge.close()        
+        aux_dict['code'] = challenge_code
         aux_dict.pop('tests_code', None)
         challenge_list.append(aux_dict)
     return jsonify({"challenges": challenge_list})
@@ -24,7 +29,15 @@ def return_challange_id(id):
     challenge = PythonChallenge.query.filter_by(id = id).first()
     if challenge is None:
         return make_response(jsonify({"Challenge": "Not found"}), 404)
-    aux_dict = PythonChallenge.to_dict(challenge)
+    aux_dict = PythonChallenge.to_dict(challenge)  
+    saved_challenge = open(aux_dict['code'], "r")
+    challenge_code = saved_challenge.read()
+    saved_challenge.close()
+    aux_dict['code'] = challenge_code
+    saved_challenge2 = open(aux_dict['tests_code'], "r")
+    challenge_test_code = saved_challenge2.read()
+    saved_challenge2.close()
+    aux_dict['tests_code'] = challenge_test_code
     aux_dict.pop('id', None)
     return jsonify({"Challenge": aux_dict}) 
 
