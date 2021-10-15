@@ -45,7 +45,7 @@ def create_new_challenge():
     tests_file = request.files.get('test_suite_file')
     tests_source_code = tests_file.read()
     tests_full_path = path.join(save_path, challenge_data['test_suite_file_name'])
-    saved_challenge = open(challenge_full_path, "wb")
+    saved_challenge = open(tests_full_path, "wb")
     saved_challenge.write(challenge_source_code)
     saved_challenge.close()
     
