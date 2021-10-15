@@ -5,8 +5,9 @@ from flask import Flask, jsonify, request, make_response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from werkzeug.datastructures import FileStorage
+from shutil import copy
+import subprocess
 import json
-import os.path
 import os
 
 @ruby.route('/challenge', methods=['POST'])
@@ -34,27 +35,28 @@ def post_repair(id):
     if not exists(id):
         return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
 
+    challenge = get_challenge(id).get_dict()
+    
     file = request.files['source_code_file']
+    #The file must be saved with the same name has the original code, else the test suite will not work
+    #file_name = 'public/challenges/' + + '.rb'
+    file_name = 'public/repair_executions/' + os.path.basename(challenge['code'])
+    file.save(dst=file_name)
 
-    file.save(dst='public/challenges/median2.rb')
+    if not compiles(file_name):
+        return make_response(jsonify({'challenge': {'repair_code': 'is erroneous'}}),400)
 
-    new_challenge = RubyChallenge(
-        code='code',
-        tests_code='tests_code',
-        repair_objective='repair_objective',
-        complexity='complexity',
-        best_score='best_score'
-    )
-    #check if the posted code has not sintax errors
-    challenge = get_challenge(id)
-    if challenge is not None:
-        test_suite = challenge.tests_code
-    #run the posted code with the test suite
+    test_file_name = 'public/repair_executions/tmp_test.rb'
+    copy(challenge['tests_code'], test_file_name)
+
+    if tests_fail(test_file_name):
+        return make_response(jsonify({'challenge': {'tests_code': 'fails'}}),200)
+
     #compute the score
     #if the score < challenge.score()
     #update score
     #return
-    return new_challenge.get_dict()
+    return challenge
 
 @ruby.route('/challenge/<int:id>', methods=['GET'])
 def get_ruby_challenge(id):
@@ -69,7 +71,7 @@ def get_ruby_challenge(id):
 
     with open(code_path) as f:
         challenge['code'] = f.read()
-        
+
     with open(tests_code_path) as f:
         challenge['tests_code'] = f.read()
 
@@ -84,7 +86,7 @@ def get_all_ruby_challenges():
         code_path = c['code']
         with open(code_path) as f:
             c['code'] = f.read()
-    
+
     return jsonify({'challenges': challenges})
 
 @ruby.route('/challenge/<int:id>', methods=['PUT'])
@@ -152,3 +154,11 @@ def update_file(challenge, file_type, data):
         new_path = f"public/challenges/{data[source_file_name]}.rb"
         os.rename(challenge[file_type], new_path)
         data[file_type] = new_path
+
+def compiles(file_name):
+    command = 'ruby -c ' + file_name
+    return (subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0)
+
+def tests_fail(test_file_name):
+    command = 'ruby ' + test_file_name
+    return (subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) != 0)
