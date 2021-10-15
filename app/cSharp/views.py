@@ -1,4 +1,7 @@
 from . import cSharp
+from app import db
+from .models import CSharp_Challenge
+from flask import jsonify
 
 @cSharp.route('/login')
 def login():
@@ -6,5 +9,7 @@ def login():
 
 @cSharp.route('/c-sharp-challenges/<int:id>', methods = ['GET'])
 def get_challenge(id):
-    #TODO: implement this method
-    return{ 'challenge': 'unsupported' }
+    challenge = db.session.query(CSharp_Challenge).get(id).__repr__()
+    challenge['code'] = open(challenge['code'], "r").read()
+    challenge['tests_code'] = open(challenge['tests_code'], "r").read()
+    return jsonify({ 'Challenge': challenge })
