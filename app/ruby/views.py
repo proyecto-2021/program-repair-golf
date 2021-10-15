@@ -40,22 +40,28 @@ def post_repair(id):
     file = request.files['source_code_file']
     #The file must be saved with the same name has the original code, else the test suite will not work
     #file_name = 'public/challenges/' + + '.rb'
-    file_name = 'public/repair_executions/' + os.path.basename(challenge['code'])
+    file_name = 'public/' + os.path.basename(challenge['code'])
     file.save(dst=file_name)
 
     if not compiles(file_name):
+        os.remove(file_name)
         return make_response(jsonify({'challenge': {'repair_code': 'is erroneous'}}),400)
 
-    test_file_name = 'public/repair_executions/tmp_test.rb'
+    test_file_name = 'public/tmp.rb'
     copy(challenge['tests_code'], test_file_name)
 
     if tests_fail(test_file_name):
+        os.remove(file_name)
+        os.remove(test_file_name)
         return make_response(jsonify({'challenge': {'tests_code': 'fails'}}),200)
 
     #compute the score
     #if the score < challenge.score()
     #update score
     #return
+    os.remove(file_name)
+    os.remove(test_file_name)
+
     return challenge
 
 @ruby.route('/challenge/<int:id>', methods=['GET'])
