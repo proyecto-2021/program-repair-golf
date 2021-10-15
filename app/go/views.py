@@ -13,4 +13,6 @@ def return_single_challenge(id):
         if challenge_by_id is None:
             return "ID Not Found", 404
         challenge_to_return=challenge_by_id.convert_dict()
+        del challenge_to_return["id"]
         return jsonify({"challenge":challenge_to_return})
+        
