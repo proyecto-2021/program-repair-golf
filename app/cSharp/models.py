@@ -7,3 +7,14 @@ class CSharp_Challenge(db.Model):
     repair_objetive = db.Column(db.String(120), nullable=False)
     complexity = db.Column(db.Integer, nullable=False)
     best_score = db.Column(db.Integer, nullable=False)
+
+    def __repr__(self):
+        return {
+            "id": self.id,
+            "code": self.code,
+            "tests_code": self.tests_code,
+            "repair_objetive": self.repair_objetive,
+            "complexity": self.complexity,
+            "best_score": self.best_score
+        }
+    
