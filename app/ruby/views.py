@@ -96,8 +96,12 @@ def update_ruby_challenge(id):
     update_data = json.loads(request.form.get('challenge'))['challenge']
     objective_challenge = get_challenge(id).get_dict()
     
+    if not compiles(request.files['source_code_file']):
+        return make_response(jsonify({'challenge': "doesn't compile"}), 400)
     update_file(objective_challenge, 'code', update_data, 'source_code_file', request.files)
 
+    if not tests_fail(request.files['test_suite_file']):
+        return make_response(jsonify({'challenge': "tests are okay. Input tests that fail"}), 400)
     update_file(objective_challenge, 'tests_code', update_data, 'test_suite_file', request.files)
     
     # Default value needed for this parameters. It must take the current file name.
