@@ -9,6 +9,7 @@ from shutil import copy
 import subprocess
 import json
 import os
+import sys
 
 @ruby.route('/challenge', methods=['POST'])
 def create_ruby_challenge():
@@ -36,26 +37,33 @@ def post_repair(id):
         return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
 
     challenge = get_challenge(id).get_dict()
-    
+
     file = request.files['source_code_file']
     #The file must be saved with the same name has the original code, else the test suite will not work
     #file_name = 'public/challenges/' + + '.rb'
-    file_name = 'public/repair_executions/' + os.path.basename(challenge['code'])
+    file_name = 'public/' + os.path.basename(challenge['code'])
     file.save(dst=file_name)
 
     if not compiles(file_name):
+        os.remove(file_name)
         return make_response(jsonify({'challenge': {'repair_code': 'is erroneous'}}),400)
 
-    test_file_name = 'public/repair_executions/tmp_test.rb'
+    test_file_name = 'public/tmp.rb'
+    print(dependencies_ok(challenge['tests_code']))
     copy(challenge['tests_code'], test_file_name)
 
     if tests_fail(test_file_name):
+        os.remove(file_name)
+        os.remove(test_file_name)
         return make_response(jsonify({'challenge': {'tests_code': 'fails'}}),200)
 
     #compute the score
     #if the score < challenge.score()
     #update score
     #return
+    os.remove(file_name)
+    os.remove(test_file_name)
+
     return challenge
 
 @ruby.route('/challenge/<int:id>', methods=['GET'])
@@ -80,7 +88,7 @@ def get_ruby_challenge(id):
 @ruby.route('/challenges', methods=['GET'])
 def get_all_ruby_challenges():
     challenges = get_all_challenges_dict()
-    
+
     for c in challenges:
         del c['tests_code']
         code_path = c['code']
@@ -98,7 +106,7 @@ def update_ruby_challenge(id):
     
     update_file(objective_challenge, 'code', update_data)
     update_file(objective_challenge, 'tests_code', update_data)
-    
+
     # Default value needed for this parameters. It must take the current file name.
     del update_data['source_code_file_name'] # This keys are no longer needed for updating the challenge.
     del update_data['test_suite_file_name']
@@ -162,3 +170,10 @@ def compiles(file_name):
 def tests_fail(test_file_name):
     command = 'ruby ' + test_file_name
     return (subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) != 0)
+
+def dependencies_ok(test_file_path):
+    command = 'grep "require_relative" ' + test_file_path
+    p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+    file_name = (p.communicate()[0].decode(sys.stdout.encoding).strip().split("'")[1])
+    file_path = 'public/challenges/' + file_name + '.rb'
+    return os.path.isfile(file_path)
