@@ -10,6 +10,7 @@ import subprocess
 import json
 import os
 import sys
+import nltk
 
 @ruby.route('/challenge', methods=['POST'])
 def create_ruby_challenge():
@@ -49,7 +50,6 @@ def post_repair(id):
         return make_response(jsonify({'challenge': {'repair_code': 'is erroneous'}}),400)
 
     test_file_name = 'public/tmp.rb'
-    print(dependencies_ok(challenge['tests_code']))
     copy(challenge['tests_code'], test_file_name)
 
     if tests_fail(test_file_name):
@@ -57,10 +57,13 @@ def post_repair(id):
         os.remove(test_file_name)
         return make_response(jsonify({'challenge': {'tests_code': 'fails'}}),200)
 
-    #compute the score
-    #if the score < challenge.score()
-    #update score
-    #return
+    old_best_score = challenge['best_score']
+    with open(challenge['code']) as f1, open(file_name) as f2:
+        challenge['best_score'] = nltk.edit_distance(f1.read(),f2.read())
+
+    if (challenge['best_score'] < old_best_score) or (old_best_score == 0):
+        update_challenge(id, challenge)
+
     os.remove(file_name)
     os.remove(test_file_name)
 
