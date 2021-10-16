@@ -1,5 +1,6 @@
 from . import javascript
 from .update_challenge import update_challenge_js
+from .create_challenge import create_challenge_js
 
 @javascript.route('/login')
 def login():
@@ -8,3 +9,7 @@ def login():
 @javascript.route('/javascript-challenges/<int:id>', methods=['PUT'])
 def update_challenge(id):
     return update_challenge_js(id)
+
+@javascript.route('/javascript-challenges', methods=['POST'])
+def create_challenge():
+  return create_challenge_js()
