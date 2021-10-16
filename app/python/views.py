@@ -4,6 +4,7 @@ from flask import request, make_response, jsonify
 from .models import PythonChallenge
 from json import loads
 from os import path
+import subprocess
 
 @python.route('/login', methods=['GET'])
 def login():
@@ -44,29 +45,28 @@ def return_challange_id(id):
 def create_new_challenge():
     #we get the dict with keys "source_code_file_name", "test_suite_file_name", "repair_objective", "complexity"
     challenge_data = loads(request.form.get('challenge'))['challenge']
-    save_path = path.dirname('public/challenges/')  #general path were code is saved
+    save_to = "public/challenges/"  #general path were code will be saved
+    saved_at = "example-challenges/python-challenges/"  #general path were code is saved
     
-    challenge_file = request.files.get('source_code_file')  #obtain the binary
-    challenge_source_code = challenge_file.read()   #read it, and store its content
-    challenge_full_path = path.join(save_path, challenge_data['source_code_file_name']) #save_path + file_name
-    saved_challenge = open(challenge_full_path, "wb")   #creating a new file in new location
-    saved_challenge.write(challenge_source_code)    #write the binary we got
-    saved_challenge.close()                         #save it
+    code_path = saved_at + challenge_data['source_code_file_name']
+    p = subprocess.call("python -m py_compile " + code_path ,stdout=subprocess.PIPE, shell=True)
+    
+    if p == 1:
+        return make_response(jsonify({"Error":"Syntax error in main code"}), 409)
 
-    #same as above
-    tests_file = request.files.get('test_suite_file')
-    tests_source_code = tests_file.read()
-    tests_full_path = path.join(save_path, challenge_data['test_suite_file_name'])
-    saved_challenge = open(tests_full_path, "wb")
-    saved_challenge.write(challenge_source_code)
-    saved_challenge.close()
-    
-    #if the challenge is invalid, an error will be returned
-    #valid_python_challenge(challenge_data, path_to_code, path_to_tests)
-    
+    test_path = saved_at + challenge_data['source_code_file_name']
+    p = subprocess.call("python -m py_compile " + test_path ,stdout=subprocess.PIPE, shell=True)
+    print("mira como me chupa un huevo tu if")
+
+    if p == 1:
+        return make_response(jsonify({"Error":"Syntax error in tests code"}), 409)
+
+    challenge_source_code = read_and_resave(save_to, 'source_code_file', challenge_data['source_code_file_name'])
+    tests_source_code = read_and_resave(save_to, 'test_suite_file', challenge_data['test_suite_file_name'])
+   
     #create row for database with the new challenge
-    new_challenge = PythonChallenge(code=challenge_full_path,
-        tests_code=tests_full_path,
+    new_challenge = PythonChallenge(code=code_path,
+        tests_code=test_path,
         repair_objective=challenge_data['repair_objective'],
         complexity=challenge_data['complexity'],
         best_score=0)
@@ -124,3 +124,12 @@ def update_challenge(id):
     saved_challenge.close()
     return jsonify({"challenge" : response})
 
+
+def read_and_resave(save_to, req_key, filename):
+    bin_file = request.files.get(req_key)               #obtain the binary
+    source_code = bin_file.read()                       #read it, and store its content
+    full_path = path.join(save_to, filename)          #save_path + file_name
+    new_save = open(full_path, "wb")                    #creating a new file in new location
+    new_save.write(source_code)                         #write the binary we got
+    new_save.close()                                    #save it
+    return source_code
