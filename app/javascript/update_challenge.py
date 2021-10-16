@@ -4,10 +4,10 @@ from .models_js import JavascriptChallenge
 from ..javascript import files_js
 import json
 
-def update_challenge_js(id_challenge):
+def update_challenge_js(id):
 
     challenge_json = json.loads(request.form.get('challenge'))['challenge']
-    challenge = JavascriptChallenge.query.filter_by(id=id_challenge).first()
+    challenge = JavascriptChallenge.find_challenge(id)
     
     if not challenge_json: return make_response(jsonify({"challenge":"Not found: challenge request is null" }), 404)   
     if not challenge: 
@@ -17,7 +17,6 @@ def update_challenge_js(id_challenge):
     test_suite_file_upd = request.files['test_suite_file']
     
     code_file_name = files_js.get_name_file(challenge.code)
-    print(code_file_name)
     test_file_name = files_js.get_name_file(challenge.tests_code)
 
     repair_objetive = challenge_json['repair_objective']
