@@ -15,10 +15,9 @@ def return_challenges():
     challenge_list = []
     for challenge in all_challenges:
         
-        aux_dict = PythonChallenge.to_dict(challenge)
+        aux_dict = PythonChallenresponse.to_dict(challenge)
         saved_challenge = open(aux_dict['code'], "r")
         challenge_code = saved_challenge.read()
-        saved_challenge.close()        
         aux_dict['code'] = challenge_code
         aux_dict.pop('tests_code', None)
         challenge_list.append(aux_dict)
@@ -30,7 +29,7 @@ def return_challange_id(id):
     if challenge is None:
         return make_response(jsonify({"Challenge": "Not found"}), 404)
     aux_dict = PythonChallenge.to_dict(challenge)  
-    saved_challenge = open(aux_dict['code'], "r")
+    saved_challenge = open(aux_dict['code'], "r")   
     challenge_code = saved_challenge.read()
     saved_challenge.close()
     aux_dict['code'] = challenge_code
@@ -92,11 +91,36 @@ def update_challenge(id):
 
     if req_challenge is None:
         return make_response(jsonify({"challenge":"there is no challenge with that id"}),404)
-    else:
-        db.session.query(PythonChallenge).filter_by(id=id).update(dict( complexity = challenge_data['complexity']))
+
+    response =  PythonChallenge.to_dict(req_challenge).copy()
+    challenge_file = request.files.get('source_code_file')  #obtain the binary
+    if challenge_file != None:
+        challenge_source_code = challenge_file.read()   #read it, and store its content
+        challenge_full_path = path.join(save_path, challenge_data['source_code_file_name']) #save_path + file_name
+        saved_challenge = open(challenge_full_path, "wb")   #creating a new file in new location
+        saved_challenge.write(challenge_source_code)    #write the binary we got
+        saved_challenge.close()
+    
+    tests_file = request.files.get('test_suite_file')
+    if tests_file != None:
+        tests_source_code = tests_file.read()
+        tests_full_path = path.join(save_path, challenge_data['test_suite_file_name'])
+        saved_challenge = open(tests_full_path, "wb")
+        saved_challenge.write(challenge_source_code)
+        saved_challenge.close()
+
+    if 'repair_objective' in challenge_data:
+        db.session.query(PythonChallenge).filter_by(id=id).update(dict( repair_objective = challenge_data['repair_objective']))
         db.session.commit()
-        req_challenge = PythonChallenge.query.filter_by(id=id).first()
-        dictionary =  PythonChallenge.to_dict(req_challenge)
-        dictionary.pop('id', None)
-        return jsonify({"challenge" : dictionary})
+        response['repair_objective'] = challenge_data['repair_objective']
+
+    
+    db.session.query(PythonChallenge).filter_by(id=id).update(dict( complexity = challenge_data['complexity']))
+    db.session.commit()
+    response['complexity'] = challenge_data['complexity'] 
+
+    saved_challenge = open(response['code'], "r")   
+    challenge_code = saved_challenge.read()
+    saved_challenge.close()
+    return jsonify({"challenge" : response})
 
