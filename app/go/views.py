@@ -15,8 +15,11 @@ def hello():
 def get_all_challenges():
 	challenges = db.session.query(GoChallenge).all()
 	show = []
-	for i in challenges:
-		show.append(GoChallenge.convert_dict(i))
+	i = 0
+	for challenge in challenges:
+		show.append(GoChallenge.convert_dict(challenge))
+		del show[i]['tests_code']
+		i+=1
 	return jsonify({"challenges" : show})
 
 '''
