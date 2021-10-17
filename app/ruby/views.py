@@ -17,12 +17,21 @@ def create_ruby_challenge():
     input_challenge = json.loads(request.form.get('challenge'))
     dictionary = input_challenge['challenge']
 
-    code_path = save('source_code_file', dictionary['source_code_file_name'])
-    test_code_path = save('test_suite_file', dictionary['test_suite_file_name'])
+    file = request.files['source_code_file']
+    file_path = save(file, dictionary['source_code_file_name'])
+    if not compiles(file_path):
+        os.remove(file_path)
+        return make_response(jsonify({'challenge': 'source_code not compile'}),400)
+
+    test_file = request.files['test_suite_file']
+    test_file_path = save(test_file, dictionary['test_suite_file_name'])
+    if not compiles(test_file_path):
+        os.remove(test_file_path)
+        return make_response(jsonify({'challenge': 'test_suite not compile'}),400)
 
     new_challenge = RubyChallenge(
-        code = code_path,
-        tests_code = test_code_path,
+        code = file_path,
+        tests_code = test_file_path,
         repair_objective = dictionary['repair_objective'],
         complexity = dictionary['complexity'],
         best_score = 0
@@ -136,8 +145,7 @@ def update_challenge(id, changes):
     db.session.query(RubyChallenge).filter_by(id=id).update(changes)
     db.session.commit()
 
-def save(key, file_name):
-    file = request.files[key]
+def save(file, file_name):
     path = 'public/challenges/' + file_name + '.rb'
     file.save(dst=path)
     return path
