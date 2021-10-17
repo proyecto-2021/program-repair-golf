@@ -19,12 +19,26 @@ def create_ruby_challenge():
 
     file = request.files['source_code_file']
     file_path = save(file, dictionary['source_code_file_name'])
+
+    #check that the same file is not posted again
+    if os.path.isfile(file_path):
+        os.remove(file_path)
+        return make_response(jsonify({'challenge': 'source_code is already exist'}),409)
+    
+    #check that the file have no syntaxis errors
     if not compiles(file_path):
         os.remove(file_path)
         return make_response(jsonify({'challenge': 'source_code not compile'}),400)
 
     test_file = request.files['test_suite_file']
     test_file_path = save(test_file, dictionary['test_suite_file_name'])
+    
+    #check that the same file is not posted again
+    if os.path.isfile(test_file_path):
+        os.remove(test_file_path)
+        return make_response(jsonify({'challenge': 'test_suite is already exist'}),409)
+
+    #check no syntaxis errors
     if not compiles(test_file_path):
         os.remove(test_file_path)
         return make_response(jsonify({'challenge': 'test_suite not compile'}),400)
