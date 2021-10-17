@@ -40,8 +40,6 @@ def post_repair(id):
     challenge = get_challenge(id).get_dict()
 
     file = request.files['source_code_file']
-    #The file must be saved with the same name has the original code, else the test suite will not work
-    #file_name = 'public/challenges/' + + '.rb'
     file_name = 'public/' + os.path.basename(challenge['code'])
     file.save(dst=file_name)
 
@@ -106,7 +104,7 @@ def update_ruby_challenge(id):
         return make_response(jsonify({'challenge': 'NOT FOUND'}), 404)
     update_data = json.loads(request.form.get('challenge'))['challenge']
     objective_challenge = get_challenge(id).get_dict()
-    
+
     update_file(objective_challenge, 'code', update_data)
     update_file(objective_challenge, 'tests_code', update_data)
 
@@ -174,9 +172,8 @@ def tests_fail(test_file_name):
     command = 'ruby ' + test_file_name
     return (subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) != 0)
 
-def dependencies_ok(test_file_path):
+def dependencies_ok(test_file_path, file_name):
     command = 'grep "require_relative" ' + test_file_path
     p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-    file_name = (p.communicate()[0].decode(sys.stdout.encoding).strip().split("'")[1])
-    file_path = 'public/challenges/' + file_name + '.rb'
-    return os.path.isfile(file_path)
+    dependence_name = (p.communicate()[0].decode(sys.stdout.encoding).strip().split("'")[1])
+    return dependence_name == file_name
