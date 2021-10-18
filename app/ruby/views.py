@@ -3,7 +3,7 @@ from .models import RubyChallenge
 from app import db
 from flask import jsonify, request, make_response
 from shutil import copy
-import subprocess, json, os, sys
+import subprocess, json, os, sys, nltk
 
 @ruby.route('/challenge', methods=['POST'])
 def create_ruby_challenge():
@@ -54,8 +54,6 @@ def post_repair(id):
     challenge = get_challenge(id).get_dict()
 
     file = request.files['source_code_file']
-    #The file must be saved with the same name has the original code, else the test suite will not work
-    #file_name = 'public/challenges/' + + '.rb'
     file_name = 'public/' + os.path.basename(challenge['code'])
     file.save(dst=file_name)
 
@@ -64,7 +62,6 @@ def post_repair(id):
         return make_response(jsonify({'challenge': {'repair_code': 'is erroneous'}}),400)
 
     test_file_name = 'public/tmp.rb'
-    print(dependencies_ok(challenge['tests_code']))
     copy(challenge['tests_code'], test_file_name)
 
     if tests_fail(test_file_name):
@@ -72,10 +69,13 @@ def post_repair(id):
         os.remove(test_file_name)
         return make_response(jsonify({'challenge': {'tests_code': 'fails'}}),200)
 
-    #compute the score
-    #if the score < challenge.score()
-    #update score
-    #return
+    old_best_score = challenge['best_score']
+    with open(challenge['code']) as f1, open(file_name) as f2:
+        challenge['best_score'] = nltk.edit_distance(f1.read(),f2.read())
+
+    if (challenge['best_score'] < old_best_score) or (old_best_score == 0):
+        update_challenge(id, challenge)
+
     os.remove(file_name)
     os.remove(test_file_name)
 
@@ -118,7 +118,7 @@ def update_ruby_challenge(id):
         return make_response(jsonify({'challenge': 'NOT FOUND'}), 404)
     update_data = json.loads(request.form.get('challenge'))['challenge']
     objective_challenge = get_challenge(id).get_dict()
-    
+
     update_file(objective_challenge, 'code', update_data)
     update_file(objective_challenge, 'tests_code', update_data)
 
@@ -186,9 +186,8 @@ def tests_fail(test_file_name):
     command = 'ruby ' + test_file_name
     return (subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) != 0)
 
-def dependencies_ok(test_file_path):
+def dependencies_ok(test_file_path, file_name):
     command = 'grep "require_relative" ' + test_file_path
     p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-    file_name = (p.communicate()[0].decode(sys.stdout.encoding).strip().split("'")[1])
-    file_path = 'public/challenges/' + file_name + '.rb'
-    return os.path.isfile(file_path)
+    dependence_name = (p.communicate()[0].decode(sys.stdout.encoding).strip().split("'")[1])
+    return dependence_name == file_name
