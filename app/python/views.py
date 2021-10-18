@@ -47,19 +47,12 @@ def create_new_challenge():
     challenge_data = loads(request.form.get('challenge'))['challenge']
     save_to = "public/challenges/"  #general path were code will be saved
     saved_at = "example-challenges/python-challenges/"  #general path were code is saved
-    
+
     code_path = saved_at + challenge_data['source_code_file_name']
-    p = subprocess.call("python -m py_compile " + code_path ,stdout=subprocess.PIPE, shell=True)
-    
-    if p == 1:
-        return make_response(jsonify({"Error":"Syntax error in main code"}), 409)
-
-    test_path = saved_at + challenge_data['source_code_file_name']
-    p = subprocess.call("python -m py_compile " + test_path ,stdout=subprocess.PIPE, shell=True)
-    print("mira como me chupa un huevo tu if")
-
-    if p == 1:
-        return make_response(jsonify({"Error":"Syntax error in tests code"}), 409)
+    test_path = saved_at + challenge_data['test_suite_file_name']
+    result = valid_python_challenge(code_path, test_path)
+    if 'Error' in result:
+        return make_response(jsonify(result), 409)
 
     challenge_source_code = read_and_resave(save_to, 'source_code_file', challenge_data['source_code_file_name'])
     tests_source_code = read_and_resave(save_to, 'test_suite_file', challenge_data['test_suite_file_name'])
@@ -133,3 +126,20 @@ def read_and_resave(save_to, req_key, filename):
     new_save.write(source_code)                         #write the binary we got
     new_save.close()                                    #save it
     return source_code
+
+def valid_python_challenge(code_path,test_path):
+    #checks for any syntax errors in code
+    if not no_syntax_errors(code_path):
+        return {"Error": "Syntax error at " + code_path}
+    #checks for any syntax errors in tests code
+    elif not no_syntax_errors(test_path):
+        return {"Error": "Syntax error at " + test_path}
+    #checks if at least one test don't pass
+    #elif !tests_fail():
+    #    return {"Error": "At least one test must fail"}
+    else:   #program is fine 
+        return { 'Result': 'ok' }
+
+def no_syntax_errors(code_path):
+    p = subprocess.call("python -m py_compile " + code_path ,stdout=subprocess.PIPE, shell=True)
+    return p == 0   #0 is no syntax errors, 1 is the opposite
