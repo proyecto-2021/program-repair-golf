@@ -135,11 +135,16 @@ def valid_python_challenge(code_path,test_path):
     elif not no_syntax_errors(test_path):
         return {"Error": "Syntax error at " + test_path}
     #checks if at least one test don't pass
-    #elif !tests_fail():
-    #    return {"Error": "At least one test must fail"}
+    elif not tests_fail(test_path):
+        return {"Error": "At least one test must fail"}
     else:   #program is fine 
         return { 'Result': 'ok' }
 
 def no_syntax_errors(code_path):
     p = subprocess.call("python -m py_compile " + code_path ,stdout=subprocess.PIPE, shell=True)
     return p == 0   #0 is no syntax errors, 1 is the opposite
+
+def  tests_fail(test_path):
+    p = subprocess.call("python -m pytest " + test_path ,stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    return p == 1 #1 is exception due a test fail, 0 the oposite
+    
