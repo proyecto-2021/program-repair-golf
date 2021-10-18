@@ -1,14 +1,10 @@
 from . import ruby
 from .models import RubyChallenge
 from app import db
-from flask import Flask, jsonify, request, make_response
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import create_engine
-from werkzeug.datastructures import FileStorage
+from flask import jsonify, request, make_response
 from shutil import copy
-import subprocess
-import json
-import os
+import subprocess, json, os, sys
+import nltk
 
 @ruby.route('/challenge', methods=['POST'])
 def create_ruby_challenge():
@@ -16,12 +12,33 @@ def create_ruby_challenge():
     input_challenge = json.loads(request.form.get('challenge'))
     dictionary = input_challenge['challenge']
 
-    code_path = save('source_code_file', dictionary['source_code_file_name'])
-    test_code_path = save('test_suite_file', dictionary['test_suite_file_name'])
+    file = request.files['source_code_file']
+    file_path = 'public/challenges/' + dictionary['source_code_file_name'] + '.rb'
+
+    test_file = request.files['test_suite_file']
+    test_file_path = 'public/challenges/' + dictionary['test_suite_file_name'] + '.rb'
+
+    #check that the same files is not posted again
+    if not save(file, file_path):
+        return make_response(jsonify({'challenge': 'source_code is already exist'}),409)
+    
+    if not save(test_file, test_file_path):
+        return make_response(jsonify({'challenge': 'test_suite is already exist'}),409)
+
+    #check no syntaxis errors
+    if not (compiles(file_path) and compiles(test_file_path)):
+        os.remove(file_path)
+        os.remove(test_file_path)
+        return make_response(jsonify({'challenge': 'source_code and/or test_suite not compile'}),400)
+
+    if  not dependencies_ok(test_file_path, dictionary['source_code_file_name']):
+        os.remove(file_path)
+        os.remove(test_file_path)
+        return make_response(jsonify({'challenge': 'test_suite dependencies are wrong'}),400)
 
     new_challenge = RubyChallenge(
-        code = code_path,
-        tests_code = test_code_path,
+        code = file_path,
+        tests_code = test_file_path,
         repair_objective = dictionary['repair_objective'],
         complexity = dictionary['complexity'],
         best_score = 0
@@ -36,27 +53,43 @@ def post_repair(id):
         return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
 
     challenge = get_challenge(id).get_dict()
-    
+
     file = request.files['source_code_file']
-    #The file must be saved with the same name has the original code, else the test suite will not work
-    #file_name = 'public/challenges/' + + '.rb'
-    file_name = 'public/repair_executions/' + os.path.basename(challenge['code'])
+    file_name = 'public/' + os.path.basename(challenge['code'])
     file.save(dst=file_name)
 
     if not compiles(file_name):
+        os.remove(file_name)
         return make_response(jsonify({'challenge': {'repair_code': 'is erroneous'}}),400)
 
-    test_file_name = 'public/repair_executions/tmp_test.rb'
+    test_file_name = 'public/tmp.rb'
     copy(challenge['tests_code'], test_file_name)
 
     if tests_fail(test_file_name):
+        os.remove(file_name)
+        os.remove(test_file_name)
         return make_response(jsonify({'challenge': {'tests_code': 'fails'}}),200)
 
-    #compute the score
-    #if the score < challenge.score()
-    #update score
-    #return
-    return challenge
+    with open(challenge['code']) as f1, open(file_name) as f2:
+        score = nltk.edit_distance(f1.read(),f2.read())
+
+    if (score < challenge['best_score']) or (challenge['best_score'] == 0):
+        update_challenge(id, {'best_score': score})
+
+    os.remove(file_name)
+    os.remove(test_file_name)
+
+    challenge = get_challenge(id).get_dict()
+    delete_keys(challenge, ['id','code','complexity','tests_code'])
+    return jsonify( {'repair' :
+                        {
+                            'challenge': challenge,
+                            'player': {'username': 'Agustin'},
+                            'attemps': '1',
+                            'score': score
+                        }
+                    }
+                )
 
 @ruby.route('/challenge/<int:id>', methods=['GET'])
 def get_ruby_challenge(id):
@@ -80,7 +113,7 @@ def get_ruby_challenge(id):
 @ruby.route('/challenges', methods=['GET'])
 def get_all_ruby_challenges():
     challenges = get_all_challenges_dict()
-    
+
     for c in challenges:
         del c['tests_code']
         code_path = c['code']
@@ -95,10 +128,10 @@ def update_ruby_challenge(id):
         return make_response(jsonify({'challenge': 'NOT FOUND'}), 404)
     update_data = json.loads(request.form.get('challenge'))['challenge']
     objective_challenge = get_challenge(id).get_dict()
-    
+
     update_file(objective_challenge, 'code', update_data)
     update_file(objective_challenge, 'tests_code', update_data)
-    
+
     # Default value needed for this parameters. It must take the current file name.
     del update_data['source_code_file_name'] # This keys are no longer needed for updating the challenge.
     del update_data['test_suite_file_name']
@@ -107,6 +140,10 @@ def update_ruby_challenge(id):
     updated_challenge = get_challenge(id).get_dict()
     del updated_challenge['id']
     return jsonify({'challenge': updated_challenge})
+
+def delete_keys(dictionary, key_list):
+    for key in key_list:
+        del dictionary[key]
 
 def get_challenge(id):
     return db.session.query(RubyChallenge).filter_by(id=id).first()
@@ -128,11 +165,11 @@ def update_challenge(id, changes):
     db.session.query(RubyChallenge).filter_by(id=id).update(changes)
     db.session.commit()
 
-def save(key, file_name):
-    file = request.files[key]
-    path = 'public/challenges/' + file_name + '.rb'
+def save(file, path):
+    if os.path.isfile(path):
+        return False
     file.save(dst=path)
-    return path
+    return True
 
 def file_exists(f, persistent=True):
     if not persistent:
@@ -162,3 +199,9 @@ def compiles(file_name):
 def tests_fail(test_file_name):
     command = 'ruby ' + test_file_name
     return (subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) != 0)
+
+def dependencies_ok(test_file_path, file_name):
+    command = 'grep "require_relative" ' + test_file_path
+    p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+    dependence_name = (p.communicate()[0].decode(sys.stdout.encoding).strip().split("'")[1])
+    return dependence_name == file_name
