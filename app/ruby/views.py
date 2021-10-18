@@ -1,15 +1,9 @@
 from . import ruby
 from .models import RubyChallenge
 from app import db
-from flask import Flask, jsonify, request, make_response
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import create_engine
-from werkzeug.datastructures import FileStorage
+from flask import jsonify, request, make_response
 from shutil import copy
-import subprocess
-import json
-import os
-import sys
+import subprocess, json, os, sys
 
 @ruby.route('/challenge', methods=['POST'])
 def create_ruby_challenge():
@@ -18,30 +12,28 @@ def create_ruby_challenge():
     dictionary = input_challenge['challenge']
 
     file = request.files['source_code_file']
-    file_path = save(file, dictionary['source_code_file_name'])
-
-    #check that the same file is not posted again
-    if os.path.isfile(file_path):
-        os.remove(file_path)
-        return make_response(jsonify({'challenge': 'source_code is already exist'}),409)
-    
-    #check that the file have no syntaxis errors
-    if not compiles(file_path):
-        os.remove(file_path)
-        return make_response(jsonify({'challenge': 'source_code not compile'}),400)
+    file_path = 'public/challenges/' + dictionary['source_code_file_name'] + '.rb'
 
     test_file = request.files['test_suite_file']
-    test_file_path = save(test_file, dictionary['test_suite_file_name'])
+    test_file_path = 'public/challenges/' + dictionary['test_suite_file_name'] + '.rb'
     
-    #check that the same file is not posted again
-    if os.path.isfile(test_file_path):
-        os.remove(test_file_path)
+    #check that the same files is not posted again
+    if not save(file, file_path):
+        return make_response(jsonify({'challenge': 'source_code is already exist'}),409)
+    
+    if not save(test_file, test_file_path):
         return make_response(jsonify({'challenge': 'test_suite is already exist'}),409)
 
     #check no syntaxis errors
-    if not compiles(test_file_path):
+    if not (compiles(file_path) and compiles(test_file_path)):
+        os.remove(file_path)
         os.remove(test_file_path)
-        return make_response(jsonify({'challenge': 'test_suite not compile'}),400)
+        return make_response(jsonify({'challenge': 'source_code and/or test_suite not compile'}),400)
+
+    #if  not dependencies_ok(test_file_path):
+    #    os.remove(file_path)
+    #    os.remove(test_file_path)
+    #    return make_response(jsonify({'challenge': 'test_suite dependencies are wrong'}),400)
 
     new_challenge = RubyChallenge(
         code = file_path,
@@ -159,10 +151,11 @@ def update_challenge(id, changes):
     db.session.query(RubyChallenge).filter_by(id=id).update(changes)
     db.session.commit()
 
-def save(file, file_name):
-    path = 'public/challenges/' + file_name + '.rb'
+def save(file, path):
+    if os.path.isfile(path):
+        return False
     file.save(dst=path)
-    return path
+    return True
 
 def file_exists(f, persistent=True):
     if not persistent:
