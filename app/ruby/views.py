@@ -120,34 +120,35 @@ def update_ruby_challenge(id):
     update_data = json.loads(request.form.get('challenge'))['challenge']
     old_challenge = get_challenge(id).get_dict()
     source_code_name = f"{update_data['source_code_file_name']}.rb"
+    source_code_path_tmp = f"public/{source_code_name}"
     source_test_name = f"{update_data['test_suite_file_name']}.rb"
+    source_test_path_tmp = f"public/{source_test_name}"
     del update_data['source_code_file_name']
     del update_data['test_suite_file_name']
 
     if 'source_code_file' in request.files:
         source_code_file = request.files['source_code_file']
-        source_code_path_tmp = f"public/{source_code_name}"
         source_code_file.save(dst=source_code_path_tmp)
         if os.path.isfile(source_code_path_tmp) and not compiles(source_code_path_tmp):
             os.remove(source_code_path_tmp)
             return make_response(jsonify({'code': "doesn't compile or doesn't exists"}), 400)
+    else:
+        update_file_name(old_challenge, 'code', source_code_name, update_data)
 
     if 'test_suite_file' in request.files:
         source_test_file = request.files['test_suite_file']
-        source_test_path_tmp = f"public/{source_test_name}"
         source_test_file.save(dst=source_test_path_tmp)
         if os.path.isfile(source_test_path_tmp) and not tests_fail(source_test_path_tmp):
             os.remove(source_test_path_tmp)
             return make_response(jsonify({'tests': "tests must fail or doesn't exists"}), 400)
+    else:
+        update_file_name(old_challenge, 'tests_code', source_test_name, update_data)
         
     if update_challenge(id, update_data) < 1:
         return make_response(jsonify({'challenge': "update failed check input data"}), 400)
 
     update_file(old_challenge, 'code', source_code_path_tmp, source_code_name, update_data)
     update_file(old_challenge, 'tests_code', source_test_path_tmp, source_test_name, update_data)
-    
-    update_file_name(old_challenge, 'code', source_code_name, update_data)
-    update_file_name(old_challenge, 'tests_code', source_test_name, update_data)
 
     update_challenge(id, update_data)
     
