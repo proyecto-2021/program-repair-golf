@@ -16,3 +16,6 @@ class JavascriptChallenge(db.Model):
     repair_objective = db.Column(db.String(128))
     complexity = db.Column(db.Integer)
     best_score =  db.Column(db.Integer)
+
+    def find_challenge(id_challenge):
+        return JavascriptChallenge.query.filter_by(id=id_challenge).first()

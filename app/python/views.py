@@ -12,34 +12,51 @@ def login():
 
 @python.route('/api/v1/python-challenges', methods=['GET'])
 def return_challenges(): 
+    #Get all the challanges
     all_challenges = PythonChallenge.query.all()
-    challenge_list = []
+    challenge_list = [] 
     for challenge in all_challenges:
         
-        aux_dict = PythonChallenresponse.to_dict(challenge)
-        saved_challenge = open(aux_dict['code'], "r")
+        #Get row as a dictionary
+        response = PythonChallenge.to_dict(challenge)
+        
+        #Get code from file
+        saved_challenge = open(response['code'], "r")
         challenge_code = saved_challenge.read()
-        aux_dict['code'] = challenge_code
-        aux_dict.pop('tests_code', None)
-        challenge_list.append(aux_dict)
+        saved_challenge.close()        
+        
+        response['code'] = challenge_code
+        response.pop('tests_code', None)
+        challenge_list.append(response)
+
     return jsonify({"challenges": challenge_list})
 
 @python.route('/api/v1/python-challenges/<id>', methods=['GET'])
 def return_challange_id(id):
+    #Get challenge with given id 
     challenge = PythonChallenge.query.filter_by(id = id).first()
+    
     if challenge is None:
         return make_response(jsonify({"Challenge": "Not found"}), 404)
-    aux_dict = PythonChallenge.to_dict(challenge)  
-    saved_challenge = open(aux_dict['code'], "r")   
+    
+    #Dictionary auxiliary to modify the keys
+    response = PythonChallenge.to_dict(challenge)  
+
+    #Get code from file
+    saved_challenge = open(response['code'], "r")
     challenge_code = saved_challenge.read()
     saved_challenge.close()
-    aux_dict['code'] = challenge_code
-    saved_challenge2 = open(aux_dict['tests_code'], "r")
-    challenge_test_code = saved_challenge2.read()
-    saved_challenge2.close()
-    aux_dict['tests_code'] = challenge_test_code
-    aux_dict.pop('id', None)
-    return jsonify({"Challenge": aux_dict}) 
+    response['code'] = challenge_code
+    
+    #Get tests code from file
+    saved_challenge = open(response['tests_code'], "r")
+    challenge_test_code = saved_challenge.read()
+    saved_challenge.close()
+    
+    response['tests_code'] = challenge_test_code
+    response.pop('id', None)
+
+    return jsonify({"Challenge": response})
 
 @python.route('/api/v1/python-challenges', methods=['POST'])
 def create_new_challenge():
