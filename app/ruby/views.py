@@ -80,10 +80,7 @@ def post_repair(id):
     os.remove(test_file_name)
 
     challenge = get_challenge(id).get_dict()
-    del challenge['id']
-    del challenge['code']
-    del challenge['complexity']
-    del challenge['tests_code']
+    delete_keys(challenge, ['id','code','complexity','tests_code'])
     return jsonify( {'repair' :
                         {
                             'challenge': challenge,
@@ -143,6 +140,10 @@ def update_ruby_challenge(id):
     updated_challenge = get_challenge(id).get_dict()
     del updated_challenge['id']
     return jsonify({'challenge': updated_challenge})
+
+def delete_keys(dictionary, key_list):
+    for key in key_list:
+        del dictionary[key]
 
 def get_challenge(id):
     return db.session.query(RubyChallenge).filter_by(id=id).first()
