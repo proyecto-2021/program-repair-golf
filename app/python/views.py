@@ -79,26 +79,28 @@ def create_new_challenge():
 @python.route('api/v1/python-challenges/<id>', methods=['PUT'])
 def update_challenge(id):
     challenge_data = loads(request.form.get('challenge'))['challenge']
+    save_to = "public/challenges/"  #general path were code will be saved
+    saved_at = "example-challenges/python-challenges/"  
+
 
     req_challenge = PythonChallenge.query.filter_by(id=id).first()
-
+    
     if req_challenge is None:
         return make_response(jsonify({"challenge":"there is no challenge with that id"}),404)
 
     response =  PythonChallenge.to_dict(req_challenge).copy()
+
     challenge_file = request.files.get('source_code_file')  #obtain the binary
     if challenge_file != None:
         challenge_source_code = challenge_file.read()   #read it, and store its content
-        challenge_full_path = path.join(save_path, challenge_data['source_code_file_name']) #save_path + file_name
-        saved_challenge = open(challenge_full_path, "wb")   #creating a new file in new location
+        saved_challenge = open(req_challenge.code, "wb")   #creating a new file in new location
         saved_challenge.write(challenge_source_code)    #write the binary we got
         saved_challenge.close()
     
     tests_file = request.files.get('test_suite_file')
     if tests_file != None:
         tests_source_code = tests_file.read()
-        tests_full_path = path.join(save_path, challenge_data['test_suite_file_name'])
-        saved_challenge = open(tests_full_path, "wb")
+        saved_challenge = open(req_challenge.tests_code, "wb")
         saved_challenge.write(challenge_source_code)
         saved_challenge.close()
 
