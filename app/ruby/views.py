@@ -17,7 +17,7 @@ def create_ruby_challenge():
 
     test_file = request.files['test_suite_file']
     test_file_path = 'public/challenges/' + dictionary['test_suite_file_name'] + '.rb'
-    
+
     #check that the same files is not posted again
     if not save(file, file_path):
         return make_response(jsonify({'challenge': 'source_code is already exist'}),409)
@@ -70,17 +70,29 @@ def post_repair(id):
         os.remove(test_file_name)
         return make_response(jsonify({'challenge': {'tests_code': 'fails'}}),200)
 
-    old_best_score = challenge['best_score']
     with open(challenge['code']) as f1, open(file_name) as f2:
-        challenge['best_score'] = nltk.edit_distance(f1.read(),f2.read())
+        score = nltk.edit_distance(f1.read(),f2.read())
 
-    if (challenge['best_score'] < old_best_score) or (old_best_score == 0):
-        update_challenge(id, challenge)
+    if (score < challenge['best_score']) or (challenge['best_score'] == 0):
+        update_challenge(id, {'best_score': score})
 
     os.remove(file_name)
     os.remove(test_file_name)
 
-    return challenge
+    challenge = get_challenge(id).get_dict()
+    del challenge['id']
+    del challenge['code']
+    del challenge['complexity']
+    del challenge['tests_code']
+    return jsonify( {'repair' :
+                        {
+                            'challenge': challenge,
+                            'player': {'username': 'Agustin'},
+                            'attemps': '1',
+                            'score': score
+                        }
+                    }
+                )
 
 @ruby.route('/challenge/<int:id>', methods=['GET'])
 def get_ruby_challenge(id):
