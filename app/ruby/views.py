@@ -3,7 +3,8 @@ from .models import RubyChallenge
 from app import db
 from flask import jsonify, request, make_response
 from shutil import copy
-import subprocess, json, os, sys, nltk
+import subprocess, json, os, sys
+import nltk
 
 @ruby.route('/challenge', methods=['POST'])
 def create_ruby_challenge():
@@ -30,10 +31,10 @@ def create_ruby_challenge():
         os.remove(test_file_path)
         return make_response(jsonify({'challenge': 'source_code and/or test_suite not compile'}),400)
 
-    #if  not dependencies_ok(test_file_path):
-    #    os.remove(file_path)
-    #    os.remove(test_file_path)
-    #    return make_response(jsonify({'challenge': 'test_suite dependencies are wrong'}),400)
+    if  not dependencies_ok(test_file_path, dictionary['source_code_file_name']):
+        os.remove(file_path)
+        os.remove(test_file_path)
+        return make_response(jsonify({'challenge': 'test_suite dependencies are wrong'}),400)
 
     new_challenge = RubyChallenge(
         code = file_path,
