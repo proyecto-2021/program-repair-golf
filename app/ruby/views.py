@@ -94,21 +94,35 @@ def update_ruby_challenge(id):
     if not exists(id):
         return make_response(jsonify({'challenge': 'NOT FOUND'}), 404)
     update_data = json.loads(request.form.get('challenge'))['challenge']
-    objective_challenge = get_challenge(id).get_dict()
-    
-    if not compiles(request.files['source_code_file']):
-        return make_response(jsonify({'challenge': "doesn't compile"}), 400)
-    update_file(objective_challenge, 'code', update_data, 'source_code_file', request.files)
-
-    if not tests_fail(request.files['test_suite_file']):
-        return make_response(jsonify({'challenge': "tests are okay. Input tests that fail"}), 400)
-    update_file(objective_challenge, 'tests_code', update_data, 'test_suite_file', request.files)
-    
-    # Default value needed for this parameters. It must take the current file name.
-    del update_data['source_code_file_name'] # This keys are no longer needed for updating the challenge.
+    old_challenge = get_challenge(id).get_dict()
+    source_code_name = f"{update_data['source_code_file_name']}.rb"
+    source_test_name = f"{update_data['test_suite_file_name']}.rb"
+    del update_data['source_code_file_name']
     del update_data['test_suite_file_name']
 
+    if 'source_code_file' in request.files:
+        source_code_file = request.files['source_code_file']
+        source_code_path_tmp = f"public/{source_code_name}"
+        source_code_file.save(dst=source_code_path_tmp)
+        if os.path.isfile(source_code_path_tmp) and not compiles(source_code_path_tmp):
+            os.remove(source_code_path_tmp)
+            return make_response(jsonify({'code': "doesn't compile"}), 400)
+
+    if 'test_suite_file' in request.files:
+        source_test_file = request.files['test_suite_file']
+        source_test_path_tmp = f"public/{source_test_name}"
+        source_test_file.save(dst=source_test_path_tmp)
+        if os.path.isfile(source_test_path_tmp) and not tests_fail(source_test_path_tmp):
+            os.remove(source_test_path_tmp)
+            return make_response(jsonify({'tests': "tests must fail"}), 400)
+        
+    if update_challenge(id, update_data) < 1:
+        return make_response(jsonify({'challenge': "update failed check input data"}), 400)
+
+    update_file(old_challenge, 'code', source_code_path_tmp, source_code_name, update_data)
+    update_file(old_challenge, 'tests_code', source_test_path_tmp, source_test_name, update_data)
     update_challenge(id, update_data)
+    
     updated_challenge = get_challenge(id).get_dict()
     del updated_challenge['id']
     return jsonify({'challenge': updated_challenge})
@@ -140,19 +154,16 @@ def save(key, file_name):
     file.save(dst=path)
     return path
 
-def file_exists(f, source, persistent=True):
-    if not persistent:
-        return (f in source)
-    return os.path.isfile(f"{source}{f}")
+def file_exists(f):
+    return os.path.isfile(f)
 
-def update_file(challenge, file_type, data, source_file, source):
-    source_file_name = f"{source_file}_name"
-
-    if file_exists(source_file, source, persistent=False):
+def update_file(challenge, file_type, source_path, source_name, data):
+    if file_exists(source_path):
         os.remove(challenge[file_type])
-        data[file_type] = save(source_file, data[source_file_name])
-    elif (os.path.basename(challenge[file_type]).split('.')[0] != data[source_file_name]):
-        new_path = f"public/challenges/{data[source_file_name]}.rb"
+        data[file_type] = copy(source_path, f"public/challenges/{source_name}")
+        os.remove(source_path)
+    elif (os.path.basename(challenge[file_type]) != source_name):
+        new_path = f"public/challenges/{source_name}"
         os.rename(challenge[file_type], new_path)
         data[file_type] = new_path
 
