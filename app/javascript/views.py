@@ -1,12 +1,10 @@
 from . import javascript
-from flask import jsonify, make_response
-from .models import JavaScriptChallenges
+from .list_challenges import list_challenges_js
 
 @javascript.route('/login')
 def login():
     return { 'result': 'javascript' }
 
-@javascript.rout('/api/v1/javascript-challenges', methods=['GET'])
+@javascript.route('/javascript-challenges', methods=['GET'])
 def javascipt_challenges():
-    challenges = JavaScriptChallenges.query(id,code,repair_objective,complexity).all()
-    return make_response(jsonify({"challenges" : [challenges]}), 200)
+    return list_challenges_js()
