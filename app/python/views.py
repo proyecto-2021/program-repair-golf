@@ -80,7 +80,6 @@ def create_new_challenge():
 def update_challenge(id):
     challenge_data = loads(request.form.get('challenge'))['challenge']
     save_to = "public/challenges/"  #general path were code will be saved
-    saved_at = "example-challenges/python-challenges/"  
 
 
     req_challenge = PythonChallenge.query.filter_by(id=id).first()
@@ -89,6 +88,21 @@ def update_challenge(id):
         return make_response(jsonify({"challenge":"there is no challenge with that id"}),404)
 
     response =  PythonChallenge.to_dict(req_challenge).copy()
+
+    #determine path to temp, user may have requested name change for the file
+    code_path = temp_path
+    if 'source_code_file_name' in challenge_data:
+        code_path += challenge_data['source_code_file_name']
+    else:   #concatenate old file name
+        code_path += (lambda x: x.split('/')[-1]) (req_challenge.code)
+    
+    #same as above
+    test_path = temp_path
+    if 'test_suite_file_name' in challenge_data:
+        test_path += challenge_data['test_suite_file_name']
+    else:   #concatenate old file name
+        test_path += (lambda x: x.split('/')[-1]) (req_challenge.code)
+
 
     challenge_file = request.files.get('source_code_file')  #obtain the binary
     if challenge_file != None:
