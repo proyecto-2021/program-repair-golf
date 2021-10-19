@@ -1,3 +1,4 @@
+import os
 from . import go
 from flask import request, jsonify
 from .. import db
@@ -13,12 +14,13 @@ def return_single_challenge(id):
         if challenge_by_id is None:
             return "ID Not Found", 404
         challenge_to_return=challenge_by_id.convert_dict()
+        challenge_to_return["code"]="".join(from_file_to_str(os.path.abspath(challenge_to_return["code"])))
         del challenge_to_return["id"]
         return jsonify({"challenge":challenge_to_return})
 
 
 def from_file_to_str(path):
-    file= open(path,'r')
+    file= open(str(path),'r')
     content=file.readlines()
     file.close()
     return content
