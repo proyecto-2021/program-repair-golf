@@ -97,7 +97,7 @@ def get_ruby_challenge(id):
         return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
 
     challenge = get_challenge(id).get_dict()
-    del challenge['id']
+    delete_keys(challenge, ['id'])
 
     code_path = challenge['code']
     tests_code_path = challenge['tests_code']
@@ -115,7 +115,7 @@ def get_all_ruby_challenges():
     challenges = get_all_challenges_dict()
 
     for c in challenges:
-        del c['tests_code']
+        delete_keys(c, ['tests_code'])
         code_path = c['code']
         with open(code_path) as f:
             c['code'] = f.read()
