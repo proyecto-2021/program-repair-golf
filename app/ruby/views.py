@@ -157,9 +157,9 @@ def update_ruby_challenge(id):
     # If there is a new test suite, check dependencies and if it fails.
     if 'test_suite_file' in request.files:
         request.files['test_suite_file'].save(dst=source_test_path_tmp)
-        if os.path.isfile(source_test_path_tmp) and not tests_fail(source_test_path_tmp):
+        if os.path.isfile(source_test_path_tmp) and (not compiles(source_test_path_tmp) or not tests_fail(source_test_path_tmp)):
             os.remove(source_test_path_tmp)
-            return make_response(jsonify({'tests': "tests must fail or doesn't exists"}), 400)
+            return make_response(jsonify({'tests': "tests doesn't compiles or doesn't fail"}), 400)
         if not dependencies_ok(source_test_path_tmp, os.path.basename(source_code_name.split('.')[0])):
             os.remove(source_test_path_tmp)
             return make_response(jsonify({'tests': "dependencies failed to compile"}), 400)
