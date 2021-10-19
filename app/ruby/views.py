@@ -21,7 +21,7 @@ def create_ruby_challenge():
     #check that the same files is not posted again
     if not save(file, file_path):
         return make_response(jsonify({'challenge': 'source_code is already exist'}),409)
-    
+
     if not save(test_file, test_file_path):
         return make_response(jsonify({'challenge': 'test_suite is already exist'}),409)
 
@@ -56,7 +56,7 @@ def post_repair(id):
 
     file = request.files['source_code_file']
     file_name = 'public/' + os.path.basename(challenge['code'])
-    file.save(dst=file_name)
+    save(file, file_name)
 
     if not compiles(file_name):
         os.remove(file_name)
