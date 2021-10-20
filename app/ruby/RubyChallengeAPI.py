@@ -3,8 +3,9 @@ from . import ruby
 from .models import RubyChallenge
 from flask import jsonify, request, make_response
 from shutil import copy
-import subprocess, json, os, sys
+import json, os
 import nltk
+from .filemanagement import *
 
 class RubyChallengeAPI(MethodView):
 
@@ -128,14 +129,14 @@ class RubyChallengeAPI(MethodView):
         source_test_name = f"{update_data['test_suite_file_name']}.rb"
         source_code_path_destiny = f"public/challenge/{source_code_name}"
         source_test_path_destiny = f"public/challenge/{source_test_name}"
-        
+
         # Check if file name already exists
         if (file_exists(source_code_path_destiny) and old_challenge['code'] != source_code_path_destiny): 
             return make_response(jsonify({'code': 'code name already exists'}), 400)
         if (file_exists(source_test_path_destiny) and old_challenge['tests_code'] != source_test_path_destiny):
             return make_response(jsonify({'test': 'test name already exists'}), 400)
         del source_code_path_destiny, source_test_path_destiny
-        
+
         source_code_path_tmp = f"public/{source_code_name}"
         source_test_path_tmp = f"public/{source_test_name}"
 
@@ -164,7 +165,7 @@ class RubyChallengeAPI(MethodView):
                 os.remove(source_test_path_tmp)
                 return make_response(jsonify({'tests': "dependencies failed to compile"}), 400)
             update_file_name(old_challenge, 'tests_code', source_test_name, update_data)
-            
+
         #Update DB info (complexity, objetive, etc) and remove tmp data in failure case
         if update_challenge(id, update_data) < 1:
             if os.path.isfile(source_test_path_tmp):
@@ -179,7 +180,7 @@ class RubyChallengeAPI(MethodView):
 
         # Update challenge with new paths
         update_challenge(id, update_data)
-        
+
         # Return updated challenge
         updated_challenge = get_challenge(id).get_dict()
         delete_keys(updated_challenge, ['id'])
@@ -197,42 +198,3 @@ get_all_challenges_dict = RubyChallenge.get_all_challenges_dict
 create_challenge = RubyChallenge.create_challenge
 update_challenge = RubyChallenge.update_challenge
 exists = RubyChallenge.exists
-
-def delete_keys(dictionary, key_list):
-    for key in key_list:
-        del dictionary[key]
-
-def save(file, path):
-    if os.path.isfile(path):
-        return False
-    file.save(dst=path)
-    return True
-
-def file_exists(f):
-    return os.path.isfile(f)
-
-def update_file(challenge, file_type, source_path, source_name, data):
-    if file_exists(source_path):
-        os.remove(challenge[file_type])
-        data[file_type] = copy(source_path, f"public/challenges/{source_name}")
-        os.remove(source_path)
-
-def update_file_name(challenge, file_type, source_name, data):
-    if (os.path.basename(challenge[file_type]) != source_name):
-        new_name = f"public/challenges/{source_name}"
-        os.rename(challenge[file_type], new_name)
-        data[file_type] = new_name
-
-def compiles(file_name):
-    command = 'ruby -c ' + file_name
-    return (subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0)
-
-def tests_fail(test_file_name):
-    command = 'ruby ' + test_file_name
-    return (subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) != 0)
-
-def dependencies_ok(test_file_path, file_name):
-    command = 'grep "require_relative" ' + test_file_path
-    p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-    dependence_name = (p.communicate()[0].decode(sys.stdout.encoding).strip().split("'")[1])
-    return dependence_name == file_name
