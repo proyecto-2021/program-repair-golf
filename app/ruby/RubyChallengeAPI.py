@@ -4,7 +4,6 @@ from .models import RubyChallenge
 from app import db
 from flask import jsonify, request, make_response
 from shutil import copy
-from RubyChallenge import *
 import subprocess, json, os, sys
 import nltk
 
@@ -189,36 +188,20 @@ class RubyChallengeAPI(MethodView):
 
 ruby_challenge_view = RubyChallengeAPI.as_view('ruby_challenge_api')
 ruby.add_url_rule('/challenge', defaults={'id': None}, view_func=ruby_challenge_view, methods=['POST',])
-ruby.add_url_rule('/challenge', defaults={'id': None}, view_func=ruby_challenge_view, methods=['GET',])
+ruby.add_url_rule('/challenges', defaults={'id': None}, view_func=ruby_challenge_view, methods=['GET',])
 ruby.add_url_rule('/challenge/<int:id>', view_func=ruby_challenge_view, methods=['GET', 'PUT'])
 ruby.add_url_rule('/challenge/<int:id>/repair', view_func=ruby_challenge_view, methods=['POST',])
+
+get_challenge = RubyChallenge.get_challenge
+get_challenges = RubyChallenge.get_challenges
+get_all_challenges_dict = RubyChallenge.get_all_challenges_dict
+create_challenge = RubyChallenge.create_challenge
+update_challenge = RubyChallenge.update_challenge
+exists = RubyChallenge.exists
 
 def delete_keys(dictionary, key_list):
     for key in key_list:
         del dictionary[key]
-
-def get_challenge(id):
-    return db.session.query(RubyChallenge).filter_by(id=id).first()
-
-def get_challenges():
-    return db.session.query(RubyChallenge).all()
-
-def get_all_challenges_dict():
-    return list(map(lambda x: x.get_dict(), get_challenges()))
-
-def exists(id):
-    return get_challenge(id) is not None
-
-def create_challenge(challenge):
-    db.session.add(challenge)
-    db.session.commit()
-
-def update_challenge(id, changes):
-    if len(changes) == 0:
-        return 1
-    result = db.session.query(RubyChallenge).filter_by(id=id).update(changes)
-    db.session.commit()
-    return result
 
 def save(file, path):
     if os.path.isfile(path):
