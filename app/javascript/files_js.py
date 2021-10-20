@@ -31,3 +31,8 @@ def exist_file(file_name):
 
     path = PUBLIC_PATH + file_name + FILE_EXTENSION
     return os.path.lexists(path)
+
+def open_file(path):
+    with open(path) as f:
+        content = f.read()
+    return content
