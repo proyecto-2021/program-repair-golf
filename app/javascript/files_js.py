@@ -28,6 +28,7 @@ def upload(file,file_name):
     return path
 
 def exist_file(file_name):
+
     path = PUBLIC_PATH + file_name + FILE_EXTENSION
     return os.path.lexists(path)
 

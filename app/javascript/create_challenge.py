@@ -13,11 +13,21 @@ def create_challenge_js():
     challenge_json = json.loads(data_requ.get('challenge'))['challenge']
     source_code_file = request.files['source_code_file']
     test_suite_file = request.files['test_suite_file']
-    source_code_file_path = files_js.upload(source_code_file, challenge_json['source_code_file_name'])
-    test_code_file_path = files_js.upload(test_suite_file, challenge_json['test_suite_file_name'])
+
+    code_file_name = challenge_json['source_code_file_name']   
+    test_file_name = challenge_json['test_suite_file_name']
+
+    if files_js.exist_file(code_file_name):
+        return make_response(jsonify({'challenge': 'File code exists'}), 409)
+
+    if files_js.exist_file(test_file_name):
+        return make_response(jsonify({'challenge': 'File test exists'}), 409)
+
+    source_code_file_path = files_js.upload(source_code_file, code_file_name)
+    test_code_file_path = files_js.upload(test_suite_file, test_file_name)
     
     if not files_js.valid(source_code_file) or not files_js.valid(test_suite_file): 
-        return make_response(jsonify({"Error": "The null or nonexistent file or must have a .js extension"}))
+        return make_response(jsonify({"Error": "The null or non existent file or must have a .js extension"}))
     
     challenge = JavascriptChallenge(code = source_code_file_path,
                                     tests_code = test_code_file_path,
@@ -28,4 +38,4 @@ def create_challenge_js():
     db.session.add(challenge)
     db.session.commit()
     
-    return make_response(jsonify({'challenge': challenge}), 200)
+    return make_response(jsonify({'challenge': challenge.to_dict()}), 200)
