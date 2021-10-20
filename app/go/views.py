@@ -25,3 +25,4 @@ def from_file_to_str(challenge):
     file.close()
     challenge["code"]="".join(content)
     return challenge
+
