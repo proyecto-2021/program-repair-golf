@@ -18,3 +18,32 @@ class RubyChallenge(db.Model):
             "complexity":self.complexity,
             "best_score":self.best_score
         }
+
+    @staticmethod
+    def get_challenge(id):
+        return db.session.query(RubyChallenge).filter_by(id=id).first()
+
+    @staticmethod
+    def get_challenges():
+        return db.session.query(RubyChallenge).all()
+
+    @staticmethod
+    def get_all_challenges_dict():
+        return list(map(lambda x: x.get_dict(), RubyChallenge.get_challenges()))
+
+    @staticmethod
+    def create_challenge(challenge):
+        db.session.add(challenge)
+        db.session.commit()
+
+    @staticmethod
+    def update_challenge(id, changes):
+        if len(changes) == 0:
+            return 1
+        result = db.session.query(RubyChallenge).filter_by(id=id).update(changes)
+        db.session.commit()
+        return result
+
+    @staticmethod
+    def exists(id):
+        return RubyChallenge.get_challenge(id) is not None
