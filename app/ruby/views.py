@@ -193,21 +193,8 @@ def delete_keys(dictionary, key_list):
     for key in key_list:
         del dictionary[key]
 
-def get_challenge(id):
-    return db.session.query(RubyChallenge).filter_by(id=id).first()
-
-def get_challenges():
-    return db.session.query(RubyChallenge).all()
-
-def get_all_challenges_dict():
-    return list(map(lambda x: x.get_dict(), get_challenges()))
-
 def exists(id):
     return get_challenge(id) is not None
-
-def create_challenge(challenge):
-    db.session.add(challenge)
-    db.session.commit()
 
 def update_challenge(id, changes):
     if len(changes) == 0:

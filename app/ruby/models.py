@@ -18,3 +18,19 @@ class RubyChallenge(db.Model):
             "complexity":self.complexity,
             "best_score":self.best_score
         }
+
+    @staticmethod
+    def get_challenge(id):
+    	return db.session.query(RubyChallenge).filter_by(id=id).first()
+
+    @staticmethod
+	def get_challenges():
+		return db.session.query(RubyChallenge).all()
+	@staticmethod
+	def get_all_challenges_dict():
+		return list(map(lambda x: x.get_dict(), get_challenges()))
+
+	@staticmethod
+	def create_challenge(challenge):
+		db.session.add(challenge)
+		db.session.commit()
