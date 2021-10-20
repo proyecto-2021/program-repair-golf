@@ -1,7 +1,6 @@
 from flask.views import MethodView
 from . import ruby
 from .models import RubyChallenge
-from app import db
 from flask import jsonify, request, make_response
 from shutil import copy
 import subprocess, json, os, sys
