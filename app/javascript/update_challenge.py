@@ -32,4 +32,4 @@ def update_challenge_js(id):
         challenge.complexity = complexity
 
     db.session.commit()
-    return make_response(jsonify({"challenge": [challenge]}), 200)
+    return make_response(jsonify({"challenge": challenge.to_dict()}), 200)
