@@ -44,7 +44,6 @@ def View_Challenges(id):
     else: 
         return make_response(jsonify({"challenge":[Challenge_java.__repr__(challenge)]}))
       
-
 @java.route('/java-challenges/<int:id>', methods=['PUT'])
 def UpdateChallenge(id):
     challenge= Challenge_java.query.filter_by(id=id).first()
@@ -57,18 +56,19 @@ def UpdateChallenge(id):
         
         challenge_json = loads(request.form.get('challenge'))
         challenge_upd= challenge_json['challenge']
-        repair_objetive_upd=challenge_upd['repair_objective']
+        repair_objective_upd=challenge_upd['repair_objective']
         complexity_upd=challenge_upd['complexity']
 
         #Controlo si se obtuvieron datos para actualizar
         if code_file_upd is not None:
-            challenge.code=os.path.basename(code_file_upd)
+            challenge.code=os.path.split(code_file_upd.filename)[-1].split('.')[0]
+            #os.path.basename(code_file_upd.filename)
             upload_file_1(code_file_upd)
         if test_suite_upd is not None: 
-            challenge.tests_code=os.path.basename(test_suite_upd)
+            challenge.tests_code=os.path.split(test_suite_upd.filename)[-1].split('.')[0]
             upload_file_1(test_suite_upd)
-        if repair_objetive_upd is not None:
-            challenge.repair_objetive=repair_objetive_upd
+        if repair_objective_upd is not None:
+            challenge.repair_objective=repair_objective_upd
         if complexity_upd is not None:
             challenge.complexity=complexity_upd
         
@@ -133,10 +133,10 @@ def upload_file(file, test_suite):
             test_suite.save(os.path.join(UPLOAD_FOLDER, testname))
             #print('archivo cargado, ahora se registra datos en la db')
 
-#@java.route('/java-challenges/<int:id>/repair', methods=['POST'])
-#def repair_challenge(id):
- #   file = request.files['source_code_file']
-  #  challenge = Challenge_java.query.filter_by(id = id).first()
+@java.route('/java-challenges/<int:id>/repair', methods=['POST'])
+def repair_challenge(id):
+    file = request.files['source_code_file']
+    challenge = Challenge_java.query.filter_by(id = id).first()
    # if challenge is not None:
         #si file es sintacticamente correcta, entonces compara file con los test suite
         #es decir file con challenge['tests_code']
