@@ -46,25 +46,26 @@ def UpdateChallenge(id):
         return make_response(jsonify({"challenge":"Not Found!"}),404)
     else:
         #Recupero los datos para actualizar
-        source_code_file_upd=request.form.get('source_code_file')
-        test_suite_file_upd=request.form.get('test_suite_file')
-
+        code_file_upd = request.files['source_code_file']
+        test_suite_upd = request.files['test_suite_file']
+        
         challenge_json = loads(request.form.get('challenge'))
         challenge_upd= challenge_json['challenge']
         repair_objetive_upd=challenge_upd['repair_objective']
         complexity_upd=challenge_upd['complexity']
 
         #Controlo si se obtuvieron datos para actualizar
-        if source_code_file_upd is not None:
-            challenge.code=os.path.basename(source_code_file_upd)
-            #HACER UPLOAD ARCHIVO
-        if test_suite_file_upd is not None: 
-            challenge.tests_code=os.path.basename(test_suite_file_upd)
-            #HACER UPLOAD ARCHIVO
+        if code_file_upd is not None:
+            challenge.code=os.path.basename(code_file_upd)
+            upload_file_1(code_file_upd)
+        if test_suite_upd is not None: 
+            challenge.tests_code=os.path.basename(test_suite_upd)
+            upload_file_1(test_suite_upd)
         if repair_objetive_upd is not None:
             challenge.repair_objetive=repair_objetive_upd
         if complexity_upd is not None:
             challenge.complexity=complexity_upd
+        
         db.session.commit()
         return jsonify({"challenge":Challenge_java.__repr__(challenge)})
 
@@ -96,6 +97,16 @@ def create_challenge():
     else:
         return make_response(jsonify("No ingreso los datos de los archivos java"))
 
+
+def upload_file_1(file):
+    if file is None:
+        return make_response(jsonify({"error_message": "One of the provided files has syntax errors."}))
+    if file.filename == '' :
+        return make_response(jsonify("No name of file"), 404)
+    if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(UPLOAD_FOLDER, filename))
+            
 
 def allowed_file(filename):
     return '.' in filename and \
