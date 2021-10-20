@@ -24,7 +24,13 @@ def ViewAllChallenges():
     all_challenges=[]
     for i in challenge['challenges']:
         aux_challenge = Challenge_java.__repr__(i)
-        #aux_challenge.pop('tests_code',None)
+        nombre_code = aux_challenge['code']
+        path='public/challenges/' + nombre_code + '.java'
+        file = open (path,mode='r',encoding='utf-8')
+        filemostrar=file.read()
+        file.close()
+        aux_challenge['code']=filemostrar
+        aux_challenge.pop('tests_code',None)
         all_challenges.append(aux_challenge)
     return make_response(jsonify({"challenges":all_challenges}))
   
