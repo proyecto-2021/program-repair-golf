@@ -20,9 +20,18 @@ def upload(file,file_name):
 
     path = PUBLIC_PATH + file_name + FILE_EXTENSION
     
-    if os.path.lexists(path) and os.path.isfile(path):
+    if exist_file(file_name) and os.path.isfile(path):
         os.remove(path)
         path = f'{PUBLIC_PATH + file_name}_upd{FILE_EXTENSION}'
         
     file.save(path)
     return path
+
+def exist_file(file_name):
+    path = PUBLIC_PATH + file_name + FILE_EXTENSION
+    return os.path.lexists(path)
+
+def open_file(path):
+    with open(path) as f:
+        content = f.read()
+    return content
