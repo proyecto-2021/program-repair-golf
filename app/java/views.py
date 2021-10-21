@@ -1,6 +1,5 @@
 import re
 from flask.helpers import make_response
-
 from app.java.models_java import Challenge_java
 from . import java
 from app import db
@@ -8,9 +7,20 @@ import os
 from flask import Flask, flash, request, redirect, url_for, jsonify, json
 from werkzeug.utils import secure_filename
 from json import loads
+from types import TracebackType
+import subprocess
+import os.path
+from subprocess import STDOUT, PIPE
 
-UPLOAD_FOLDER = './public/challenges'
+UPLOAD_FOLDER = './public/challenges/'
+PATHLIBRERIA = 'app/java/lib/junit-4.13.2.jar:example-challenges/java-challenges/'
+PATHEXECUTE = 'org.junit.runner.JUnitCore'
 ALLOWED_EXTENSIONS = {'java'}
+#DALE = '/home/leo/Escritorio/Archivos_proyecto/Algo.java'
+#DALETWO = '/home/leo/Escritorio/Archivos_proyecto/Algo'
+#PATHGENERAL = './example-challenges/java-challenges/'
+PATHCLASSJAVA = './example-challenges/java-challenges/Median.java'
+DASINJAVA = './example-challenges/java-challenges/MedianTest.java'
 
 @java.route('/prueba')
 def login():
@@ -170,3 +180,61 @@ def repair_challenge(id):
     #else:
      #   return make_response(jsonify("Error al seleccionar archivo"))
 
+#################################
+def compile_java(java_file):
+    subprocess.check_call(['javac', java_file])
+
+def execute_java(java_file):
+    cmd=['java', java_file]
+    proc=subprocess.Popen(cmd, stdout = PIPE, stderr = STDOUT)
+    input = subprocess.Popen(cmd, stdin = PIPE)
+    print(proc.stdout.read())
+
+def compile_java_test(java_file):
+    #subprocess.check_call(['javac', '-cp','/home/leo/Escritorio/Proyecto/junit-4.13.2.jar:example-challenges/java-challenges/', java_file])
+    subprocess.check_call(['javac', '-cp', PATHLIBRERIA, java_file])
+
+def execute_java_test(java_file):
+    #cmd=['java', '-cp', '/home/leo/Escritorio/Proyecto/junit-4.13.2.jar:example-challenges/java-challenges/' ,'org.junit.runner.JUnitCore', java_file]
+    cmd=['java', '-cp', PATHLIBRERIA , PATHEXECUTE, java_file]
+    proc=subprocess.Popen(cmd, stdout = PIPE, stderr = STDOUT)
+    input = subprocess.Popen(cmd, stdin = PIPE)
+    if input:
+        print("No pasa los test exitosamente")
+        return False
+    else:
+        print("Paso exitosamente los tests")
+        return True
+    #print(proc.stdout.read())
+
+
+@java.route('/java-prueba/<int:id>', methods=['GET'])
+def java_prueba(id):     
+    ######################
+    #codeJava = open(DALE, 'r')
+    #f = open(DALE, mode='r', encoding='utf-8')  
+    #mostrar = f.read()
+    #f.close()
+    #print(mostrar)
+
+    ############# Descomentar esto ############
+    challenge = Challenge_java.query.filter_by(id=id).first()
+    name_class = challenge.code
+    name_test = challenge.tests_code
+    path_class = UPLOAD_FOLDER + name_class + '.java'
+    path_test = UPLOAD_FOLDER + name_test + '.java'
+    ############ Descomentar esto #############
+
+    try:
+        compile_java(path_class)
+    except Exception:
+        return make_response(jsonify("Error de sintaxis en la clase java, por favor revise su codigo"))
+    try:
+        compile_java_test(path_test)
+    except Exception:
+        return make_response(jsonify("Error de sintaxis en la test suite, por favor revise su codigo"))
+    #si llega a esta punto es que los dos archivos compilan
+    if execute_java_test(path_test):
+        return make_response(jsonify("La test suite debe fallar en almenos un caso de test para poder subirlo"))
+    else:
+        return make_response(jsonify("La test suite y la clase java seran subidos correctamente"))
