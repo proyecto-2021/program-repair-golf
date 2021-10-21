@@ -49,6 +49,8 @@ def ViewAllChallenges():
 @java.route('/java-challenges/<int:id>',methods=['GET'])
 def View_Challenges(id):
     challenge=Challenge_java.query.filter_by(id=id).first()
+    if challenge is None:
+        return make_response(jsonify({"challenge": "Not exist this id"}))
     challengeaux=Challenge_java.__repr__(challenge)
     if (challengeaux is None):
         return make_response(jsonify({"challenge":"Not found prueba"}),404)   
