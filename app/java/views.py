@@ -11,9 +11,11 @@ from types import TracebackType
 import subprocess
 import os.path
 from subprocess import STDOUT, PIPE
+from os import remove
+from os import path
 
 UPLOAD_FOLDER = './public/challenges/'
-PATHLIBRERIA = 'app/java/lib/junit-4.13.2.jar:example-challenges/java-challenges/'
+PATHLIBRERIA = 'app/java/lib/junit-4.13.2.jar:public/challenges'
 PATHEXECUTE = 'org.junit.runner.JUnitCore'
 ALLOWED_EXTENSIONS = {'java'}
 #DALE = '/home/leo/Escritorio/Archivos_proyecto/Algo.java'
@@ -107,63 +109,60 @@ def UpdateChallenge(id):
         db.session.commit()
         return jsonify({"challenge":Challenge_java.__repr__(challenge)})
 
-#java.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @java.route('/java-challenges', methods=['POST'])
 def create_challenge():
     aux = request.form['challenge']
     to_dict = json.loads(aux)
     dict_final = to_dict['challenge']
+
     if dict_final is not None:
         code_file_name = dict_final['source_code_file_name']
         test_suite_file_name = dict_final['test_suite_file_name']
         objective = dict_final['repair_objective']
         complex = dict_final['complexity']
         challenge = Challenge_java.query.filter_by(code=code_file_name).first()
+
         if challenge is None:
             # check if the post request has the file part
             file = request.files['source_code_file']
             test_suite = request.files['test_suite_file']
-            upload_file(file, test_suite)
-                
-            new_chan = Challenge_java(code=code_file_name, tests_code=test_suite_file_name, repair_objective=objective, complexity=complex, score=0)
-            db.session.add(new_chan)
-            db.session.commit()
-            return make_response(jsonify({"challenge": Challenge_java.__repr__(new_chan)}))
+            
+            upload_file_1(file)
+            path_file_java = UPLOAD_FOLDER + file.filename
+
+            try:
+                compile_java(path_file_java)
+            except Exception:
+                delete_path(path_file_java)
+                return make_response(jsonify("Error de sintaxis en la clase java, por favor revise su codigo"))
+            
+            upload_file_1(test_suite)
+            path_test_java = UPLOAD_FOLDER + test_suite.filename
+            
+            try:
+               compile_java_test(path_test_java)
+            except Exception:
+                delete_path(path_file_java)
+                delete_path(path_test_java)
+                return make_response(jsonify("Error de sintaxis en la test suite, por favor revise su codigo"))    
+            
+            if execute_java_test(path_test_java):
+                return make_response(jsonify("La test suite debe fallar en almenos un caso de test para poder subirlo"))
+            else:
+                #upload_file(file, test_suite)
+                new_chan = Challenge_java(code=code_file_name, tests_code=test_suite_file_name, repair_objective=objective, complexity=complex, score=0)
+                db.session.add(new_chan)
+                db.session.commit()
+
+                return make_response(jsonify({"challenge": Challenge_java.__repr__(new_chan)}))   
+        
         else:
             return make_response(jsonify("Nombre de archivo existente, cargue nuevamente"), 404)
+    
     else:
         return make_response(jsonify("No ingreso los datos de los archivos java"))
 
-
-def upload_file_1(file):
-    if file is None:
-        return make_response(jsonify({"error_message": "One of the provided files has syntax errors."}))
-    if file.filename == '' :
-        return make_response(jsonify("No name of file"), 404)
-    if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
-            
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def upload_file(file, test_suite):
-    if file is None or test_suite is None:
-        return make_response(jsonify({"error_message": "One of the provided files has syntax errors."}))
-        #file = request.files['source_code_file']
-        # If the user does not select a file, the browser submits an
-        # empty file without a filename.
-    if file.filename == '' or test_suite.filename == '':
-        return make_response(jsonify("No name of file"), 404)
-    if file and allowed_file(file.filename):
-        if test_suite and allowed_file(test_suite.filename):
-            filename = secure_filename(file.filename)
-            testname = secure_filename(test_suite.filename)
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
-            test_suite.save(os.path.join(UPLOAD_FOLDER, testname))
-            #print('archivo cargado, ahora se registra datos en la db')
 
 @java.route('/java-challenges/<int:id>/repair', methods=['POST'])
 def repair_challenge(id):
@@ -181,6 +180,44 @@ def repair_challenge(id):
      #       db.session.commit()
     #else:
      #   return make_response(jsonify("Error al seleccionar archivo"))
+     
+def delete_path(file_rm):
+    if path.exists(file_rm):
+        remove(file_rm)
+
+
+def upload_file_1(file):
+    if file is None:
+        return make_response(jsonify({"error_message": "One of the provided files has syntax errors."}))
+    if file.filename == '' :
+        return make_response(jsonify("No name of file"), 404)
+    if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(UPLOAD_FOLDER, filename))
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+###### Casi para borrar ######
+def upload_file(file, test_suite):
+    if file is None or test_suite is None:
+        return make_response(jsonify({"error_message": "One of the provided files has syntax errors."}))
+        #file = request.files['source_code_file']
+        # If the user does not select a file, the browser submits an
+        # empty file without a filename.
+    if file.filename == '' or test_suite.filename == '':
+        return make_response(jsonify("No name of file"), 404)
+    if file and allowed_file(file.filename):
+        if test_suite and allowed_file(test_suite.filename):
+            filename = secure_filename(file.filename)
+            testname = secure_filename(test_suite.filename)
+            file.save(os.path.join(UPLOAD_FOLDER, filename))
+            test_suite.save(os.path.join(UPLOAD_FOLDER, testname))
+            #print('archivo cargado, ahora se registra datos en la db')
+
 
 #################################
 def compile_java(java_file):
@@ -195,7 +232,7 @@ def execute_java(java_file):
 def compile_java_test(java_file):
     #subprocess.check_call(['javac', '-cp','/home/leo/Escritorio/Proyecto/junit-4.13.2.jar:example-challenges/java-challenges/', java_file])
     subprocess.check_call(['javac', '-cp', PATHLIBRERIA, java_file])
-
+    
 def execute_java_test(java_file):
     #cmd=['java', '-cp', '/home/leo/Escritorio/Proyecto/junit-4.13.2.jar:example-challenges/java-challenges/' ,'org.junit.runner.JUnitCore', java_file]
     cmd=['java', '-cp', PATHLIBRERIA , PATHEXECUTE, java_file]
