@@ -39,11 +39,31 @@ def ViewAllChallenges():
 @java.route('/java-challenges/<int:id>',methods=['GET'])
 def View_Challenges(id):
     challenge=Challenge_java.query.filter_by(id=id).first()
-    if (challenge is None):
+    challengeaux=Challenge_java.__repr__(challenge)
+    if (challengeaux is None):
         return make_response(jsonify({"challenge":"Not found prueba"}),404)   
     else: 
-        return make_response(jsonify({"challenge":[Challenge_java.__repr__(challenge)]}))
-      
+        #recupero el codigojava del challenge
+        nombre_code = challengeaux['code']
+        path='public/challenges/' + nombre_code + '.java'
+        file = open (path,mode='r',encoding='utf-8')
+        filemostrar=file.read()
+        file.close()
+        challengeaux['code']=filemostrar
+
+
+        #recupero el codigojava del test
+        nombre_test =challengeaux['tests_code']
+        path='public/challenges/' + nombre_test + '.java'
+        file = open (path,mode='r',encoding='utf-8')
+        filemostrar=file.read()
+        file.close()
+        challengeaux['tests_code']=filemostrar
+
+       # challenge.append(challenge)
+           
+        return jsonify({"challenge":challengeaux})
+        
 @java.route('/java-challenges/<int:id>', methods=['PUT'])
 def UpdateChallenge(id):
     challenge= Challenge_java.query.filter_by(id=id).first()
