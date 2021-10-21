@@ -37,5 +37,11 @@ def create_challenge_js():
     
     db.session.add(challenge)
     db.session.commit()
+
+    challenge_dict = challenge.to_dict()
+    challenge_dict['code'] = files_js.open_file(challenge.code)
+    challenge_dict['tests_code'] = files_js.open_file(challenge.tests_code)
+
+    return make_response(jsonify({"challenge": challenge_dict}), 200)
     
-    return make_response(jsonify({'challenge': challenge.to_dict()}), 200)
+    
