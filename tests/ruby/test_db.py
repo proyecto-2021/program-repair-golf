@@ -28,3 +28,24 @@ def test_get_challenge(client):
     assert challenge1.get_dict()['id'] == 1
     assert challenge2.get_dict()['id'] == 2
 
+def test_get_all_challenges(client):
+    challenges_list = RubyChallenge.get_challenges()
+    assert len(challenges_list) == 2
+    
+    for i in range(10):
+        RubyChallenge.create_challenge(generate_challenge())
+    
+    challenges_list = RubyChallenge.get_challenges()
+    assert len(challenges_list) == 12
+    
+    
+    
+    
+    
+    
+    
+    
+     
+    
+
+
