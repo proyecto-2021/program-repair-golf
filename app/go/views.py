@@ -3,7 +3,6 @@ from .models_go import GoChallenge
 from app import db
 from flask import Flask, jsonify, request, make_response
 from flask_sqlalchemy import SQLAlchemy
-'''from sqlalchemy import create_engine'''
 import json
 
 @go.route('/hello') 
@@ -21,8 +20,3 @@ def get_all_challenges():
 		del show[i]['tests_code']
 		i+=1
 	return jsonify({"challenges" : show})
-
-'''
-@app.route('api/v1/go-challenges/<int:id>', methods=['PUT'])
-def update_challenge(id):
-'''
