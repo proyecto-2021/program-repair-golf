@@ -18,7 +18,6 @@ def repair_challengue_go(id):
     is_good_code_solution_file = subprocess.run(["go","build",code_solution_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
     os.remove(code_solution_path)
     
-    #return jsonify(is_good_code_solution_file.returncode)
     if is_good_code_solution_file.returncode == 2:
         return make_response((jsonify({"code_solution_file":"with errors"}),409))
     
