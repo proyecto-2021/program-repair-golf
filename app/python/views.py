@@ -12,28 +12,35 @@ def login():
 
 @python.route('/api/v1/python-challenges', methods=['GET'])
 def return_challenges(): 
+    #Get all the challanges
     all_challenges = PythonChallenge.query.all()
-    challenge_list = []
+    challenge_list = [] 
     for challenge in all_challenges:
-        aux_dict = PythonChallenresponse.to_dict(challenge)
-        aux_dict['code'] = read_file(aux_dict['code'], "r")
-        aux_dict.pop('tests_code', None)
-        challenge_list.append(aux_dict)
+        #Get row as a dictionary
+        response = PythonChallenresponse.to_dict(challenge)
+        #Get code from file
+        response['code'] = read_file(response['code'], "r")
+        response.pop('tests_code', None)
+        challenge_list.append(response)
 
     return jsonify({"challenges": challenge_list})
 
 @python.route('/api/v1/python-challenges/<id>', methods=['GET'])
 def return_challange_id(id):
+    #Get challenge with given id 
     challenge = PythonChallenge.query.filter_by(id = id).first()
+    
     if challenge is None:
         return make_response(jsonify({"Challenge": "Not found"}), 404)
-    aux_dict = PythonChallenge.to_dict(challenge)  
-    
-    aux_dict['code'] = read_file(aux_dict['code'], "r")
-    aux_dict['tests_code'] = read_file(aux_dict['tests_code'], "r")
-    aux_dict.pop('id', None)
 
-    return jsonify({"Challenge": aux_dict}) 
+    #Dictionary auxiliary to modify the keys
+    aux_dict = PythonChallenge.to_dict(challenge)  
+    #Get tests code from file
+    response['code'] = read_file(response['code'], "r")
+    response['tests_code'] = read_file(response['tests_code'], "r")
+    response.pop('id', None)
+
+    return jsonify({"Challenge": response}) 
 
 @python.route('/api/v1/python-challenges', methods=['POST'])
 def create_new_challenge():
@@ -115,8 +122,8 @@ def valid_python_challenge(code_path,test_path):
     elif not no_syntax_errors(test_path):
         return {"Error": "Syntax error at " + test_path}
     #checks if at least one test don't pass
-    #elif !tests_fail():
-    #    return {"Error": "At least one test must fail"}
+    elif not tests_fail(test_path):
+        return {"Error": "At least one test must fail"}
     else:   #program is fine 
         return { 'Result': 'ok' }
 
@@ -124,6 +131,10 @@ def no_syntax_errors(code_path):
     p = subprocess.call("python -m py_compile " + code_path ,stdout=subprocess.PIPE, shell=True)
     return p == 0   #0 is no syntax errors, 1 is the opposite
 
+def  tests_fail(test_path):
+    p = subprocess.call("python -m pytest " + test_path ,stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    return p == 1 #1 is exception due a test fail, 0 the oposite
+  
 #checks for name or content change reuqest
 def file_changes_required(names, code, tests):
     return code is None or tests is None or 'source_code_file_name' in names or 'test_suite_file_name' in names
