@@ -24,6 +24,7 @@ ALLOWED_EXTENSIONS = {'java'}
 PATHCLASSJAVA = './example-challenges/java-challenges/Median.java'
 DASINJAVA = './example-challenges/java-challenges/MedianTest.java'
 
+
 @java.route('/prueba')
 def login():
     return { 'result': 'funciona' }
@@ -128,38 +129,34 @@ def create_challenge():
             file = request.files['source_code_file']
             test_suite = request.files['test_suite_file']
             
+            # upload class java and compile
             upload_file_1(file)
             path_file_java = UPLOAD_FOLDER + file.filename
-
-            try:
-                compile_java(path_file_java)
-            except Exception:
-                delete_path(path_file_java)
-                return make_response(jsonify("Error de sintaxis en la clase java, por favor revise su codigo"))
+            class_java_compile(path_file_java)
             
+            # upload test suite java and compile
             upload_file_1(test_suite)
             path_test_java = UPLOAD_FOLDER + test_suite.filename
+            #test_file_compile(path_test_java, path_file_java)
             
-            try:
-               compile_java_test(path_test_java)
-            except Exception:
-                delete_path(path_file_java)
-                delete_path(path_test_java)
-                return make_response(jsonify("Error de sintaxis en la test suite, por favor revise su codigo"))    
-            
-            if execute_java_test(path_test_java):
-                return make_response(jsonify("La test suite debe fallar en almenos un caso de test para poder subirlo"))
+            # excute test suite java
+            # excute_java_test return true if pass all test
+            if test_file_compile(path_test_java, path_file_java):
+                if execute_java_test(path_test_java):
+                    return make_response(jsonify("La test suite debe fallar en almenos un caso de test para poder subirlo"))
+                else:
+                    #upload_file(file, test_suite)
+                    new_chan = Challenge_java(code=code_file_name, tests_code=test_suite_file_name, repair_objective=objective, complexity=complex, score=0)
+                    db.session.add(new_chan)
+                    db.session.commit()
+                
+                    # show_codes return a dict with code class java and code test
+                    ouput = show_codes(code_file_name)
+                    return make_response(jsonify({"challenge": ouput}))
             else:
-                #upload_file(file, test_suite)
-                new_chan = Challenge_java(code=code_file_name, tests_code=test_suite_file_name, repair_objective=objective, complexity=complex, score=0)
-                db.session.add(new_chan)
-                db.session.commit()
-
-                return make_response(jsonify({"challenge": Challenge_java.__repr__(new_chan)}))   
-        
+                return make_response(jsonify("No compila"))           
         else:
             return make_response(jsonify("Nombre de archivo existente, cargue nuevamente"), 404)
-    
     else:
         return make_response(jsonify("No ingreso los datos de los archivos java"))
 
@@ -180,7 +177,48 @@ def repair_challenge(id):
      #       db.session.commit()
     #else:
      #   return make_response(jsonify("Error al seleccionar archivo"))
-     
+
+def show_codes(name_file):
+    challenge_aux = Challenge_java.query.filter_by(code = name_file).first()
+    if challenge_aux is not None:
+        new_var = Challenge_java.__repr__(challenge_aux)
+        name_code = new_var['code']
+        path = 'public/challenges/' + name_code + '.java'
+        f = open(path, mode='r', encoding='utf-8')
+        file_show = f.read()
+        f.close()
+        new_var['code'] = file_show
+
+        name_test = new_var['tests_code']
+        path_test = 'public/challenges/' + name_test + '.java'
+        f_test = open(path_test, mode='r', encoding='utf-8')
+        file_show_test = f_test.read()
+        f_test.close()
+        new_var['tests_code'] = file_show_test
+        return new_var
+    else:
+        return make_response(jsonify("No existe challenge"))
+
+
+def class_java_compile(path_file_java):
+    try:
+        compile_java(path_file_java)
+    except Exception:
+        delete_path(path_file_java)
+        return make_response(jsonify("Error de sintaxis en la clase java, por favor revise su codigo"))
+
+
+def test_file_compile(path_test_java, path_file_java):
+    try:
+        compile_java_test(path_test_java)
+    except Exception:
+        delete_path(path_file_java)
+        delete_path(path_test_java)
+        return False
+    return True
+        #return make_response(jsonify("Error de sintaxis en la test suite, por favor revise su codigo"))    
+
+
 def delete_path(file_rm):
     if path.exists(file_rm):
         remove(file_rm)
