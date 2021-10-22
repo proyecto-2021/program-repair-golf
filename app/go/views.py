@@ -4,7 +4,6 @@ from .models_go import GoChallenge
 from app import db
 from flask import Flask, jsonify, request, make_response
 from flask_sqlalchemy import SQLAlchemy
-'''from sqlalchemy import create_engine'''
 import json
 
 
