@@ -1,23 +1,7 @@
 from app import create_app, db
 import pytest
 from app.ruby.models import RubyChallenge
-
-@pytest.fixture(scope='module')
-def client():
-    # Arrange
-    app = create_app('testing')
-    # Create a test client using the Flask application configured for testing
-    with app.test_client() as test_client:
-        # Establish an application context
-        with app.app_context():
-            db.create_all()
-            # Tests will be executed on the test_client object
-            yield test_client
-
-            # Cleanup
-            # FIXME: Pablo: I guess this is not needed for an in-memory DB?
-            # db.drop_all()
-
+from . import client
 
 def generate_challenge():
     challenge = RubyChallenge(
