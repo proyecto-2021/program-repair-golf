@@ -80,15 +80,14 @@ def create_new_challenge():
 def update_challenge(id):
     challenge_data = loads(request.form.get('challenge'))['challenge']
     save_to = "public/challenges/"  #general path were code will be saved
-
+    temp_path = "public/temp/"      #general path to temp directory
 
     req_challenge = PythonChallenge.query.filter_by(id=id).first()
     
-    if req_challenge is None:
+    if req_challenge is None:   #case id is not in database
         return make_response(jsonify({"challenge":"there is no challenge with that id"}),404)
 
-    response =  PythonChallenge.to_dict(req_challenge).copy()
-
+    response = PythonChallenge.to_dict(req_challenge).copy()   #start creating response for the endpoint
     #determine path to temp, user may have requested name change for the file
     code_path = temp_path
     if 'source_code_file_name' in challenge_data:
@@ -103,7 +102,7 @@ def update_challenge(id):
     else:   #concatenate old file name
         test_path += (lambda x: x.split('/')[-1]) (req_challenge.code)
 
-
+    #check if code change was requested
     challenge_file = request.files.get('source_code_file')  #obtain the binary
     if challenge_file != None:
         challenge_source_code = challenge_file.read()   #read it, and store its content
@@ -111,6 +110,7 @@ def update_challenge(id):
         saved_challenge.write(challenge_source_code)    #write the binary we got
         saved_challenge.close()
     
+    #check if test code change was requested
     tests_file = request.files.get('test_suite_file')
     if tests_file != None:
         tests_source_code = tests_file.read()
@@ -118,19 +118,16 @@ def update_challenge(id):
         saved_challenge.write(challenge_source_code)
         saved_challenge.close()
 
+    #check if change for repair objective was requested
     if 'repair_objective' in challenge_data:
         db.session.query(PythonChallenge).filter_by(id=id).update(dict( repair_objective = challenge_data['repair_objective']))
         db.session.commit()
         response['repair_objective'] = challenge_data['repair_objective']
+    #check if change for repair objective was requested
+    if 'complexity' in challenge_data:
+        db.session.query(PythonChallenge).filter_by(id=id).update(dict( complexity = challenge_data['complexity']))
+        db.session.commit()    
 
-    
-    db.session.query(PythonChallenge).filter_by(id=id).update(dict( complexity = challenge_data['complexity']))
-    db.session.commit()
-    response['complexity'] = challenge_data['complexity'] 
-
-    saved_challenge = open(response['code'], "r")   
-    challenge_code = saved_challenge.read()
-    saved_challenge.close()
     return jsonify({"challenge" : response})
 
 
@@ -142,6 +139,7 @@ def read_and_resave(save_to, req_key, filename):
     new_save.write(source_code)                         #write the binary we got
     new_save.close()                                    #save it
     return source_code
+
 
 def valid_python_challenge(code_path,test_path):
     #checks for any syntax errors in code
