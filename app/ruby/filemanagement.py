@@ -1,10 +1,5 @@
-from . import ruby
-from .models import RubyChallenge
-from app import db
-from flask import jsonify, request, make_response
 from shutil import copy
-import subprocess, json, os, sys
-import nltk
+import subprocess, os, sys
 
 def delete_keys(dictionary, key_list):
     for key in key_list:
