@@ -1,5 +1,6 @@
 from app import create_app, db
 import pytest
+import os
 
 @pytest.fixture(scope='module')
 def client():
@@ -12,3 +13,10 @@ def client():
             db.create_all()
             # Tests will be executed on the test_client object
             yield test_client
+
+    try:
+        os.remove('public/challenges/example.rb')
+        os.remove('public/challenges/example_test.rb')
+        os.remove('public/challenges/example_fixed.rb')
+    except:
+        print('F')
