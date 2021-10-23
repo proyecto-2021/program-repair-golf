@@ -1,5 +1,6 @@
 import json
 from flask import Flask,jsonify,request,make_response
+from app import db
 
 from app.go.models_go import GoChallenge
 from . import go
@@ -7,6 +8,8 @@ from . import go
 import subprocess
 import os
 import shutil
+import nltk
+
 
 @go.route('/hello') 
 def hello():
@@ -36,8 +39,14 @@ def repair_challengue_go(id):
     the_challenge_is_solved = subprocess.run(["go","test"],cwd="public/challenges/solution",stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
     #1 cuando fallan los test
     if the_challenge_is_solved.returncode == 1:
-        return make_response((jsonify({"the challengue":"not solved"}),409))
+        return make_response((jsonify({"the challengue":"not solved"}),409))  
     
+    #Esto va debajo del if
+    challengue_original_code = challengue_to_dict["code"]
+    
+    #file= open(str(os.path.abspath(challengue_original_code)),'r')
+    print(challengue_original_code)
+    print(nltk.edit_distance(challengue_original_code,code_solution_path))
     
     
     #print(type(challengue_to_dict))
