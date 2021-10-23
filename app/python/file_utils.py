@@ -5,19 +5,12 @@ def temporary_save(new_names, code_file, tests_file, old_code_path, old_test_pat
 	code_path = determine_path(new_names.get('source_code_file_name'), temp_path, old_code_path)
 	test_path = determine_path(new_names.get('test_suite_file_name'), temp_path, old_test_path)
 
-	source_code = None
-    if code_file != None:
-        source_code = code_file.read()   #read it, and store its content
-    else:
-        source_code = read_file(old_code_path, "rb")
-    save_file(code_path, "wb", source_code)
-
-    source_code_tests = None
-    if tests_file != None:
-        source_code_tests = tests_file.read()   #read it, and store its content
-    else:
-        source_code_tests = read_file(old_test_path, "rb")
-    save_file(test_path, "wb", source_code_tests)
+	#gets new or old content
+	source_code = determine_content(code_file, old_code_path)
+	save_file(code_path, "wb", source_code)
+	#gets new or old content
+	source_code_tests = determine_content(tests_file, old_test_path)
+	save_file(test_path, "wb", source_code_tests)
 		
 def read_file(path, mode):
 	file = open(path, mode)
@@ -36,3 +29,11 @@ def determine_path(filename, base_path, old_path):
 		return base_path + (lambda x: x.split('/')[-1]) (old_path)
 	else:
 		return base_path + filename
+
+#returns a the content of a file, if file is none, returns content of old path
+def determine_content(file_content, path_to_old_content):
+	if file_content != None:
+		return file_content.read()   #read it, and store its content
+	else:
+		return read_file(path_to_old_content, "rb")
+	
