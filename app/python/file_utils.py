@@ -1,16 +1,3 @@
-
-def temporary_save(new_names, code_file, tests_file, old_code_path, old_test_path):
-	temp_path = "public/temp/"      #path to temp directory
-	
-	code_path = determine_path(new_names.get('source_code_file_name'), temp_path, old_code_path)
-	test_path = determine_path(new_names.get('test_suite_file_name'), temp_path, old_test_path)
-
-	#gets new or old content
-	source_code = determine_content(code_file, old_code_path)
-	save_file(code_path, "wb", source_code)
-	#gets new or old content
-	source_code_tests = determine_content(tests_file, old_test_path)
-	save_file(test_path, "wb", source_code_tests)
 		
 def read_file(path, mode):
 	file = open(path, mode)
