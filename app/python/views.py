@@ -34,8 +34,9 @@ def return_challange_id(id):
     if challenge is None:
         return make_response(jsonify({"Challenge": "Not found"}), 404)
 
-    #Dictionary auxiliary to modify the keys
-    aux_dict = PythonChallenge.to_dict(challenge)  
+    #Diction
+    ary auxiliary to modify the keys
+    response = PythonChallenge.to_dict(challenge)  
     #Get tests code from file
     response['code'] = read_file(response['code'], "r")
     response['tests_code'] = read_file(response['tests_code'], "r")
@@ -88,7 +89,7 @@ def update_challenge(id):
     temp_path = "public/temp/"      #path to temp directory
 
     req_challenge = PythonChallenge.query.filter_by(id=id).first()
-    
+
     if req_challenge is None:   #case id is not in database
         return make_response(jsonify({"challenge":"there is no challenge with that id"}),404)
 
@@ -103,14 +104,14 @@ def update_challenge(id):
 
     #check if change for repair objective was requested
     if 'repair_objective' in challenge_data:
-        db.session.query(PythonChallenge).filter_by(id=id).update(dict( repair_objective = challenge_data['repair_objective']))
-        db.session.commit()
         response['repair_objective'] = challenge_data['repair_objective']
     #check if change for repair objective was requested
     if 'complexity' in challenge_data:
-        db.session.query(PythonChallenge).filter_by(id=id).update(dict( complexity = challenge_data['complexity']))
-        db.session.commit()    
-
+        response['complexity'] = challenge_data['complexity']
+    
+    #this must be changed when we update files correctly, otherwise we'll be saving code instead of path
+    db.session.query(PythonChallenge).filter_by(id=id).update(dict(response))
+    db.session.commit()
     return jsonify({"challenge" : response})
 
 def valid_python_challenge(code_path,test_path):
