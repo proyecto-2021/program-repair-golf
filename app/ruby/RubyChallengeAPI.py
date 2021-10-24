@@ -38,16 +38,15 @@ class RubyChallengeAPI(MethodView):
                 os.remove(test_file_path)
                 return make_response(jsonify({'challenge': 'test_suite dependencies are wrong'}),400)
 
-            new_challenge = RubyChallenge(
-                code = file_path,
-                tests_code = test_file_path,
-                repair_objective = dictionary['repair_objective'],
-                complexity = dictionary['complexity'],
-                best_score = 0
-            )
+            new_challenge = create_challenge(file_path, test_file_path, dictionary['repair_objective'], dictionary['complexity'])
 
-            create_challenge(new_challenge)
-            return jsonify({'challenge': new_challenge.get_dict()})
+            with open(new_challenge['code']) as f1:
+                new_challenge['code'] = f1.read()
+
+            with open(new_challenge['tests_code']) as f2:
+                new_challenge['tests_code'] = f2.read()
+
+            return jsonify({'challenge': new_challenge})
         else:
             if not exists(id):
                 return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
