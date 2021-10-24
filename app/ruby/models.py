@@ -32,9 +32,17 @@ class RubyChallenge(db.Model):
         return list(map(lambda x: x.get_dict(), RubyChallenge.get_challenges()))
 
     @staticmethod
-    def create_challenge(challenge):
+    def create_challenge(code, tests_code, repair_objective, complexity):
+        challenge = RubyChallenge(
+            code = code,
+            tests_code = tests_code,
+            repair_objective = repair_objective,
+            complexity = complexity,
+            best_score = 0
+        )
         db.session.add(challenge)
         db.session.commit()
+        return challenge.get_dict()
 
     @staticmethod
     def update_challenge(id, changes):
