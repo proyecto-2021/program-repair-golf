@@ -85,6 +85,8 @@ def create_new_challenge():
 def update_challenge(id):
     challenge_data = loads(request.form.get('challenge'))['challenge']
     save_to = "public/challenges/"  #general path were code will be saved
+    temp_path = "public/temp/"      #path to temp directory
+
     req_challenge = PythonChallenge.query.filter_by(id=id).first()
     
     if req_challenge is None:   #case id is not in database
@@ -95,7 +97,9 @@ def update_challenge(id):
     new_code = request.files.get('source_code_file')
     new_test = request.files.get('test_suite_file')
     if file_changes_required(challenge_data, new_code, new_test):
-        temporary_save(challenge_data, new_code, new_test, req_challenge.code, req_challenge.tests_code)
+        #saving changes in a temporal location for checking validation
+        temp_code_path = save_changes(challenge_data.get('source_code_file_name'), new_code, req_challenge.code, temp_path)
+        temp_test_path = save_changes(challenge_data.get('test_suite_file_name'), new_test, req_challenge.tests_code, temp_path)
 
     #check if change for repair objective was requested
     if 'repair_objective' in challenge_data:
@@ -134,3 +138,11 @@ def  tests_fail(test_path):
 def file_changes_required(names, code, tests):
     return code is None or tests is None or 'source_code_file_name' in names or 'test_suite_file_name' in names
 
+#saves a file with new name and new content
+#if not a new name it uses the old one, same for content
+def save_changes(new_name, file_content, old_file_path, base_path):
+	new_path = determine_path(new_name, base_path, old_file_path)
+	#gets new or old content
+	source_code = determine_content(file_content, old_file_path)
+	save_file(new_path, "wb", source_code)
+	return new_path
