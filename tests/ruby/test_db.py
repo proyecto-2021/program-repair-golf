@@ -30,15 +30,3 @@ def test_get_all_challenges(client):
     
     challenges_list = RubyChallenge.get_challenges()
     assert len(challenges_list) == 12
-    
-    
-    
-    
-    
-    
-    
-    
-     
-    
-
-
