@@ -20,8 +20,34 @@ def test_post_challenge(client):
     assert r.json == {
                     "challenge": {
                             "id": 1,
-                            "code": "public/challenges/example.rb",
-                            "tests_code": "public/challenges/example_test.rb",
+                            "code": "def median(a,b,c)\n  "
+                                        "res = 0\n  "
+                                        "if ((a>=b and a<=c) or (a>=c and a<=b))\n    "
+                                            "res = a\n  "
+                                        "end\n  "
+                                        "if ((b>=a and b<=c) or (b>=c and b<=a))\n    "
+                                            "res = b\n  "
+                                        "else\n    "
+                                            "res = c\n  "
+                                        "end\n  "
+                                        "return res\n"
+                                    "end\n",
+                            "tests_code":   "require 'minitest/autorun'\n"
+                                            "require_relative 'example'\n"
+                                            "\n"
+                                            "class MedianTest < Minitest::Test\n  "
+                                                "def test_1\n    "
+                                                    "assert median(1,2,3) == 2\n  "
+                                                "end\n"
+                                                "\n  "
+                                                "def test_2\n    "
+                                                    "assert median(2,1,3) == 2\n  "
+                                                "end\n"
+                                                "\n  "
+                                                "def test_3\n    "
+                                                    "assert median(3,1,2) == 2\n  "
+                                                "end\n"
+                                            "end\n",
                             "repair_objective": "Testing",
                             "complexity": "2",
                             "best_score": 0
