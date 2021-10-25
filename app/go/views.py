@@ -22,7 +22,7 @@ def return_single_challenge(id):
 
 def from_file_to_str(challenge):
     file= open(str(os.path.abspath(challenge["code"])),'r')
-    content=file.readlines ()
+    content=file.readlines()
     file.close()
     challenge["code"]=(content)
     return challenge
