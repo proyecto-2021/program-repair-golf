@@ -34,8 +34,7 @@ def return_challange_id(id):
     if challenge is None:
         return make_response(jsonify({"Challenge": "Not found"}), 404)
 
-    #Diction
-    ary auxiliary to modify the keys
+    #Dictionary auxiliary to modify the keys
     response = PythonChallenge.to_dict(challenge)  
     #Get tests code from file
     response['code'] = read_file(response['code'], "r")
