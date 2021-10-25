@@ -26,15 +26,28 @@ def update_challenge_js(id):
         challenge.code = files_js.upload(source_code_file_upd, code_file_name)
     if files_js.valid(test_suite_file_upd):
         challenge.tests_code = files_js.upload(test_suite_file_upd, test_file_name)
+
+    compiles_out = files_js.compile_js(challenge.code)
+    
+    #si los archivos no compomilan tendra un msj de salida y se eliminaran los archivos
+    if compiles_out:
+        files_js.remove_files(challenge.code,challenge.tests_code)
+        return make_response(jsonify({'challenge': f'Error File not compile {compiles_out}'}), 404)
+    
+    test_out = files_js.run_test(challenge.tests_code)   
+    
+    #El test devera fallar almenos una vez en caso contrario tendra un msj de salida y se eliminaran los archivos
+    if not files_js.test_fail(test_out):
+        files_js.remove_files( challenge.code,challenge.tests_code)
+        return make_response(jsonify({'challenge': f'The test has to fail at least once {test_out}'}), 404)
+
     if repair_objetive:
         challenge.repair_objetive = repair_objetive
     if complexity:
         challenge.complexity = complexity
 
     db.session.commit()
-
-    challenge_dict = challenge.to_dict()
-    challenge_dict['code'] = files_js.open_file(challenge.code)
-    challenge_dict['tests_code'] = files_js.open_file(challenge.tests_code)
-
-    return make_response(jsonify({"challenge": challenge_dict}), 200)
+    
+    challenge.code = files_js.open_file(challenge.code)
+    challenge.tests_code = files_js.open_file(challenge.tests_code)
+    return make_response(jsonify({"challenge": challenge.to_dict()}), 200)
