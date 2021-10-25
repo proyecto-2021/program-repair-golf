@@ -54,7 +54,7 @@ def compile_js(path_file):
 def run_test(path_file):
     #si no existen las dependecias las copia
     if not ok_dependences():
-        cp_dependences = copy_dependences().stdout.read()
+        cp_dependences = extract_dependences().stdout.read()
         if cp_dependences: return cp_dependences
 
     command_test = f'cd {PUBLIC_PATH}; npm test {path_file}' 
@@ -68,13 +68,9 @@ def run_test(path_file):
 def test_fail(output):
     return str(output).find('FAIL') != -1
 
-def copy_dependences():
-    
-    cp_modules = f'cp -R {DEPENDENCES_FOLDER + DEPENDENCES_FILES["modules_folder"]} {PUBLIC_PATH}; '
-    cp_package = f'cp {DEPENDENCES_FOLDER + DEPENDENCES_FILES["package_file"]} {PUBLIC_PATH}; ' 
-    cp_package_lock = f'cp {DEPENDENCES_FOLDER + DEPENDENCES_FILES["package_lock_file"]} {PUBLIC_PATH}; '
-    
-    return run_commands(cp_modules + cp_package + cp_package_lock) 
+def extract_dependences():
+    command = f'cd {DEPENDENCES_FOLDER}; unzip lib.zip -d ../../../{PUBLIC_PATH};'
+    return run_commands(command) 
 
 def install_dependence():
     command = f'cd {PUBLIC_PATH}; npm install'
