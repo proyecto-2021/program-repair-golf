@@ -93,13 +93,23 @@ def update_challenge(id):
         return make_response(jsonify({"challenge":"there is no challenge with that id"}),404)
 
     response = PythonChallenge.to_dict(req_challenge).copy()   #start creating response for the endpoint
-    
+
     new_code = request.files.get('source_code_file')
     new_test = request.files.get('test_suite_file')
     if file_changes_required(challenge_data, new_code, new_test):
         #saving changes in a temporal location for checking validation
         temp_code_path = save_changes(challenge_data.get('source_code_file_name'), new_code, req_challenge.code, temp_path)
         temp_test_path = save_changes(challenge_data.get('test_suite_file_name'), new_test, req_challenge.tests_code, temp_path)
+
+        #challenge validation here
+
+        #old challenge files deletion
+
+        #new challenge files saving
+
+        #deletion of files at temp
+
+        #adding new paths to response (response is used later to save challenge in db)
 
     #check if change for repair objective was requested
     if 'repair_objective' in challenge_data:
@@ -108,9 +118,19 @@ def update_challenge(id):
     if 'complexity' in challenge_data:
         response['complexity'] = challenge_data['complexity']
     
-    #this must be changed when we update files correctly, otherwise we'll be saving code instead of path
+    #updating challenge in db with data in response
     db.session.query(PythonChallenge).filter_by(id=id).update(dict(response))
     db.session.commit()
+
+    #in case contents of files were changed update 'code' and 'tests_code' keys of response with code
+    if new_code != None:    #for some reason new_code is unnabled to read the file again
+        print("\ncontent changes won't be shown until we save new path in response['code']\n")
+        response['code'] = read_file(response['code'], "r")
+
+    if new_test != None:
+        print("\ncontent changes won't be shown until we save new path in response['tests_code']\n")
+        response['tests_code'] = read_file(response['tests_code'], "r")
+
     return jsonify({"challenge" : response})
 
 def valid_python_challenge(code_path,test_path):
