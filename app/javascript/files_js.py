@@ -55,7 +55,9 @@ def run_test(path_file):
     #si no existen las dependecias las copia
     if not ok_dependences():
         cp_dependences = extract_dependences().stdout.read()
-        if cp_dependences: return cp_dependences
+
+        if error_extract_dependences(cp_dependences): 
+            return cp_dependences
 
     command_test = f'cd {PUBLIC_PATH}; npm test {path_file}' 
     test_ok = run_commands(command_test).stdout.read()
@@ -71,6 +73,10 @@ def test_fail(output):
 def extract_dependences():
     command = f'cd {DEPENDENCES_FOLDER}; unzip lib.zip -d ../../../{PUBLIC_PATH};'
     return run_commands(command) 
+    
+def error_extract_dependences(output): 
+    error_open = 'cannot'
+    return str(output).find(error_open) != -1 
 
 def install_dependence():
     command = f'cd {PUBLIC_PATH}; npm install'
@@ -82,8 +88,9 @@ def run_commands(command):
 def ok_dependences(): 
     return os.path.lexists(PUBLIC_PATH + DEPENDENCES_FILES['modules_folder']) and os.path.lexists(PUBLIC_PATH + DEPENDENCES_FILES["package_file"]) and os.path.lexists(PUBLIC_PATH + DEPENDENCES_FILES["package_lock_file"])
 
-def rm_file(path_file):
-    os.remove(path_file)
+def remove_files(*args): 
+    for path_file in args:
+        if os.path.lexists(path_file): os.remove(path_file)
 
 #! Estos metodos no son necesarios  
 
