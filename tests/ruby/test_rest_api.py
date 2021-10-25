@@ -53,3 +53,23 @@ def test_post_challenge(client):
                             "best_score": 0
                         }
                     }
+
+def test_get_after_post(client):
+    url = '/ruby/challenge'
+    data = {
+        'source_code_file': open('tests/ruby/test-files/example.rb', 'rb'),
+        'test_suite_file': open('tests/ruby/test-files/example_test.rb', 'rb'),
+        'challenge': '{ \
+            "challenge": { \
+                "source_code_file_name" : "example", \
+                "test_suite_file_name" : "example_test", \
+                "repair_objective" : "Testing", \
+                "complexity" : "2" \
+            } \
+        }'
+    }
+
+    r = client.post(url, data=data)
+    del r.json['id']
+
+
