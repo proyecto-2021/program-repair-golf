@@ -1,5 +1,6 @@
 from shutil import copy
 import subprocess, os, sys
+from . import FILES_PATH
 
 def delete_keys(dictionary, key_list):
     for key in key_list:
@@ -17,12 +18,12 @@ def file_exists(f):
 def update_file(challenge, file_type, source_path, source_name, data):
     if file_exists(source_path):
         os.remove(challenge[file_type])
-        data[file_type] = copy(source_path, f"public/challenges/{source_name}")
+        data[file_type] = copy(source_path, f"{FILES_PATH}{source_name}")
         os.remove(source_path)
 
 def update_file_name(challenge, file_type, source_name, data):
     if (os.path.basename(challenge[file_type]) != source_name):
-        new_name = f"public/challenges/{source_name}"
+        new_name = f"{FILES_PATH}{source_name}"
         os.rename(challenge[file_type], new_name)
         data[file_type] = new_name
 
