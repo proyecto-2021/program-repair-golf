@@ -30,3 +30,18 @@ def test_get_all_challenges(client):
     
     challenges_list = RubyChallenge.get_challenges()
     assert len(challenges_list) == 12
+
+def test_update_challenge(client):
+    challenge = RubyChallenge.create_challenge('code', 'tests_code', 'repair_objective', '5')
+    update = {'code': 'changed', 'tests_code': 'changed', 'repair_objective': 'changed', 'complexity': 'changed'}
+    n_changes = RubyChallenge.update_challenge(challenge['id'], update)
+    updated_challenge = RubyChallenge.get_challenge(challenge['id']).get_dict()
+    assert n_changes == 1
+    assert updated_challenge['code'] == 'changed'
+    assert updated_challenge['tests_code'] == 'changed'
+    assert updated_challenge['repair_objective'] == 'changed'
+    assert updated_challenge['complexity'] == 'changed'
+
+def test_exists(client):
+    challenge = RubyChallenge.create_challenge('code', 'tests_code', 'repair_objective', '5')
+    assert RubyChallenge.exists(challenge['id'])
