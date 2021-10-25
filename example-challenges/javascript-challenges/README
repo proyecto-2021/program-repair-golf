@@ -1,9 +1,14 @@
 1. Requirements
 - npm 
 
-2. Install dependencies
+2. Creating a package.json
+npm init -y
+
+3. Install jest
+npm install jest -D 
+
+4. Install dependencies
 npm install
 
-3. Run the example
-npm run test
-
+5. Run the example
+npm run || npm test || npm t
