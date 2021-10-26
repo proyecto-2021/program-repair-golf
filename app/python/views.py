@@ -155,7 +155,9 @@ def update_files(challenge_data, new_code, new_test, temp_path, response):
     temp_test_path = save_changes(challenge_data.get('test_suite_file_name'), new_test, req_challenge.tests_code, temp_path)
 
     #challenge validation here
-
+    validation_result = valid_python_challenge(temp_code_path, temp_test_path)
+    if 'Error' in validation_result:
+        return validation_result
     #old challenge files deletion
 
     #new challenge files saving
