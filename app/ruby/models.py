@@ -20,10 +20,11 @@ class RubyChallenge(db.Model):
         }
 
 def get_challenge(id):
-    return db.session.query(RubyChallenge).filter_by(id=id).first()
+    return db.session.query(RubyChallenge).filter_by(id=id).first().get_dict()
 
 def get_challenges():
-    return db.session.query(RubyChallenge).all()
+    return [challenge.get_dict() for challenge in
+        db.session.query(RubyChallenge).all()]
 
 def get_all_challenges_dict():
     return list(map(lambda x: x.get_dict(), get_challenges()))
