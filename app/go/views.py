@@ -1,9 +1,9 @@
 import os
 from . import go
-from flask import request, jsonify
+from flask import request, jsonify, json, make_response
 from .. import db
 from .models_go import GoChallenge
-
+import subprocess, os
 
 @go.route('/hello') 
 def hello():
@@ -21,12 +21,6 @@ def return_single_challenge(id):
         del challenge_to_return["id"]
         return jsonify({"challenge":challenge_to_return})
 
-
-from . import go
-from .models_go import GoChallenge
-from flask import jsonify, request, json, make_response
-from .. import db
-import subprocess, os
 
 @go.route('/hello') 
 def hello():
