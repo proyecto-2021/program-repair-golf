@@ -1,7 +1,7 @@
 from flask.views import MethodView
 from . import ruby
-from .models import RubyChallenge
-from flask import jsonify, request, make_response, current_app
+from .models import *
+from flask import jsonify, request, make_response
 from shutil import copy
 import json, os
 import nltk
@@ -193,10 +193,3 @@ ruby.add_url_rule('/challenge', defaults={'id': None}, view_func=ruby_challenge_
 ruby.add_url_rule('/challenges', defaults={'id': None}, view_func=ruby_challenge_view, methods=['GET',])
 ruby.add_url_rule('/challenge/<int:id>', view_func=ruby_challenge_view, methods=['GET', 'PUT'])
 ruby.add_url_rule('/challenge/<int:id>/repair', view_func=ruby_challenge_view, methods=['POST',])
-
-get_challenge = RubyChallenge.get_challenge
-get_challenges = RubyChallenge.get_challenges
-get_all_challenges_dict = RubyChallenge.get_all_challenges_dict
-create_challenge = RubyChallenge.create_challenge
-update_challenge = RubyChallenge.update_challenge
-exists = RubyChallenge.exists
