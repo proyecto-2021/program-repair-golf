@@ -1,5 +1,5 @@
 import os
-import tempfile
+from tempfile import gettempdir
 
 class Config(object):
     TESTING = False
@@ -17,7 +17,7 @@ class DevelopmentConfig(Config):
     SQLALCHEMY_DATABASE_URI = "sqlite:////tmp/foo.db"
 
 class TestingConfig(Config):
-    FILES_PATH = tempfile.gettempdir() + '/'
+    FILES_PATH = gettempdir() + '/'
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     TESTING = True
 
