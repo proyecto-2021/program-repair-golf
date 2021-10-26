@@ -1,13 +1,19 @@
 from flask.views import MethodView
 from . import ruby
 from .models import RubyChallenge
-from flask import jsonify, request, make_response
+from flask import jsonify, request, make_response, current_app
 from shutil import copy
 import json, os
 import nltk
 from .filemanagement import *
+#from . import FILES_PATH
+
+
 
 class RubyChallengeAPI(MethodView):
+
+    def __init__(self):
+        FILES_PATH = current_app.config.get('FILES_PATH')
 
     def post(self, id):
         if id is None:
@@ -15,10 +21,10 @@ class RubyChallengeAPI(MethodView):
             dictionary = input_challenge['challenge']
 
             file = request.files['source_code_file']
-            file_path = 'public/challenges/' + dictionary['source_code_file_name'] + '.rb'
+            file_path = FILES_PATH + dictionary['source_code_file_name'] + '.rb'
 
             test_file = request.files['test_suite_file']
-            test_file_path = 'public/challenges/' + dictionary['test_suite_file_name'] + '.rb'
+            test_file_path = FILES_PATH + dictionary['test_suite_file_name'] + '.rb'
 
             #check that the same files is not posted again
             if not save(file, file_path):
@@ -126,8 +132,8 @@ class RubyChallengeAPI(MethodView):
         old_challenge = get_challenge(id).get_dict()
         source_code_name = f"{update_data['source_code_file_name']}.rb"
         source_test_name = f"{update_data['test_suite_file_name']}.rb"
-        source_code_path_destiny = f"public/challenge/{source_code_name}"
-        source_test_path_destiny = f"public/challenge/{source_test_name}"
+        source_code_path_destiny = f"{FILES_PATH}{source_code_name}"
+        source_test_path_destiny = f"{FILES_PATH}{source_test_name}"
 
         # Check if file name already exists
         if (file_exists(source_code_path_destiny) and old_challenge['code'] != source_code_path_destiny): 

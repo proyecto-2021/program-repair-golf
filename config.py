@@ -17,7 +17,7 @@ class DevelopmentConfig(Config):
     SQLALCHEMY_DATABASE_URI = "sqlite:////tmp/foo.db"
 
 class TestingConfig(Config):
-    FILES_PATH = tempfile.gettempdir() + '/public/challenges'
+    FILES_PATH = tempfile.gettempdir() + '/public/challenges/'
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     TESTING = True
 

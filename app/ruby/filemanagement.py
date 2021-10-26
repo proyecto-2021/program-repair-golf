@@ -1,6 +1,6 @@
 from shutil import copy
 import subprocess, os, sys
-from . import FILES_PATH
+FILES_PATH = 'public/challenges/'
 
 def delete_keys(dictionary, key_list):
     for key in key_list:
