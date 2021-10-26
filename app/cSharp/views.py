@@ -5,6 +5,7 @@ from .models import CSharp_Challenge
 from  flask import jsonify,make_response,json,request
 import subprocess,os
 from subprocess import PIPE
+import nltk
 
 NUNIT_PATH="./app/cSharp/lib/NUnit.3.13.2/lib/net35/"
 NUNIT_LIB="./app/cSharp/lib/NUnit.3.13.2/lib/net35/nunit.framework.dll"
@@ -23,9 +24,9 @@ def repair_Candidate(id):
         challenge = db.session.query(CSharp_Challenge).get(id).__repr__()
         challenge_name = os.path.basename(challenge['code'])
         file = request.files['source_code_file']
-        path = 'public/challenges/' + challenge_name
-        file.save(dst=path)
-        cmd = 'mcs ' + path
+        repair_path = 'public/challenges/' + challenge_name
+        file.save(dst=repair_path)
+        cmd = 'mcs ' + repair_path
         if (subprocess.call(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0):
             test = challenge['tests_code']
             #commands to run tests
@@ -34,11 +35,23 @@ def repair_Candidate(id):
             cmd_execute = 'mono ' + NUNIT_CONSOLE_RUNNER + ' ' + test.replace('.cs', '.dll') + ' -noresult'
             cmd_run_test = cmd_export + ' && ' + cmd_compile + ' && ' + cmd_execute 
             if (subprocess.call(cmd_run_test, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0):
-                #to do: calculate score
-                return make_response(jsonify({'Repair candidate:' : 'Tests passed'}), 200)
+                challenge_script = open(challenge['code'], "r").readlines()
+                repair_script = open(repair_path, "r").readlines()
+                score = nltk.edit_distance(challenge_script, repair_script)
+
+                if int(challenge['best_score']) == 0 or int(challenge['best_score']) > score:
+                    db.session.query(CSharp_Challenge).filter_by(id=id).update(dict(best_score=score))
+                    db.session.commit()
+                    challenge['best_score'] = score
+
+                challenge_data = {
+                    "repair_objective": challenge['repair_objetive'],
+                    "best_score": challenge['best_score']
+                }
+
+                return make_response(jsonify({'repair': {'challenge': challenge_data, 'score': score}}), 200)
             else:
                 return make_response(jsonify({'Repair candidate:' : 'Tests not passed'}), 409)
-            #return make_response(jsonify({'repair candidate:' : 'compiled'}), 200)
         else:
             return make_response(jsonify({'repair candidate:' : 'Sintax error'}), 409)
 
