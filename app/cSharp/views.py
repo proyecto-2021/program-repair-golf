@@ -29,12 +29,15 @@ def repair_Candidate(id):
         cmd = 'mcs ' + repair_path
         if (subprocess.call(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0):
             test = challenge['tests_code']
+            test_dll = test.replace('.cs', '.dll')
+            repair_exe_path = repair_path.replace('.cs', '.exe')
             #commands to run tests
             cmd_export = 'export MONO_PATH=' + NUNIT_PATH
-            cmd_compile = cmd + ' ' + test + ' -target:library -r:' + NUNIT_LIB + ' -out:' + test.replace('.cs', '.dll')
-            cmd_execute = 'mono ' + NUNIT_CONSOLE_RUNNER + ' ' + test.replace('.cs', '.dll') + ' -noresult'
+            cmd_compile = cmd + ' ' + test + ' -target:library -r:' + NUNIT_LIB + ' -out:' + test_dll
+            cmd_execute = 'mono ' + NUNIT_CONSOLE_RUNNER + ' ' + test_dll + ' -noresult'
             cmd_run_test = cmd_export + ' && ' + cmd_compile + ' && ' + cmd_execute 
             if (subprocess.call(cmd_run_test, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0):
+                #scoring script
                 challenge_script = open(challenge['code'], "r").readlines()
                 repair_script = open(repair_path, "r").readlines()
                 score = nltk.edit_distance(challenge_script, repair_script)
@@ -48,11 +51,21 @@ def repair_Candidate(id):
                     "repair_objective": challenge['repair_objetive'],
                     "best_score": challenge['best_score']
                 }
-
+                
+                #cleanup
+                os.remove(repair_path)
+                os.remove(repair_exe_path)
+                os.remove(test_dll)
                 return make_response(jsonify({'repair': {'challenge': challenge_data, 'score': score}}), 200)
             else:
+                #cleanup
+                os.remove(repair_path)
+                os.remove(repair_exe_path)
+                os.remove(test_dll)
                 return make_response(jsonify({'Repair candidate:' : 'Tests not passed'}), 409)
         else:
+            #cleanup
+            os.remove(repair_path)
             return make_response(jsonify({'repair candidate:' : 'Sintax error'}), 409)
 
     else: 
