@@ -1,7 +1,7 @@
 from flask.views import MethodView
 from . import ruby
 from .models import RubyChallenge
-from flask import jsonify, request, make_response
+from flask import jsonify, request, make_response, current_app
 from shutil import copy
 import json, os
 import nltk
@@ -9,16 +9,19 @@ from .filemanagement import *
 
 class RubyChallengeAPI(MethodView):
 
+    def __init__(self):
+        self.files_path = current_app.config.get('FILES_PATH')
+
     def post(self, id):
         if id is None:
             input_challenge = json.loads(request.form.get('challenge'))
             dictionary = input_challenge['challenge']
 
             file = request.files['source_code_file']
-            file_path = 'public/challenges/' + dictionary['source_code_file_name'] + '.rb'
+            file_path = self.files_path + dictionary['source_code_file_name'] + '.rb'
 
             test_file = request.files['test_suite_file']
-            test_file_path = 'public/challenges/' + dictionary['test_suite_file_name'] + '.rb'
+            test_file_path = self.files_path + dictionary['test_suite_file_name'] + '.rb'
 
             #check that the same files is not posted again
             if not save(file, file_path):
@@ -27,7 +30,7 @@ class RubyChallengeAPI(MethodView):
             if not save(test_file, test_file_path):
                 return make_response(jsonify({'challenge': 'test_suite is already exist'}),409)
 
-            #check no syntaxis errors
+            #check no syntax's errors
             if not (compiles(file_path) and compiles(test_file_path)):
                 os.remove(file_path)
                 os.remove(test_file_path)
@@ -102,22 +105,22 @@ class RubyChallengeAPI(MethodView):
 
             return jsonify({'challenges': challenges})
         else:
-                if not exists(id):
-                    return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
+            if not exists(id):
+                return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
 
-                challenge = get_challenge(id).get_dict()
-                delete_keys(challenge, ['id'])
+            challenge = get_challenge(id).get_dict()
+            delete_keys(challenge, ['id'])
 
-                code_path = challenge['code']
-                tests_code_path = challenge['tests_code']
+            code_path = challenge['code']
+            tests_code_path = challenge['tests_code']
 
-                with open(code_path) as f:
-                    challenge['code'] = f.read()
+            with open(code_path) as f:
+                challenge['code'] = f.read()
 
-                with open(tests_code_path) as f:
-                    challenge['tests_code'] = f.read()
+            with open(tests_code_path) as f:
+                challenge['tests_code'] = f.read()
 
-                return jsonify({'challenge': challenge})
+            return jsonify({'challenge': challenge})
 
     def put(self, id):
         if not exists(id):
@@ -126,8 +129,8 @@ class RubyChallengeAPI(MethodView):
         old_challenge = get_challenge(id).get_dict()
         source_code_name = f"{update_data['source_code_file_name']}.rb"
         source_test_name = f"{update_data['test_suite_file_name']}.rb"
-        source_code_path_destiny = f"public/challenge/{source_code_name}"
-        source_test_path_destiny = f"public/challenge/{source_test_name}"
+        source_code_path_destiny = f"{self.files_path}{source_code_name}"
+        source_test_path_destiny = f"{self.files_path}{source_test_name}"
 
         # Check if file name already exists
         if (file_exists(source_code_path_destiny) and old_challenge['code'] != source_code_path_destiny): 
@@ -148,7 +151,7 @@ class RubyChallengeAPI(MethodView):
                 os.remove(source_code_path_tmp)
                 return make_response(jsonify({'code': "doesn't compile or doesn't exists"}), 400)
         else:
-            update_file_name(old_challenge, 'code', source_code_name, update_data)
+            update_file_name(old_challenge, 'code', self.files_path, source_code_name, update_data)
 
         # If there is a new test suite, check dependencies and if it fails.
         if 'test_suite_file' in request.files:
@@ -163,7 +166,7 @@ class RubyChallengeAPI(MethodView):
             if not dependencies_ok(old_challenge['tests_code'], os.path.basename(source_code_name.split('.')[0])):
                 os.remove(source_test_path_tmp)
                 return make_response(jsonify({'tests': "dependencies failed to compile"}), 400)
-            update_file_name(old_challenge, 'tests_code', source_test_name, update_data)
+            update_file_name(old_challenge, 'tests_code', self.files_path, source_test_name, update_data)
 
         #Update DB info (complexity, objetive, etc) and remove tmp data in failure case
         if update_challenge(id, update_data) < 1:
@@ -174,8 +177,8 @@ class RubyChallengeAPI(MethodView):
             return make_response(jsonify({'challenge': "update failed check input data"}), 400)
 
         # Update test and code files if they exists
-        update_file(old_challenge, 'code', source_code_path_tmp, source_code_name, update_data)
-        update_file(old_challenge, 'tests_code', source_test_path_tmp, source_test_name, update_data)
+        update_file(old_challenge, 'code', source_code_path_tmp, self.files_path, source_code_name, update_data)
+        update_file(old_challenge, 'tests_code', source_test_path_tmp, self.files_path, source_test_name, update_data)
 
         # Update challenge with new paths
         update_challenge(id, update_data)

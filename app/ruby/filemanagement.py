@@ -14,15 +14,15 @@ def save(file, path):
 def file_exists(f):
     return os.path.isfile(f)
 
-def update_file(challenge, file_type, source_path, source_name, data):
+def update_file(challenge, file_type, files_path, source_path, source_name, data):
     if file_exists(source_path):
         os.remove(challenge[file_type])
-        data[file_type] = copy(source_path, f"public/challenges/{source_name}")
+        data[file_type] = copy(source_path, f"{files_path}{source_name}")
         os.remove(source_path)
 
-def update_file_name(challenge, file_type, source_name, data):
+def update_file_name(challenge, file_type, files_path, source_name, data):
     if (os.path.basename(challenge[file_type]) != source_name):
-        new_name = f"public/challenges/{source_name}"
+        new_name = f"{files_path}{source_name}"
         os.rename(challenge[file_type], new_name)
         data[file_type] = new_name
 
