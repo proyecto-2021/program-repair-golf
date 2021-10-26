@@ -28,23 +28,22 @@ def repair_Candidate(id):
         cmd = 'mcs ' + path
         if (subprocess.call(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0):
             test = challenge['tests_code']
-            #commands to run tests. Don't work
-            #cmd_export = 'export MONO_PATH=' + NUNIT_PATH
-            #cmd_compile = cmd + ' ' + test + ' -target:library -r:' + NUNIT_LIB + ' -out:' + test.replace('.cs', '.dll')
-            #cmd_execute = 'mono ' + NUNIT_CONSOLE_RUNNER + ' ' + test.replace('.cs', '.dll') + ' -noresult'
-            #cmd_run_test = cmd_export + ' && ' + cmd_compile + ' && ' + cmd_execute 
-            #if (subprocess.call(cmd_run_test, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0):
+            #commands to run tests
+            cmd_export = 'export MONO_PATH=' + NUNIT_PATH
+            cmd_compile = cmd + ' ' + test + ' -target:library -r:' + NUNIT_LIB + ' -out:' + test.replace('.cs', '.dll')
+            cmd_execute = 'mono ' + NUNIT_CONSOLE_RUNNER + ' ' + test.replace('.cs', '.dll') + ' -noresult'
+            cmd_run_test = cmd_export + ' && ' + cmd_compile + ' && ' + cmd_execute 
+            if (subprocess.call(cmd_run_test, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0):
                 #to do: calculate score
-            #    return make_response(jsonify({'Repair candidate:' : 'Tests passed'}), 200)
-            #else:
-            #    return make_response(jsonify({'Repair candidate:' : 'Tests not passed'}), 409)
-            return make_response(jsonify({'repair candidate:' : 'compiled'}), 200)
+                return make_response(jsonify({'Repair candidate:' : 'Tests passed'}), 200)
+            else:
+                return make_response(jsonify({'Repair candidate:' : 'Tests not passed'}), 409)
+            #return make_response(jsonify({'repair candidate:' : 'compiled'}), 200)
         else:
             return make_response(jsonify({'repair candidate:' : 'Sintax error'}), 409)
 
     else: 
         return make_response(jsonify({'challenge': 'Not found'}),404)
-    pass
 
 @cSharp.route('/c-sharp-challenges/<int:id>', methods = ['GET'])
 def get_challenge(id):
