@@ -1,7 +1,7 @@
 from flask.views import MethodView
 from . import ruby
 from .models import *
-from flask import jsonify, request, make_response
+from flask import jsonify, request, make_response, current_app
 from shutil import copy
 import json, os
 import nltk
