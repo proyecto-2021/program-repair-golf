@@ -22,11 +22,6 @@ def return_single_challenge(id):
         return jsonify({"challenge":challenge_to_return})
 
 
-@go.route('/hello') 
-def hello():
-    return 'Hello World!'
-
-
 @go.route('/api/v1/go-challenges/<id>', methods=['PUT'])
 def update_a_go_challenge(id):
     challenge = GoChallenge.query.filter_by(id = id).first()
