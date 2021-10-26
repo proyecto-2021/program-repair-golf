@@ -35,17 +35,21 @@ def update_a_go_challenge(id):
 
     # Guardo los datos a actualizar
     new_code = f"{request_data['source_code_file_name']}.go"
-    new_test_code = f"{request_data['test_suite_file']}.go"
-    new_repair_objective = request_data['repair_objetive']
+    new_test_code = f"{request_data['test_suite_file_name']}.go"
+    new_repair_objective = request_data['repair_objective']
     new_complexity = request_data['complexity']
 
-    code_path = "public/challenges/" + f"{new_code}"
-    test_path = "public/challenges/" + f"{new_test_code}" 
+    #code_path = "public/challenges/" + f"{new_code}"
+    #test_path = "public/challenges/" + f"{new_test_code}" 
 
-    if os.path.isfile(code_path) and code_path != challenge['code']:
+    #Nico
+    code_path = "example-challenges/go-challenges/" + f"{new_code}"
+    test_path = "example-challenges/go-challenges/" + f"{new_test_code}"
+
+    '''if os.path.isfile(code_path) and code_path != challenge['code']:
         make_response({'code':'existing code path'}, 400)
     if os.path.isfile(test_path) and test_path != challenge['test_code']:
-        make_response({'test_code':'existing test path'}, 400)
+        make_response({'test_code':'existing test path'}, 400)'''
 
     # Controlar que los archivos no tengan errores de sintaxis
     code_compile = subprocess.run(["go", "build" ,code_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
@@ -61,18 +65,23 @@ def update_a_go_challenge(id):
 
     # Controlar que la suite de pruebas falla
     # Verifico si el test falla 
-    if subprocess.run(['go', 'test', '-v'], cwd=test_path).returncode == 0:
+    if subprocess.run(['go', 'test', '-v'], cwd=test_path.replace(new_test_code,'')).returncode == 0:
         return ({'test_code_file':'test must fails'}, 412)
 
     # Actualizacion
-    challenge.code = new_code
-    challenge.test_code = new_test_code
+    challenge.code = code_path
+    challenge.tests_code = test_path
     challenge.repair_objetive = new_repair_objective    
     challenge.complexity = new_complexity
     challenge.best_score = 0
 
     db.session.commit()
-    return jsonify({'challenge': GoChallenge.convert_dict(challenge)})
+    
+    #Retorna el codigo fuente de code y la testsuite
+    challenge_dict = challenge.convert_dict()
+    from_file_to_str(challenge_dict)
+    from_file_to_str_tests(challenge_dict)
+    return jsonify({'challenge': challenge_dict})
 
 
 def from_file_to_str(challenge):
