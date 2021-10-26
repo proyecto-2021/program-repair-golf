@@ -96,21 +96,12 @@ def update_challenge(id):
 
     new_code = request.files.get('source_code_file')
     new_test = request.files.get('test_suite_file')
+    
     if file_changes_required(challenge_data, new_code, new_test):
-        #saving changes in a temporal location for checking validation
-        temp_code_path = save_changes(challenge_data.get('source_code_file_name'), new_code, req_challenge.code, temp_path)
-        temp_test_path = save_changes(challenge_data.get('test_suite_file_name'), new_test, req_challenge.tests_code, temp_path)
-
-        #challenge validation here
-
-        #old challenge files deletion
-
-        #new challenge files saving
-
-        #deletion of files at temp
-
-        #adding new paths to response (response is used later to save challenge in db)
-
+        update_result = update_files(challenge_data, new_code, new_test, temp_path, response)
+        if 'Error' in update_result:
+            return make_response(jsonify(update_result), 409)
+    
     #check if change for repair objective was requested
     if 'repair_objective' in challenge_data:
         response['repair_objective'] = challenge_data['repair_objective']
@@ -157,6 +148,23 @@ def  tests_fail(test_path):
 #checks for name or content change reuqest
 def file_changes_required(names, code, tests):
     return code is None or tests is None or 'source_code_file_name' in names or 'test_suite_file_name' in names
+
+def update_files(challenge_data, new_code, new_test, temp_path, response):
+    #saving changes in a temporal location for checking validation
+    temp_code_path = save_changes(challenge_data.get('source_code_file_name'), new_code, req_challenge.code, temp_path)
+    temp_test_path = save_changes(challenge_data.get('test_suite_file_name'), new_test, req_challenge.tests_code, temp_path)
+
+    #challenge validation here
+
+    #old challenge files deletion
+
+    #new challenge files saving
+
+    #deletion of files at temp
+
+    #adding new paths to response (response is used later to save challenge in db)
+    
+    return { 'Result': 'ok' }    
 
 #saves a file with new name and new content
 #if not a new name it uses the old one, same for content
