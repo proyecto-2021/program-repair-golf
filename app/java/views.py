@@ -130,31 +130,33 @@ def create_challenge():
             test_suite = request.files['test_suite_file']
             
             # upload class java and compile
-            upload_file_1(file)
+            upload_file_1(file, UPLOAD_FOLDER)
             path_file_java = UPLOAD_FOLDER + file.filename
-            class_java_compile(path_file_java)
-            
-            # upload test suite java and compile
-            upload_file_1(test_suite)
-            path_test_java = UPLOAD_FOLDER + test_suite.filename
-            #test_file_compile(path_test_java, path_file_java)
-            
-            # excute test suite java
-            # excute_java_test return true if pass all test
-            if test_file_compile(path_test_java, path_file_java):
-                if execute_java_test(path_test_java):
-                    return make_response(jsonify("La test suite debe fallar en almenos un caso de test para poder subirlo"))
-                else:
-                    #upload_file(file, test_suite)
-                    new_chan = Challenge_java(code=code_file_name, tests_code=test_suite_file_name, repair_objective=objective, complexity=complex, score=0)
-                    db.session.add(new_chan)
-                    db.session.commit()
+            if class_java_compile(path_file_java):
                 
-                    # show_codes return a dict with code class java and code test
-                    output = show_codes(code_file_name)
-                    return make_response(jsonify({"challenge": output}))
+                # upload test suite java and compile
+                upload_file_1(test_suite, UPLOAD_FOLDER)
+                path_test_java = UPLOAD_FOLDER + test_suite.filename
+                #test_file_compile(path_test_java, path_file_java)
+                
+                # excute test suite java
+                # excute_java_test return true if pass all test
+                if test_file_compile(path_test_java, path_file_java):
+                    if execute_java_test(path_test_java):
+                        return make_response(jsonify("La test suite debe fallar en almenos un caso de test para poder subirlo"))
+                    else:
+                        #upload_file(file, test_suite)
+                        new_chan = Challenge_java(code=code_file_name, tests_code=test_suite_file_name, repair_objective=objective, complexity=complex, score=0)
+                        db.session.add(new_chan)
+                        db.session.commit()
+                    
+                        # show_codes return a dict with code class java and code test
+                        output = show_codes(code_file_name)
+                        return make_response(jsonify({"challenge": output}))
+                else:
+                    return make_response(jsonify("Test suite not compile"))
             else:
-                return make_response(jsonify("No compila"))           
+                return make_response(jsonify("Class java not compile"))
         else:
             return make_response(jsonify("Nombre de archivo existente, cargue nuevamente"), 404)
     else:
@@ -223,7 +225,8 @@ def class_java_compile(path_file_java):
         compile_java(path_file_java)
     except Exception:
         delete_path(path_file_java)
-        return make_response(jsonify("Error de sintaxis en la clase java, por favor revise su codigo"))
+        return False
+    return True
 
 # given an path file test and path file class
 # if not compile file test remove the files and return exception
