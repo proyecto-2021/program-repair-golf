@@ -29,6 +29,7 @@ class RubyChallengeAPI(MethodView):
                 return make_response(jsonify({'challenge': 'source_code is already exist'}),409)
 
             if not save(test_file, test_file_path):
+                remove([file_path])
                 return make_response(jsonify({'challenge': 'test_suite is already exist'}),409)
 
             #check no syntax's errors
