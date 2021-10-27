@@ -43,7 +43,7 @@ def dependencies_ok(test_file_path, file_name):
     
 def get_content(path):
     with open(path) as f:
-        return f.read
+        return f.read()
 
 def remove(paths):
     for f in paths:
