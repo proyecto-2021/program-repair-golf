@@ -3,6 +3,7 @@ from .list_challenges import list_challenges_js
 from .update_challenge import update_challenge_js
 from .create_challenge import create_challenge_js
 from .get_challenge import get_challenge_js
+from .repair_chalenge import repair_chalenge_js
 
 @javascript.route('/login')
 def login():
@@ -23,3 +24,7 @@ def create_challenge():
 @javascript.route('/javascript-challenges/<int:id>', methods=['GET'])
 def get_challenge(id):
   return get_challenge_js(id)
+
+@javascript.route('/javascript-challenges/<int:id>/repair', methods=['POST'])
+def repair_chalenge(id):
+  return repair_chalenge_js(id)
