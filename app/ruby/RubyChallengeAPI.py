@@ -13,9 +13,8 @@ class RubyChallengeAPI(MethodView):
         self.files_path = current_app.config.get('FILES_PATH')
 
     def post(self, id):
-        if id is None:
-            input_challenge = json.loads(request.form.get('challenge'))
-            dictionary = input_challenge['challenge']
+        if id is None: 
+            dictionary = json.loads(request.form.get('challenge'))['challenge']
 
             file = request.files['source_code_file']
             file_path = self.files_path + dictionary['source_code_file_name'] + '.rb'
