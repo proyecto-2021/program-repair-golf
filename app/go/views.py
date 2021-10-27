@@ -51,22 +51,18 @@ def update_a_go_challenge(id):
     if os.path.isfile(test_path) and test_path != challenge['test_code']:
         make_response({'test_code':'existing test path'}, 400)'''
 
-    # Controlar que los archivos no tengan errores de sintaxis
+    # Verifico si los archivos tienen errores de sintaxis y si el test falla 
+
     code_compile = subprocess.run(["go", "build" ,code_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
     test_compile = subprocess.run(["go", "test", "-c"],cwd="public/challenges")
-    pass_test_suite = subprocess.run(["go", "test"],cwd="public/challenges")
+    pass_test_suite = subprocess.run(['go', 'test', '-v'], cwd=test_path.replace(new_test_code,''))
     
     if code_compile.returncode == 2:
         return make_response(jsonify({"code_file":"code with sintax errors"}),409)
     elif test_compile.returncode == 2:
         return make_response(jsonify({"test_code_file":"test with sintax errors"}),409)
     elif pass_test_suite.returncode == 0:
-        return make_response(jsonify({"test_suite":"pass test suite"}),409)
-
-    # Controlar que la suite de pruebas falla
-    # Verifico si el test falla 
-    if subprocess.run(['go', 'test', '-v'], cwd=test_path.replace(new_test_code,'')).returncode == 0:
-        return ({'test_code_file':'test must fails'}, 412)
+        return make_response(jsonify({'test_code_file':'test must fails'}, 412))
 
     # Actualizacion
     challenge.code = code_path
