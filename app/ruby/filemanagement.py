@@ -49,4 +49,3 @@ def remove(paths):
     for f in paths:
         if file_exists(f):
             os.remove(f)
-        continue
