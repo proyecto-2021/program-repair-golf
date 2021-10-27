@@ -61,7 +61,6 @@ def repair_Candidate(id):
                 #cleanup
                 os.remove(repair_path)
                 os.remove(repair_exe_path)
-                os.remove(test_dll)
                 return make_response(jsonify({'Repair candidate:' : 'Tests not passed'}), 409)
         else:
             #cleanup
