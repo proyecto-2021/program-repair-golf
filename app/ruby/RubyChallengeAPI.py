@@ -54,7 +54,7 @@ class RubyChallengeAPI(MethodView):
             if not exists(id):
                 return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
 
-            challenge = get_challenge(id).get_dict()
+            challenge = get_challenge(id)
 
             file = request.files['source_code_file']
             file_name = 'public/' + os.path.basename(challenge['code'])
@@ -81,7 +81,7 @@ class RubyChallengeAPI(MethodView):
             os.remove(file_name)
             os.remove(test_file_name)
 
-            challenge = get_challenge(id).get_dict()
+            challenge = get_challenge(id)
             delete_keys(challenge, ['id','code','complexity','tests_code'])
             return jsonify( {'repair' :
                                 {
@@ -95,7 +95,7 @@ class RubyChallengeAPI(MethodView):
 
     def get(self, id):
         if id is None:
-            challenges = get_all_challenges_dict()
+            challenges = get_challenges()
 
             for c in challenges:
                 delete_keys(c, ['tests_code'])
@@ -108,7 +108,7 @@ class RubyChallengeAPI(MethodView):
             if not exists(id):
                 return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
 
-            challenge = get_challenge(id).get_dict()
+            challenge = get_challenge(id)
             delete_keys(challenge, ['id'])
 
             code_path = challenge['code']
@@ -126,7 +126,7 @@ class RubyChallengeAPI(MethodView):
         if not exists(id):
             return make_response(jsonify({'challenge': 'NOT FOUND'}), 404)
         update_data = json.loads(request.form.get('challenge'))['challenge']
-        old_challenge = get_challenge(id).get_dict()
+        old_challenge = get_challenge(id)
         source_code_name = f"{update_data['source_code_file_name']}.rb"
         source_test_name = f"{update_data['test_suite_file_name']}.rb"
         source_code_path_destiny = f"{self.files_path}{source_code_name}"
@@ -184,7 +184,7 @@ class RubyChallengeAPI(MethodView):
         update_challenge(id, update_data)
 
         # Return updated challenge
-        updated_challenge = get_challenge(id).get_dict()
+        updated_challenge = get_challenge(id)
         delete_keys(updated_challenge, ['id'])
         return jsonify({'challenge': updated_challenge})
 
