@@ -12,6 +12,7 @@ NUNIT_PATH="./app/cSharp/lib/NUnit.3.13.2/lib/net35/"
 NUNIT_LIB="./app/cSharp/lib/NUnit.3.13.2/lib/net35/nunit.framework.dll"
 NUNIT_CONSOLE_RUNNER="./app/cSharp/lib/NUnit.ConsoleRunner.3.12.0/tools/nunit3-console.exe"
 CHALLENGE_SAVE_PATH = "example-challenges/c-sharp-challenges/"
+CHALLENGE_VALIDATION_PATH = "./app/cSharp/temp/"
 
 @cSharp.route('/login')
 def login():
@@ -19,10 +20,28 @@ def login():
 
 @cSharp.route('/c-sharp-challenges', methods=['POST'])
 def post_csharp_challenges():
-    new_challenge = loads(request.form.get('challenge'))['challenge']
+    #Get new challenge data
+    try:
+        new_challenge = loads(request.form.get('challenge'))['challenge']
+        new_challenge['source_code_file'] = request.files['source_code_file']
+        new_challenge['test_suite_file'] = request.files['test_suite_file']
+    except:
+        return make_response(jsonify({"challenge": "Data not found"}), 404)
 
     #Validate challenge data
-    
+    required_keys = ('source_code_file_name', 'test_suite_file_name', 'source_code_file', 'test_suite_file', 'repair_objective', 'complexity')
+    if all (key in new_challenge for key in required_keys):
+        new_source_code_path = CHALLENGE_VALIDATION_PATH + new_challenge['source_code_file_name'] + ".cs"
+        #new_test_suite_path = CHALLENGE_VALIDATION_PATH + new_challenge['test_suite_file_name'] + ".cs"
+        new_challenge['source_code_file'].save(new_source_code_path)
+        #new_challenge['test_suite_file'].save(new_test_suite_path)
+        cmd_compile_challenge = 'mcs ' + new_source_code_path
+        if (subprocess.call(cmd_compile_challenge, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0):
+            return make_response(jsonify({'Challenge': 'Source code compiled successfully'}), 200)
+        else:
+            return make_response(jsonify({'Challenge': 'Source code has sintax errors'}), 409)
+    else:
+        return make_response(jsonify({'challenge': 'Data not found'}), 404)
     try:
         os.mkdir(CHALLENGE_SAVE_PATH, new_challenge['source_code_file_name'])
     except FileExistsError:
