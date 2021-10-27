@@ -79,3 +79,30 @@ def test_get_after_post(client):
     json2 = r.json['challenge']
 
     assert json == json2
+
+def test_get_all_after_post(client):
+    url = '/ruby/challenges'
+    r = client.get(url)
+    json = r.json['challenges']
+
+    url = '/ruby/challenge'
+    data = {
+        'source_code_file': open('tests/ruby/tests-data/example3.rb', 'rb'),
+        'test_suite_file': open('tests/ruby/tests-data/example_test3.rb', 'rb'),
+        'challenge': '{ \
+            "challenge": { \
+                "source_code_file_name" : "example3", \
+                "test_suite_file_name" : "example_test3", \
+                "repair_objective" : "Testing", \
+                "complexity" : "4" \
+            } \
+        }'
+    }
+
+    client.post(url, data=data)
+
+    url = '/ruby/challenges'
+    r = client.get(url)
+    json_after_post = r.json['challenges']
+
+    assert len(json) + 1 == len(json_after_post)
