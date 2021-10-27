@@ -1,28 +1,67 @@
 import os
+import subprocess
 from pathlib import PurePath, PurePosixPath
-
-PUBLIC_PATH = './public/challenges/' 
-FILE_EXTENSION = '.js'
+import json
+from ..javascript import folders_and_files
+from ..javascript import dependences
 
 def get_name_file(path):
     return PurePosixPath(path).stem
 
 def valid(file):
-    return  file and PurePath(file.filename).suffix == FILE_EXTENSION
+    return  file and PurePath(file.filename).suffix == folders_and_files.FILE_JS_EXTENSION
 
 def upload(file,file_name):
     
-    if not os.path.lexists(PUBLIC_PATH):
-        os.makedirs(PUBLIC_PATH)
+    if not os.path.lexists(folders_and_files.CODES_PATH):
+        os.makedirs(folders_and_files.CODES_PATH)
     
     if not file_name: 
         file = 'dafault_example'
 
-    path = PUBLIC_PATH + file_name + FILE_EXTENSION
+    path = folders_and_files.CODES_PATH + file_name + folders_and_files.FILE_JS_EXTENSION
     
-    if os.path.lexists(path) and os.path.isfile(path):
+    if exist_file(file_name) and os.path.isfile(path):
         os.remove(path)
-        path = f'{PUBLIC_PATH + file_name}_upd{FILE_EXTENSION}'
         
     file.save(path)
     return path
+
+def exist_file(file_name):
+    path = folders_and_files.CODES_PATH + file_name + folders_and_files.FILE_JS_EXTENSION
+    return os.path.lexists(path)
+
+def open_file(path):
+    with open(path) as f:
+        content = f.read()
+    return content
+
+def compile_js(path_file):
+    command = 'node '+path_file
+    return run_commands(command).stdout.read()
+
+def run_test(path_file):
+    #si no existen las dependecias las copia
+    if not dependences.ok_dep(folders_and_files.CHALLENGES_PATH):
+        cp_dependences = dependences.extract().stdout.read()
+
+        if dependences.error_extract(cp_dependences): 
+            return cp_dependences
+
+    command_test = f'cd {folders_and_files.CHALLENGES_PATH}; npm test {path_file}' 
+    test_ok = run_commands(command_test).stdout.read()
+    # si no funciona los test instala las dependencias en la carpeta public
+    if str(test_ok).find("Test Suites:") == -1:
+        intall_dep = dependences.install().stdout.read()
+        test_ok = run_commands(command_test).stdout.read()  
+    return test_ok
+
+def test_fail(output):
+    return str(output).find('FAIL') != -1
+
+def run_commands(command):
+    return subprocess.Popen(command, shell=True, stdout = subprocess.PIPE, stderr = subprocess.STDOUT) 
+
+def remove_files(*args): 
+    for path_file in args:
+        if os.path.lexists(path_file): os.remove(path_file)
