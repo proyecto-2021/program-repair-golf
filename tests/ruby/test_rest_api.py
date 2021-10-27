@@ -75,9 +75,11 @@ def test_get_after_post(client):
     del json['id']
 
     url2 = f'/ruby/challenge/{id}'
-    r = client.get(url2)
-    json2 = r.json['challenge']
+    r2 = client.get(url2)
+    json2 = r2.json['challenge']
 
+    assert r.status_code == 200
+    assert r2.status_code == 200
     assert json == json2
 
 def test_get_all_after_post(client):
@@ -99,10 +101,13 @@ def test_get_all_after_post(client):
         }'
     }
 
-    client.post(url, data=data)
+    r2 = client.post(url, data=data)
 
     url = '/ruby/challenges'
-    r = client.get(url)
-    json_after_post = r.json['challenges']
+    r3 = client.get(url)
+    json_after_post = r3.json['challenges']
 
+    assert r.status_code == 200
+    assert r2.status_code == 200
+    assert r3.status_code == 200
     assert len(json) + 1 == len(json_after_post)
