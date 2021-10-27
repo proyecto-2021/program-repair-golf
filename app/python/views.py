@@ -57,14 +57,16 @@ def create_new_challenge():
         return make_response(jsonify(result), 409)
     #save in new path
     challenge_source_code = request.files.get('source_code_file').read()
-    save_file(code_path, "wb", challenge_source_code)
+    new_code_path = save_to + challenge_data['source_code_file_name']
+    save_file(new_code_path, "wb", challenge_source_code)
     #save in new path
     tests_source_code = request.files.get('test_suite_file').read()
-    save_file(test_path, "wb", tests_source_code)
+    new_tests_path = save_to + challenge_data['test_suite_file_name']
+    save_file(new_tests_path, "wb", tests_source_code)
    
     #create row for database with the new challenge
-    new_challenge = PythonChallenge(code=code_path,
-        tests_code=test_path,
+    new_challenge = PythonChallenge(code=new_code_path,
+        tests_code=new_tests_path,
         repair_objective=challenge_data['repair_objective'],
         complexity=challenge_data['complexity'],
         best_score=0)
