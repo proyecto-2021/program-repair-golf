@@ -20,14 +20,14 @@ def login():
 @cSharp.route('c-sharp-challenges/<int:id>/repair', methods=['POST'])
 def repair_Candidate(id):
     # verify challenge's existence 
-    if challenge_exist(id):
+    if db.session.query(CSharp_Challenge).get(id) is not None:
         challenge = db.session.query(CSharp_Challenge).get(id).__repr__()
         challenge_name = os.path.basename(challenge['code'])
         file = request.files['source_code_file']
         repair_path = 'public/challenges/' + challenge_name
         file.save(dst=repair_path)
         cmd = 'mcs ' + repair_path
-        if compile(cmd):
+        if (subprocess.call(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0):
             test = challenge['tests_code']
             test_dll = test.replace('.cs', '.dll')
             repair_exe_path = repair_path.replace('.cs', '.exe')
@@ -52,13 +52,20 @@ def repair_Candidate(id):
                     "best_score": challenge['best_score']
                 }
                 
-                cleanup_all(repair_path,repair_exe_path,test_dll)
+                #cleanup
+                os.remove(repair_path)
+                os.remove(repair_exe_path)
+                os.remove(test_dll)
                 return make_response(jsonify({'repair': {'challenge': challenge_data, 'score': score}}), 200)
             else:
-                cleanup_all(repair_path,repair_exe_path,test_dll)
+                #cleanup
+                os.remove(repair_path)
+                os.remove(repair_exe_path)
+                os.remove(test_dll)
                 return make_response(jsonify({'Repair candidate:' : 'Tests not passed'}), 409)
         else:
-            cleanup_path(repair_path)
+            #cleanup
+            os.remove(repair_path)
             return make_response(jsonify({'repair candidate:' : 'Sintax error'}), 409)
 
     else: 
@@ -88,19 +95,3 @@ def get_csharp_challenges():
         return jsonify({'challenges': show})
     else:
         return jsonify({'challenges': 'None Loaded'})
-
-
-
-def challenge_exist(id):
-    return db.session.query(CSharp_Challenge).get(id) is not None
-
-def compile(command):
-    return subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0
-
-def cleanup_all(path_1,path_2,path_3):
-    cleanup_path(path_1)
-    cleanup_path(path_2)
-    cleanup_path(path_3)
-
-def cleanup_path(path):
-    os.remove(path)
