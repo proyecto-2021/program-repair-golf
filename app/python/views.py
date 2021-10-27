@@ -87,7 +87,6 @@ def create_new_challenge():
 def update_challenge(id):
     challenge_data = loads(request.form.get('challenge'))['challenge']
     save_to = "public/challenges/"  #general path were code will be saved
-    temp_path = "public/temp/"      #path to temp directory
 
     req_challenge = PythonChallenge.query.filter_by(id=id).first()
 
@@ -98,12 +97,12 @@ def update_challenge(id):
 
     new_code = request.files.get('source_code_file')
     new_test = request.files.get('test_suite_file')
-    
+
     if file_changes_required(challenge_data, new_code, new_test):
-        update_result = update_files(challenge_data, new_code, new_test, temp_path, response)
+        update_result = update_files(challenge_data, new_code, new_test, req_challenge, response)
         if 'Error' in update_result:
             return make_response(jsonify(update_result), 409)
-    
+            
     #check if change for repair objective was requested
     if 'repair_objective' in challenge_data:
         response['repair_objective'] = challenge_data['repair_objective']
@@ -141,14 +140,14 @@ def valid_python_challenge(code_path,test_path):
 
 def no_syntax_errors(code_path):
     try:
-    p = subprocess.call("python -m py_compile " + code_path ,stdout=subprocess.PIPE, shell=True)
-    return p == 0   #0 is no syntax errors, 1 is the opposite
+        p = subprocess.call("python -m py_compile " + code_path ,stdout=subprocess.PIPE, shell=True)
+        return p == 0   #0 is no syntax errors, 1 is the opposite
     except CalledProcessError as err:
         return False
 
 def  tests_fail(test_path):
     try:
-    p = subprocess.call("python -m pytest " + test_path ,stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        p = subprocess.call("python -m pytest " + test_path ,stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         return p != 0 #0 means all tests passed, other value means some test/s failed
     except CalledProcessError as err:
         return True
@@ -157,12 +156,13 @@ def  tests_fail(test_path):
 def file_changes_required(names, code, tests):
     return code is None or tests is None or 'source_code_file_name' in names or 'test_suite_file_name' in names
 
-def update_files(challenge_data, new_code, new_test, temp_path, response):
+def update_files(names, new_code, new_test, old_paths, response):
+    temp_path = "public/temp/"      #path to temp directory
     #saving changes in a temporal location for checking validation
-    temp_code_path = save_changes(challenge_data.get('source_code_file_name'), new_code, req_challenge.code, temp_path)
-    temp_test_path = save_changes(challenge_data.get('test_suite_file_name'), new_test, req_challenge.tests_code, temp_path)
+    temp_code_path = save_changes(names.get('source_code_file_name'), new_code, old_paths.code, temp_path)
+    temp_test_path = save_changes(names.get('test_suite_file_name'), new_test, old_paths.tests_code, temp_path)
 
-    #challenge validation here
+    #challenge validation
     validation_result = valid_python_challenge(temp_code_path, temp_test_path)
     if 'Error' in validation_result:
         return validation_result
