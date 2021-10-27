@@ -45,8 +45,18 @@ def repair_challengue_go(id):
     challengue_original_code = challengue_to_dict["code"]
     
     #file= open(str(os.path.abspath(challengue_original_code)),'r')
-    print(challengue_original_code)
-    print(nltk.edit_distance(challengue_original_code,code_solution_path))
+
+    
+    f = open (challengue_original_code,'r')
+    original_code = f.read()
+    f.close()
+
+    f = open (code_solution_path,'r')
+    solution_code = f.read()
+    f.close()
+
+    print(nltk.edit_distance(original_code,solution_code))
+
     
     
     #print(type(challengue_to_dict))
