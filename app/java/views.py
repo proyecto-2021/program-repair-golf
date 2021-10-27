@@ -151,8 +151,8 @@ def create_challenge():
                     db.session.commit()
                 
                     # show_codes return a dict with code class java and code test
-                    ouput = show_codes(code_file_name)
-                    return make_response(jsonify({"challenge": ouput}))
+                    output = show_codes(code_file_name)
+                    return make_response(jsonify({"challenge": output}))
             else:
                 return make_response(jsonify("No compila"))           
         else:
@@ -178,28 +178,46 @@ def repair_challenge(id):
     #else:
      #   return make_response(jsonify("Error al seleccionar archivo"))
 
+
+# given an id it gets the code of the file
+def get_code_file_by_id(id):
+    challenge_id = Challenge_java.query.filter_by(id = id).first()
+    if challenge_id is not None:
+        new_id = Challenge_java.__repr__(challenge_id)
+        name_code = new_id['code']
+        path = 'public/challenges/' + name_code + '.java'
+        file_show = get_code_file_by_path(path)
+        return file_show
+    return make_response(jsonify({"ERROR": "id not exits"}))
+    
+
+# given an path file gets the code of the file
+def get_code_file_by_path(file):
+    f = open(file, mode='r', encoding='utf-8')
+    resp = f.read()
+    f.close()
+    return resp
+
+
+# given a file name it returns a dictionary with the code and test_code fields as a string
 def show_codes(name_file):
     challenge_aux = Challenge_java.query.filter_by(code = name_file).first()
     if challenge_aux is not None:
         new_var = Challenge_java.__repr__(challenge_aux)
         name_code = new_var['code']
         path = 'public/challenges/' + name_code + '.java'
-        f = open(path, mode='r', encoding='utf-8')
-        file_show = f.read()
-        f.close()
+        file_show = get_code_file_by_path(path)
         new_var['code'] = file_show
 
         name_test = new_var['tests_code']
         path_test = 'public/challenges/' + name_test + '.java'
-        f_test = open(path_test, mode='r', encoding='utf-8')
-        file_show_test = f_test.read()
-        f_test.close()
+        file_show_test = get_code_file_by_path(path_test)
         new_var['tests_code'] = file_show_test
         return new_var
-    else:
-        return make_response(jsonify("No existe challenge"))
+    return make_response(jsonify({"ERROR": "name of file no exist"}))
 
 
+# given an path file, if not compile class java remove class and return exception
 def class_java_compile(path_file_java):
     try:
         compile_java(path_file_java)
@@ -207,7 +225,8 @@ def class_java_compile(path_file_java):
         delete_path(path_file_java)
         return make_response(jsonify("Error de sintaxis en la clase java, por favor revise su codigo"))
 
-
+# given an path file test and path file class
+# if not compile file test remove the files and return exception
 def test_file_compile(path_test_java, path_file_java):
     try:
         compile_java_test(path_test_java)
@@ -216,7 +235,6 @@ def test_file_compile(path_test_java, path_file_java):
         delete_path(path_test_java)
         return False
     return True
-        #return make_response(jsonify("Error de sintaxis en la test suite, por favor revise su codigo"))    
 
 
 def delete_path(file_rm):
@@ -239,24 +257,6 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-###### Casi para borrar ######
-def upload_file(file, test_suite):
-    if file is None or test_suite is None:
-        return make_response(jsonify({"error_message": "One of the provided files has syntax errors."}))
-        #file = request.files['source_code_file']
-        # If the user does not select a file, the browser submits an
-        # empty file without a filename.
-    if file.filename == '' or test_suite.filename == '':
-        return make_response(jsonify("No name of file"), 404)
-    if file and allowed_file(file.filename):
-        if test_suite and allowed_file(test_suite.filename):
-            filename = secure_filename(file.filename)
-            testname = secure_filename(test_suite.filename)
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
-            test_suite.save(os.path.join(UPLOAD_FOLDER, testname))
-            #print('archivo cargado, ahora se registra datos en la db')
-
-
 #################################
 def compile_java(java_file):
     subprocess.check_call(['javac', java_file])
@@ -268,11 +268,9 @@ def execute_java(java_file):
     print(proc.stdout.read())
 
 def compile_java_test(java_file):
-    #subprocess.check_call(['javac', '-cp','/home/leo/Escritorio/Proyecto/junit-4.13.2.jar:example-challenges/java-challenges/', java_file])
     subprocess.check_call(['javac', '-cp', PATHLIBRERIA, java_file])
     
 def execute_java_test(java_file):
-    #cmd=['java', '-cp', '/home/leo/Escritorio/Proyecto/junit-4.13.2.jar:example-challenges/java-challenges/' ,'org.junit.runner.JUnitCore', java_file]
     cmd=['java', '-cp', PATHLIBRERIA , PATHEXECUTE, java_file]
     proc=subprocess.Popen(cmd, stdout = PIPE, stderr = STDOUT)
     input = subprocess.Popen(cmd, stdin = PIPE)
@@ -282,36 +280,4 @@ def execute_java_test(java_file):
     else:
         print("Paso exitosamente los tests")
         return True
-    #print(proc.stdout.read())
 
-
-@java.route('/java-prueba/<int:id>', methods=['GET'])
-def java_prueba(id):     
-    ######################
-    #codeJava = open(DALE, 'r')
-    #f = open(DALE, mode='r', encoding='utf-8')  
-    #mostrar = f.read()
-    #f.close()
-    #print(mostrar)
-
-    ############# Descomentar esto ############
-    challenge = Challenge_java.query.filter_by(id=id).first()
-    name_class = challenge.code
-    name_test = challenge.tests_code
-    path_class = UPLOAD_FOLDER + name_class + '.java'
-    path_test = UPLOAD_FOLDER + name_test + '.java'
-    ############ Descomentar esto #############
-
-    try:
-        compile_java(path_class)
-    except Exception:
-        return make_response(jsonify("Error de sintaxis en la clase java, por favor revise su codigo"))
-    try:
-        compile_java_test(path_test)
-    except Exception:
-        return make_response(jsonify("Error de sintaxis en la test suite, por favor revise su codigo"))
-    #si llega a esta punto es que los dos archivos compilan
-    if execute_java_test(path_test):
-        return make_response(jsonify("La test suite debe fallar en almenos un caso de test para poder subirlo"))
-    else:
-        return make_response(jsonify("La test suite y la clase java seran subidos correctamente"))
