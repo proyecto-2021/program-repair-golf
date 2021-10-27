@@ -51,25 +51,45 @@ def update_a_go_challenge(id):
     if os.path.isfile(test_path) and test_path != challenge['test_code']:
         make_response({'test_code':'existing test path'}, 400)'''
 
-    # Verifico si los archivos tienen errores de sintaxis y si el test falla 
 
-    code_compile = subprocess.run(["go", "build" ,code_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
-    test_compile = subprocess.run(["go", "test", "-c"],cwd="public/challenges")
+    # Verifico si los archivos tienen errores de sintaxis y si el test falla 
+    change_code = new_code != challenge['code']
+    change_test = new_test_code != challenge['tests_code']
+
+    if change_code:
+        code_compile = subprocess.run(["go", "build" ,code_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
+        if code_compile.returncode == 2:
+            return make_response(jsonify({"code_file":"code with sintax errors"}),409)
+
+    if change_test:
+        test_compile = subprocess.run(["go", "test", "-c"],cwd="public/challenges")
+        if test_compile.returncode == 2:
+            return make_response(jsonify({"test_code_file":"test with sintax errors"}),409)
+
     pass_test_suite = subprocess.run(['go', 'test', '-v'], cwd=test_path.replace(new_test_code,''))
-    
-    if code_compile.returncode == 2:
-        return make_response(jsonify({"code_file":"code with sintax errors"}),409)
-    elif test_compile.returncode == 2:
-        return make_response(jsonify({"test_code_file":"test with sintax errors"}),409)
-    elif pass_test_suite.returncode == 0:
+    if pass_test_suite.returncode == 0:
         return make_response(jsonify({'test_code_file':'test must fails'}, 412))
 
-    # Actualizacion
-    challenge.code = code_path
-    challenge.tests_code = test_path
-    challenge.repair_objetive = new_repair_objective    
-    challenge.complexity = new_complexity
-    challenge.best_score = 0
+    changes = 0
+
+    if change_code:
+        challenge.code = new_code
+        changes += 1
+
+    if change_test:
+        challenge.tests_code = new_test_code
+        changes += 1
+
+    if new_repair_objective != challenge['repair_objective']:
+        challenge.repair_objetive = new_repair_objective
+        changes += 1
+
+    if new_complexity != challenge['complexity']:
+        challenge.complexity = new_complexity
+        changes += 1
+
+    if changes > 0: 
+        challenge.best_score = 0
 
     db.session.commit()
     
