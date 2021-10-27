@@ -54,7 +54,7 @@ def test_post_challenge(client):
                     }
 
 
-def test_get_after_post(client):
+def test_get_one_after_post(client):
     url = '/ruby/challenge'
     data = {
         'source_code_file': open('tests/ruby/tests-data/example2.rb', 'rb'),
