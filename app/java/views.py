@@ -18,9 +18,7 @@ UPLOAD_FOLDER = './public/challenges/'
 PATHLIBRERIA = 'app/java/lib/junit-4.13.2.jar:public/challenges'
 PATHEXECUTE = 'org.junit.runner.JUnitCore'
 ALLOWED_EXTENSIONS = {'java'}
-#DALE = '/home/leo/Escritorio/Archivos_proyecto/Algo.java'
-#DALETWO = '/home/leo/Escritorio/Archivos_proyecto/Algo'
-#PATHGENERAL = './example-challenges/java-challenges/'
+
 PATHCLASSJAVA = './example-challenges/java-challenges/Median.java'
 DASINJAVA = './example-challenges/java-challenges/MedianTest.java'
 
@@ -98,10 +96,10 @@ def UpdateChallenge(id):
         if code_file_upd is not None:
             challenge.code=os.path.split(code_file_upd.filename)[-1].split('.')[0]
             #os.path.basename(code_file_upd.filename)
-            upload_file_1(code_file_upd)
+            upload_file_1(code_file_upd, UPLOAD_FOLDER)
         if test_suite_upd is not None: 
             challenge.tests_code=os.path.split(test_suite_upd.filename)[-1].split('.')[0]
-            upload_file_1(test_suite_upd)
+            upload_file_1(test_suite_upd, UPLOAD_FOLDER)
         if repair_objective_upd is not None:
             challenge.repair_objective=repair_objective_upd
         if complexity_upd is not None:
@@ -245,14 +243,15 @@ def delete_path(file_rm):
         remove(file_rm)
 
 
-def upload_file_1(file):
+def upload_file_1(file, path):
     if file is None:
         return make_response(jsonify({"error_message": "One of the provided files has syntax errors."}))
     if file.filename == '' :
         return make_response(jsonify("No name of file"), 404)
     if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(UPLOAD_FOLDER, filename))
+            file.save(os.path.join(path, filename))
+
 
 
 def allowed_file(filename):
@@ -260,7 +259,7 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-#################################
+############## Service compilation ###################
 def compile_java(java_file):
     subprocess.check_call(['javac', java_file])
 
