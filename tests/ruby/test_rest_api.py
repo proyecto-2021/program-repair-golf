@@ -135,3 +135,47 @@ def test_post_repair(client):
 
     assert r.status_code == 200
     assert r2.status_code == 200
+    assert r2.json['repair']['score'] != 0
+
+def test_put_after_post(client):
+    url = '/ruby/challenge'
+    data = {
+        'source_code_file': open('tests/ruby/tests-data/example5.rb', 'rb'),
+        'test_suite_file': open('tests/ruby/tests-data/example_test5.rb', 'rb'),
+        'challenge': '{ \
+            "challenge": { \
+                "source_code_file_name" : "example5", \
+                "test_suite_file_name" : "example_test5", \
+                "repair_objective" : "Testing pre-PUT", \
+                "complexity" : "2" \
+            } \
+        }'
+    }
+
+    r = client.post(url, data=data)
+    json = r.json['challenge']
+    id = json['id']
+
+    url2 = f'/ruby/challenge/{id}'
+    data2 = {
+        'source_code_file': open('tests/ruby/tests-data/example_put5.rb','rb'),
+        'test_suite_file' : open('tests/ruby/tests-data/example_test_put5.rb','rb'),
+        'challenge' : '{ \
+            "challenge": { \
+                "source_code_file_name": "example_put5", \
+                "test_suite_file_name": "example_test_put5", \
+                "repair_objective": "Testing post-PUT", \
+                "complexity": "3" \
+            } \
+        }'
+    }
+
+    r2 = client.put(url2, data=data2)
+
+    dict = r.json['challenge']
+    del dict['id']
+    dict2 = r2.json['challenge']
+
+    assert r.status_code == 200
+    assert r2.status_code == 200
+    assert dict != dict2
