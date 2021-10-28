@@ -1,4 +1,5 @@
 import os
+from typing import ChainMap
 from . import go
 from flask import request, jsonify, json, make_response
 from .. import db
@@ -70,25 +71,74 @@ def update_a_go_challenge(id):
     pass_test_suite = subprocess.run(['go', 'test', '-v'], cwd=test_path.replace(new_test_code,''))
     if pass_test_suite.returncode == 0:
         return make_response(jsonify({'test_code_file':'test must fails'}, 412))
+    
+    ######Nico
+    try:
+        request_data = json.loads(request.form.get('challenge'))['challenge']
+    except:
+        return jsonify({'status bad request': 400})
 
     changes = 0
+    if request.files:
+        if 'source_code_file' in request.files:
+            if 'source_code_file_name' in request_data: 
+                #revisar request.files
+                #code_path = request.files.get('source_code_file')
+                new_code_name = request_data['source_code_file_name']
+                code_path = f'example-challenges/go-challenges/{new_code_name}.go'
+               
+                #Ver si hace falta algo mas para comprobar
+                if os.path.isfile(code_path):
+                    #change_code = new_code != challenge['code']
+                    #if change_code:
+                    #    code_compile = subprocess.run(["go", "build" ,code_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
+                    #    if code_compile.returncode == 2:
+                    #        return make_response(jsonify({"code_file":"code with sintax errors"}),409)
+                    code_compile = subprocess.run(["go", "build" ,code_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
+                    if code_compile.returncode == 2:
+                        return make_response(jsonify({"code_file":"code with sintax errors"}),409)
+                    
+                    changes += 1
+                    challenge.code = code_path
+                else:
+                    return make_response(jsonify({'source_code_file' : 'not valid'}), 400)
+            else:
+                return make_response(jsonify({'source_code_file_name' : 'doesnt provide it'}), 400)
+        
+        if 'test_suite_file' in request.files:
+            #puede que no haga falta
+            if 'test_suite_file_name' in request_data:
+                
+                #test_path = request.files.get('test_suite_file')
+                new_test_name = request_data['test_suite_file_name']
+                test_path = f'example-challenges/go-challenges/{new_test_name}.go'
 
-    if change_code:
-        challenge.code = new_code
-        changes += 1
+                if os.path.isfile(test_path):
+                    #ver cwd
+                    test_compile = subprocess.run(["go", "test", "-c"],cwd='example-challenges/go-challenges')
+                    #OJO PUEDE SER 2
+                    if test_compile.returncode == 2:
+                        return make_response(jsonify({"test_code_file":"test with sintax errors"}),409)
+                    
+                    pass_test_suite = subprocess.run(['go', 'test', '-v'], cwd=test_path.replace(new_test_name+'.go',''))
+                    #OJO PUEDE SER 2
+                    if pass_test_suite.returncode == 0:
+                        return make_response(jsonify({'test_code_file':'test must fails'}, 412))
+                    
+                    changes += 1
+                    challenge.tests_code = test_path
+                else:
+                    return make_response(jsonify({'test_suite_file' : 'not valid'}), 400)
+            else:
+                return make_response(jsonify({'test_suite_file_name' : 'doesnt provide it'}), 400)
 
-    if change_test:
-        challenge.tests_code = new_test_code
-        changes += 1
 
-    if new_repair_objective != challenge['repair_objective']:
-        challenge.repair_objetive = new_repair_objective
-        changes += 1
+    if 'repair_objective' in request_data:
+        challenge.repair_objetive = request_data['repair_objective']
 
-    if new_complexity != challenge['complexity']:
-        challenge.complexity = new_complexity
-        changes += 1
-
+    if 'complexity' in request_data:
+        challenge.complexity = request_data['complexity']
+    #####
     if changes > 0: 
         challenge.best_score = 0
 
@@ -98,6 +148,7 @@ def update_a_go_challenge(id):
     challenge_dict = challenge.convert_dict()
     from_file_to_str(challenge_dict)
     from_file_to_str_tests(challenge_dict)
+    del challenge_dict['id']
     return jsonify({'challenge': challenge_dict})
 
 
