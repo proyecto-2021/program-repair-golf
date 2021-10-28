@@ -33,24 +33,25 @@ def update_a_go_challenge(id):
     #request_data = request.form.get('challenge')
     request_data = json.loads(request.form.get('challenge'))['challenge']
 
-    # Guardo los datos a actualizar
-    new_code = f"{request_data['source_code_file_name']}.go"
-    new_test_code = f"{request_data['test_suite_file_name']}.go"
-    new_repair_objective = request_data['repair_objective']
-    new_complexity = request_data['complexity']
+    if request_data is None:
+        return make_response(jsonify({"data":"data not found"}),404)
+
+    if request_data['source_code_file_name'] != None:
+        new_code = f"{request_data['source_code_file_name']}.go"
+        code_path = "example-challenges/go-challenges/" + f"{new_code}"
+
+    if request_data['test_suite_file_name'] != None:
+        new_test_code = f"{request_data['test_suite_file_name']}.go"
+        test_path = "example-challenges/go-challenges/" + f"{new_test_code}"
+
+    if request_data['repair_objective'] != None:
+        new_repair_objective = request_data['repair_objective']
+
+    if request_data['complexity'] != None:
+        new_complexity = request_data['complexity']
 
     #code_path = "public/challenges/" + f"{new_code}"
     #test_path = "public/challenges/" + f"{new_test_code}" 
-
-    #Nico
-    code_path = "example-challenges/go-challenges/" + f"{new_code}"
-    test_path = "example-challenges/go-challenges/" + f"{new_test_code}"
-
-    '''if os.path.isfile(code_path) and code_path != challenge['code']:
-        make_response({'code':'existing code path'}, 400)
-    if os.path.isfile(test_path) and test_path != challenge['test_code']:
-        make_response({'test_code':'existing test path'}, 400)'''
-
 
     # Verifico si los archivos tienen errores de sintaxis y si el test falla 
     change_code = new_code != challenge['code']
