@@ -1,6 +1,6 @@
 from app import create_app, db
 import pytest
-from app.java.models import *
+from app.java.models_java import *
 from . import client
 
 
