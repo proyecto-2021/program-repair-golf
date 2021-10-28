@@ -111,3 +111,27 @@ def test_get_all_after_post(client):
     assert r2.status_code == 200
     assert r3.status_code == 200
     assert len(json) + 1 == len(json_after_post)
+
+def test_post_repair(client):
+    url = '/ruby/challenge'
+    data = {
+        'source_code_file': open('tests/ruby/tests-data/example4.rb', 'rb'),
+        'test_suite_file': open('tests/ruby/tests-data/example_test4.rb', 'rb'),
+        'challenge': '{ \
+                "challenge": { \
+                    "source_code_file_name" : "example4", \
+                    "test_suite_file_name" : "example_test4", \
+                    "repair_objective" : "Testing repair", \
+                    "complexity" : "3" \
+                } \
+            }'
+    }
+
+    r = client.post(url, data=data)
+    id = r.json['challenge']['id']
+    url2 = f'/ruby/challenge/{id}/repair'
+    data2 = { 'source_code_file': open('tests/ruby/tests-data/example_fixed4.rb', 'rb') }
+    r2 = client.post(url2, data=data2)
+
+    assert r.status_code == 200
+    assert r2.status_code == 200
