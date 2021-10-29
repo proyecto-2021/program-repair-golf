@@ -180,6 +180,11 @@ def update_files(names, new_code, new_test, old_paths, response):
     save_file(new_test_path, "wb", read_file(temp_test_path, "rb")) #read file in temp and save it in challenges
 
     #deletion of files at temp
+    try:
+        subprocess.call("rm " + temp_code_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        subprocess.call("rm " + temp_test_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    except CalledProcessError as err:
+        return {"Error": "Internal Server Error"}
 
     #adding new paths to response (response is used later to save challenge in db)
     
