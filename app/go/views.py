@@ -2,28 +2,23 @@ import os
 from . import go
 from .models_go import GoChallenge
 from app import db
-from flask import Flask, jsonify, request, make_response
-from flask_sqlalchemy import SQLAlchemy
-import json
-
-
-@go.route('/hello') 
-def hello():
-    return 'Hello World!'
+from flask import jsonify
 
 
 @go.route('/api/v1/go-challenges', methods=['GET'])
 def get_all_challenges():
     challenges = db.session.query(GoChallenge).all()
-    show = []
+    challenges_to_show = []
     i = 0
+    
     for challenge in challenges:
         challenge_dict = challenge.convert_dict()
         from_file_to_str(challenge_dict)
-        show.append(challenge_dict)
-        del show[i]['tests_code']
+        challenges_to_show.append(challenge_dict)
+        del challenges_to_show[i]['tests_code']
         i+=1
-    return jsonify({"challenges" : show})
+
+    return jsonify({"challenges" : challenges_to_show})
 
 
 @go.route('/api/v1/go-challenges/<id>', methods=['GET'])
