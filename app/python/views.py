@@ -116,11 +116,9 @@ def update_challenge(id):
 
     #in case contents of files were changed update 'code' and 'tests_code' keys of response with code
     if new_code != None:    #for some reason new_code is unnabled to read the file again
-        print("\ncontent changes won't be shown until we save new path in response['code']\n")
         response['code'] = read_file(response['code'], "r")
 
     if new_test != None:
-        print("\ncontent changes won't be shown until we save new path in response['tests_code']\n")
         response['tests_code'] = read_file(response['tests_code'], "r")
 
     return jsonify({"challenge" : response})
@@ -161,7 +159,6 @@ def update_files(names, new_code, new_test, old_paths, response):
     #saving changes in a temporal location for checking validation
     temp_code_path = save_changes(names.get('source_code_file_name'), new_code, old_paths.code, temp_path)
     temp_test_path = save_changes(names.get('test_suite_file_name'), new_test, old_paths.tests_code, temp_path)
-
     #challenge validation
     validation_result = valid_python_challenge(temp_code_path, temp_test_path)
     if 'Error' in validation_result:
@@ -178,7 +175,7 @@ def update_files(names, new_code, new_test, old_paths, response):
 
     new_test_path = "public/challenges/" + (lambda x: x.split('/')[-1]) (temp_test_path)
     save_file(new_test_path, "wb", read_file(temp_test_path, "rb")) #read file in temp and save it in challenges
-
+    
     #deletion of files at temp
     try:
         subprocess.call("rm " + temp_code_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -187,6 +184,8 @@ def update_files(names, new_code, new_test, old_paths, response):
         return {"Error": "Internal Server Error"}
 
     #adding new paths to response (response is used later to save challenge in db)
+    response['code'] = new_code_path
+    response['tests_code'] = new_test_path
     
     return { 'Result': 'ok' }    
 
