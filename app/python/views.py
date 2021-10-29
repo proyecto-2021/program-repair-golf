@@ -102,7 +102,7 @@ def update_challenge(id):
         update_result = update_files(challenge_data, new_code, new_test, req_challenge, response)
         if 'Error' in update_result:
             return make_response(jsonify(update_result), 409)
-            
+
     #check if change for repair objective was requested
     if 'repair_objective' in challenge_data:
         response['repair_objective'] = challenge_data['repair_objective']
@@ -167,7 +167,13 @@ def update_files(names, new_code, new_test, old_paths, response):
     if 'Error' in validation_result:
         return validation_result
     #old challenge files deletion
-
+    try:
+        subprocess.call("rm " + old_paths.code, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        subprocess.call("rm " + old_paths.tests_code, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    except CalledProcessError as err:
+        return {"Error": "Internal Server Error"}
+    
+    
     #new challenge files saving
 
     #deletion of files at temp
