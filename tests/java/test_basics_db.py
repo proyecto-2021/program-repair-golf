@@ -10,6 +10,7 @@ from . import client
 def test_ViewAllChallenges(client):
     challenge = {"challenges":[]}
     challenge ['challenges'] = Challenge_java.query.all()
+    # ViewAllChallenges() hacer...
     res = len(challenge)
     assert  res == 1
     #comportamiento esperado
