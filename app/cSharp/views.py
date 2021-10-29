@@ -52,15 +52,15 @@ def repair_Candidate(id):
                     "best_score": challenge['best_score']
                 }
                 
-                clean_up_all(repair_path, repair_exe_path,test_dll)
+                remove_path([repair_path, repair_exe_path,test_dll])
                 return make_response(jsonify({'repair': {'challenge': challenge_data, 'score': score}}), 200)
             else:
                 #cleanup
-                clean_up_all(repair_path, repair_exe_path,test_dll)
+
+                remove_path([repair_path, repair_exe_path,test_dll])           
                 return make_response(jsonify({'Repair candidate:' : 'Tests not passed'}), 409)
         else:
-            #cleanup
-            clean_up(repair_path)
+            remove_path([repair_path])
             return make_response(jsonify({'repair candidate:' : 'Sintax error'}), 409)
 
     else: 
@@ -92,10 +92,8 @@ def get_csharp_challenges():
         return jsonify({'challenges': 'None Loaded'})
  
 
-def clean_up(path):
-    os.remove(path)
+def remove_path(path_list):
+    for path in path_list:
+        os.remove(path)
 
-def clean_up_all(path1,path2,path3):
-    os.remove(path1)
-    os.remove(path2)
-    os.remove(path3)
+
