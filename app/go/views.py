@@ -37,12 +37,12 @@ def from_file_to_str(challenge):
     file= open(str(os.path.abspath(challenge["code"])),'r')
     content=file.readlines()
     file.close()
-    challenge["code"]=(content)
+    challenge["code"]=content
     return challenge
 
 def from_file_to_str_tests(challenge):
     file= open(str(os.path.abspath(challenge["tests_code"])),'r')
     content=file.readlines()
     file.close()
-    challenge["tests_code"]=(content)
+    challenge["tests_code"]=content
     return challenge
