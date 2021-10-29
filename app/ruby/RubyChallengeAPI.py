@@ -33,13 +33,17 @@ class RubyChallengeAPI(MethodView):
                 return make_response(jsonify({'challenge': 'test_suite is already exist'}),409)
 
             #check no syntax's errors
-            if not (compiles(file_path) and compiles(test_file_path)) or not tests_fail(test_file_path):
+            if not (compiles(file_path) and compiles(test_file_path)):
                 remove([file_path, test_file_path])
                 return make_response(jsonify({'challenge': 'source_code and/or test_suite not compile'}),400)
 
-            if  not dependencies_ok(test_file_path, dictionary['source_code_file_name']):
+            if not dependencies_ok(test_file_path, dictionary['source_code_file_name']):
                 remove([file_path, test_file_path])
                 return make_response(jsonify({'challenge': 'test_suite dependencies are wrong'}),400)
+
+            if not tests_fail(test_file_path)
+                remove([file_path, test_file_path])
+                return make_response(jsonify({'challenge': 'test_suite does not fail'}),400)
 
             new_challenge = create_challenge(file_path, test_file_path, dictionary['repair_objective'], dictionary['complexity'])
 
@@ -173,6 +177,8 @@ class RubyChallengeAPI(MethodView):
         # Return updated challenge
         updated_challenge = get_challenge(id)
         delete_keys([updated_challenge], ['id'])
+        updated_challenge['code'] = get_content(updated_challenge['code'])
+        updated_challenge['tests_code'] = get_content(updated_challenge['tests_code'])
         return jsonify({'challenge': updated_challenge})
 
 ruby_challenge_view = RubyChallengeAPI.as_view('ruby_challenge_api')
