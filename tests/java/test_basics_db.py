@@ -13,4 +13,6 @@ def test_ViewAllChallenges(client):
     resp = len(challenge)
     if resp >= 1:
         assert resp !=0
+    else:
+        assert resp == 0
    
