@@ -135,11 +135,11 @@ def create_challenge():
                 # upload test suite java and compile
                 upload_file_1(test_suite, UPLOAD_FOLDER)
                 path_test_java = UPLOAD_FOLDER + test_suite.filename
-                #test_file_compile(path_test_java, path_file_java)
+                #file_compile(path_test_java, path_file_java)
                 
                 # excute test suite java
                 # excute_java_test return true if pass all test
-                if test_file_compile(path_test_java, path_file_java):
+                if file_compile(path_test_java, path_file_java):
                     if execute_java_test(path_test_java):
                         return make_response(jsonify("La test suite debe fallar en almenos un caso de test para poder subirlo"))
                     else:
@@ -228,7 +228,7 @@ def class_java_compile(path_file_java):
 
 # given an path file test and path file class
 # if not compile file test remove the files and return exception
-def test_file_compile(path_test_java, path_file_java):
+def file_compile(path_test_java, path_file_java):
     try:
         compile_java_test(path_test_java)
     except Exception:
