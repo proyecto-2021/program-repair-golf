@@ -7,6 +7,7 @@ from  flask import jsonify, make_response, json, request
 import subprocess, os
 from subprocess import PIPE
 import nltk
+import shutil
 
 NUNIT_PATH="./app/cSharp/lib/NUnit.3.13.2/lib/net35/"
 NUNIT_LIB="./app/cSharp/lib/NUnit.3.13.2/lib/net35/nunit.framework.dll"
@@ -20,6 +21,8 @@ def login():
 
 @cSharp.route('/c-sharp-challenges', methods=['POST'])
 def post_csharp_challenges():
+    @cSharp.route('/c-sharp-challenges', methods=['POST'])
+def post_csharp_challenges():
     #Get new challenge data
     try:
         new_challenge = loads(request.form.get('challenge'))['challenge']
@@ -31,38 +34,36 @@ def post_csharp_challenges():
     #Validate challenge data
     required_keys = ('source_code_file_name', 'test_suite_file_name', 'source_code_file', 'test_suite_file', 'repair_objective', 'complexity')
     if all (key in new_challenge for key in required_keys):
-        new_source_code_path = CHALLENGE_VALIDATION_PATH + new_challenge['source_code_file_name'] + ".cs"
-        new_test_suite_path = CHALLENGE_VALIDATION_PATH + new_challenge['test_suite_file_name'] + ".cs"
+        try:
+            os.mkdir(CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'])
+        except FileExistsError:
+            return make_response(jsonify({'Challenge': 'Already exists'}), 409)
+        new_source_code_path = CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'] + "/" + new_challenge['source_code_file_name'] + ".cs"
+        new_test_suite_path = CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'] + "/" + new_challenge['test_suite_file_name'] + ".cs"
         new_challenge['source_code_file'].save(new_source_code_path)
         new_challenge['test_suite_file'].save(new_test_suite_path)
         validate_response = validate_code(new_source_code_path, new_test_suite_path)
         new_code_exe_path = new_source_code_path.replace('.cs', '.exe')
         new_test_dll_path = new_test_suite_path.replace('.cs', '.dll')
         if validate_response == 0 :
-            remove_path([new_source_code_path, new_test_suite_path, new_code_exe_path, new_test_dll_path])
+            shutil.rmtree(CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'])
             return make_response(jsonify({'Test': 'At least one has to fail'}), 409)
         elif validate_response == 1 :
-            remove_path([new_source_code_path, new_test_suite_path, new_code_exe_path, new_test_dll_path])
+            remove_path([new_code_exe_path, new_test_dll_path])
+            #Save validated data
+            save_challenge(new_challenge, new_source_code_path, new_test_suite_path)
+            return make_response(jsonify({'Method': 'Not implemented'}), 405)
         elif validate_response == 2 :
-            remove_path([new_source_code_path, new_test_suite_path, new_code_exe_path])
+            shutil.rmtree(CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'])
             return make_response(jsonify({'Test': 'Sintax errors'}), 409)
         else:
-            remove_path([new_source_code_path, new_test_suite_path])
+            shutil.rmtree(CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'])
             return make_response(jsonify({'Challenge': 'Sintax errors'}), 409)
-        if int(new_challenge['complexity']) < 1 or int(new_challenge['complexity'] > 5) :
+        if int(new_challenge['complexity']) < 1 or int(new_challenge['complexity']) > 5 :
+            shutil.rmtree(CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'])
             return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
     else:
         return make_response(jsonify({'challenge': 'Data not found'}), 404)
-    try:
-        os.mkdir(CHALLENGE_SAVE_PATH, new_challenge['source_code_file_name'])
-    except FileExistsError:
-        return make_response(jsonify({'Challenge': 'Already exists'}), 409)
-
-    #Save validated data
-    save_path = CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'] + '/'
-    save_challenge(new_challenge, save_path)
-    
-    return make_response(jsonify({'Method': 'Not implemented'}), 405)
 
 @cSharp.route('c-sharp-challenges/<int:id>/repair', methods=['POST'])
 def repair_Candidate(id):
@@ -158,11 +159,7 @@ def save_best_score(score, previous_best_score, challenge_id):
     else: 
         return 1
 
-def save_challenge(challenge_data,save_path):
-    source_code_path = save_path + challenge_data['source_code_file_name'] + '.cs'
-    test_path = save_path + challenge_data['test_suite_file_name'] + '.cs'
+def save_challenge(challenge_data, source_code_path, test_path):
     new_challenge = CSharp_Challenge(code = source_code_path, tests_code = test_path, repair_objetive = challenge_data['repair_objective'], complexity = int(challenge_data['complexity']), best_score = 0)
-    challenge_data['source_code_file'].save(source_code_path)
-    challenge_data['test_suite_file'].save(test_path)
     db.session.add(new_challenge)
     db.session.commit()
