@@ -15,39 +15,18 @@ def test_post_challenge(client):
         }'
     }
 
+    with open('tests/ruby/tests-data/example1.rb') as f:
+        content_code = f.read()
+    with open('tests/ruby/tests-data/example_test1.rb') as f:
+        content_tests_code = f.read()
+
     r = client.post(url, data=data)
     json = r.json['challenge']
     del json['id'] #remove the id because it can change if more challenges are stored
 
     assert r.status_code == 200
-    assert json == {  "code": "def median(a,b,c)\n  "
-                                "res = 0\n  "
-                                "if ((a>=b and a<=c) or (a>=c and a<=b))\n    "
-                                    "res = a\n  "
-                                "end\n  "
-                                "if ((b>=a and b<=c) or (b>=c and b<=a))\n    "
-                                    "res = b\n  "
-                                "else\n    "
-                                    "res = c\n  "
-                                "end\n  "
-                                "return res\n"
-                        "end\n",
-                        "tests_code":   "require 'minitest/autorun'\n"
-                                        "require_relative 'example1'\n"
-                                        "\n"
-                                        "class MedianTest < Minitest::Test\n  "
-                                            "def test_1\n    "
-                                                "assert median(1,2,3) == 2\n  "
-                                            "end\n"
-                                            "\n  "
-                                            "def test_2\n    "
-                                                "assert median(2,1,3) == 2\n  "
-                                            "end\n"
-                                            "\n  "
-                                            "def test_3\n    "
-                                                "assert median(3,1,2) == 2\n  "
-                                            "end\n"
-                                        "end\n",
+    assert json == {  "code": content_code,
+                        "tests_code":  content_tests_code,
                         "repair_objective": "Testing",
                         "complexity": "2",
                         "best_score": 0
@@ -170,39 +149,18 @@ def test_put_after_post(client):
         }'
     }
 
+    with open('tests/ruby/tests-data/example_put5.rb') as f:
+        content_code = f.read()
+    with open('tests/ruby/tests-data/example_test_put5.rb') as f:
+        content_tests_code = f.read()
+
     r2 = client.put(url2, data=data2)
     dict2 = r2.json['challenge']
 
     assert r.status_code == 200
     assert r2.status_code == 200
-    assert dict2 == {  "code": "def median2(a,b,c)\n  "
-                                "res = 0\n  "
-                                "if ((a>=b and a<=c) or (a>=c and a<=b))\n    "
-                                    "res = a\n  "
-                                "end\n  "
-                                "if ((b>=a and b<=c) or (b>=c and b<=a))\n    "
-                                    "res = b\n  "
-                                "else\n    "
-                                    "res = c\n  "
-                                "end\n  "
-                                "return res\n"
-                        "end\n",
-                        "tests_code":   "require 'minitest/autorun'\n"
-                                        "require_relative 'example_put5'\n"
-                                        "\n"
-                                        "class MedianTest < Minitest::Test\n  "
-                                            "def test_1\n    "
-                                                "assert median2(1,2,3) == 2\n  "
-                                            "end\n"
-                                            "\n  "
-                                            "def test_2\n    "
-                                                "assert median2(2,1,3) == 2\n  "
-                                            "end\n"
-                                            "\n  "
-                                            "def test_3\n    "
-                                                "assert median2(3,1,2) == 2\n  "
-                                            "end\n"
-                                        "end\n",
+    assert dict2 == {  "code": content_code,
+                        "tests_code": content_tests_code,
                         "repair_objective": "Testing post-PUT",
                         "complexity": "3",
                         "best_score": 0
