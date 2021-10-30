@@ -35,7 +35,7 @@ def post_csharp_challenges():
         new_test_suite_path = CHALLENGE_VALIDATION_PATH + new_challenge['test_suite_file_name'] + ".cs"
         new_challenge['source_code_file'].save(new_source_code_path)
         new_challenge['test_suite_file'].save(new_test_suite_path)
-        validate_response = validate_challenge(new_source_code_path, new_test_suite_path)
+        validate_response = validate_code(new_source_code_path, new_test_suite_path)
         new_code_exe_path = new_source_code_path.replace('.cs', '.exe')
         new_test_dll_path = new_test_suite_path.replace('.cs', '.dll')
         if validate_response == 0 :
@@ -49,7 +49,7 @@ def post_csharp_challenges():
         else:
             remove_path([new_source_code_path, new_test_suite_path])
             return make_response(jsonify({'Challenge': 'Sintax errors'}), 409)
-        if new_challenge['complexity'] < 1 or new_challenge['complexity'] > 5 :
+        if int(new_challenge['complexity']) < 1 or int(new_challenge['complexity'] > 5) :
             return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
     else:
         return make_response(jsonify({'challenge': 'Data not found'}), 404)
@@ -73,7 +73,7 @@ def repair_Candidate(id):
         file = request.files['source_code_file']
         repair_path = 'public/challenges/' + challenge_name
         file.save(dst=repair_path)
-        validation_result = validate_repair(challenge['code'],challenge['tests_code'],repair_path)
+        validation_result = validate_code(challenge['code'],challenge['tests_code'],repair_path)
         if validation_result == -1:
             remove_path([repair_path])
             return make_response(jsonify({'repair candidate:' : 'Sintax error'}), 409)
@@ -123,7 +123,7 @@ def remove_path(path_list):
     for path in path_list:
         os.remove(path)
 
-def validate_repair(path_challenge,path_test,repair_path=None):
+def validate_code(path_challenge,path_test,repair_path=None):
     if repair_path is None:
         command = 'mcs '+ path_challenge
     else:
