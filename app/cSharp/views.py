@@ -21,9 +21,7 @@ def login():
 
 @cSharp.route('/c-sharp-challenges', methods=['POST'])
 def post_csharp_challenges():
-    @cSharp.route('/c-sharp-challenges', methods=['POST'])
-def post_csharp_challenges():
-    #Get new challenge data
+       #Get new challenge data
     try:
         new_challenge = loads(request.form.get('challenge'))['challenge']
         new_challenge['source_code_file'] = request.files['source_code_file']
