@@ -171,11 +171,39 @@ def test_put_after_post(client):
     }
 
     r2 = client.put(url2, data=data2)
-
-    dict = r.json['challenge']
-    del dict['id']
     dict2 = r2.json['challenge']
 
     assert r.status_code == 200
     assert r2.status_code == 200
-    assert dict != dict2
+    assert dict2 == {  "code": "def median2(a,b,c)\n  "
+                                "res = 0\n  "
+                                "if ((a>=b and a<=c) or (a>=c and a<=b))\n    "
+                                    "res = a\n  "
+                                "end\n  "
+                                "if ((b>=a and b<=c) or (b>=c and b<=a))\n    "
+                                    "res = b\n  "
+                                "else\n    "
+                                    "res = c\n  "
+                                "end\n  "
+                                "return res\n"
+                        "end\n",
+                        "tests_code":   "require 'minitest/autorun'\n"
+                                        "require_relative 'example_put5'\n"
+                                        "\n"
+                                        "class MedianTest < Minitest::Test\n  "
+                                            "def test_1\n    "
+                                                "assert median2(1,2,3) == 2\n  "
+                                            "end\n"
+                                            "\n  "
+                                            "def test_2\n    "
+                                                "assert median2(2,1,3) == 2\n  "
+                                            "end\n"
+                                            "\n  "
+                                            "def test_3\n    "
+                                                "assert median2(3,1,2) == 2\n  "
+                                            "end\n"
+                                        "end\n",
+                        "repair_objective": "Testing post-PUT",
+                        "complexity": "3",
+                        "best_score": 0
+                    }
