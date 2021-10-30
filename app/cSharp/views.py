@@ -44,12 +44,15 @@ def post_csharp_challenges():
             return make_response(jsonify({'Test': 'Sintax errors'}), 409)
         else:
             return make_response(jsonify({'Challenge': 'Sintax errors'}), 409)
+        if new_challenge['complexity'] < 1 or new_challenge['complexity'] > 5 :
+            return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
     else:
         return make_response(jsonify({'challenge': 'Data not found'}), 404)
     try:
         os.mkdir(CHALLENGE_SAVE_PATH, new_challenge['source_code_file_name'])
     except FileExistsError:
         return make_response(jsonify({'Challenge': 'Already exists'}), 409)
+
 
     #Save validated data
     
