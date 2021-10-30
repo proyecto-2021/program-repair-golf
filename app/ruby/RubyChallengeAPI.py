@@ -125,6 +125,8 @@ class RubyChallengeAPI(MethodView):
         source_code_path_destiny = f"{self.files_path}{source_code_name}"
         source_test_path_destiny = f"{self.files_path}{source_test_name}"
 
+        print(source_code_name + source_test_name)
+
         # Check if file name already exists
         if (file_exists(source_code_path_destiny) and old_challenge['code'] != source_code_path_destiny): 
             return make_response(jsonify({'code': 'code name already exists'}), 400)
@@ -170,10 +172,11 @@ class RubyChallengeAPI(MethodView):
             return make_response(jsonify({'challenge': "update failed check input data"}), 400)
 
         # Update test and code files if they exists
-        update_file(old_challenge, 'code', source_code_path_tmp, self.files_path, source_code_name, update_data)
-        update_file(old_challenge, 'tests_code', source_test_path_tmp, self.files_path, source_test_name, update_data)
+        update_file(old_challenge, 'code', self.files_path, source_code_path_tmp, source_code_name, update_data)
+        update_file(old_challenge, 'tests_code', self.files_path, source_test_path_tmp, source_test_name, update_data)
 
         # Update challenge with new paths
+        print(update_data)
         update_challenge(id, update_data)
 
         # Return updated challenge
