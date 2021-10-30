@@ -85,7 +85,8 @@ def create_new_challenge():
 
 @python.route('api/v1/python-challenges/<id>', methods=['PUT'])
 def update_challenge(id):
-    challenge_data = loads(request.form.get('challenge'))['challenge']
+    challenge_data = request.form.get('challenge')
+    if challenge_data != None: challenge_data = loads(challenge_data)['challenge']
     save_to = "public/challenges/"  #general path were code will be saved
 
     req_challenge = PythonChallenge.query.filter_by(id=id).first()
@@ -94,6 +95,7 @@ def update_challenge(id):
         return make_response(jsonify({"challenge":"there is no challenge with that id"}),404)
 
     response = PythonChallenge.to_dict(req_challenge).copy()   #start creating response for the endpoint
+    response.pop('best_score', None)
 
     new_code = request.files.get('source_code_file')
     new_test = request.files.get('test_suite_file')
@@ -104,18 +106,19 @@ def update_challenge(id):
             return make_response(jsonify(update_result), 409)
 
     #check if change for repair objective was requested
-    if 'repair_objective' in challenge_data:
-        response['repair_objective'] = challenge_data['repair_objective']
-    #check if change for repair objective was requested
-    if 'complexity' in challenge_data:
-        response['complexity'] = challenge_data['complexity']
+    if challenge_data != None:
+        if 'repair_objective' in challenge_data:
+            response['repair_objective'] = challenge_data['repair_objective']
+        #check if change for repair objective was requested
+        if 'complexity' in challenge_data:
+            response['complexity'] = challenge_data['complexity']
     
     #updating challenge in db with data in response
     db.session.query(PythonChallenge).filter_by(id=id).update(dict(response))
     db.session.commit()
 
     #in case contents of files were changed update 'code' and 'tests_code' keys of response with code
-    if new_code != None:    #for some reason new_code is unnabled to read the file again
+    if new_code != None:    #for some reason new_code (file) cannot be read again
         response['code'] = read_file(response['code'], "r")
 
     if new_test != None:
@@ -156,9 +159,15 @@ def file_changes_required(names, code, tests):
 
 def update_files(names, new_code, new_test, old_paths, response):
     temp_path = "public/temp/"      #path to temp directory
+
+    code_name, test_name = None, None
+    if names != None:
+        code_name = names.get('source_code_file_name')
+        test_name = names.get('test_suite_file_name')
+
     #saving changes in a temporal location for checking validation
-    temp_code_path = save_changes(names.get('source_code_file_name'), new_code, old_paths.code, temp_path)
-    temp_test_path = save_changes(names.get('test_suite_file_name'), new_test, old_paths.tests_code, temp_path)
+    temp_code_path = save_changes(code_name, new_code, old_paths.code, temp_path)
+    temp_test_path = save_changes(test_name, new_test, old_paths.tests_code, temp_path)
     #challenge validation
     validation_result = valid_python_challenge(temp_code_path, temp_test_path)
     if 'Error' in validation_result:
