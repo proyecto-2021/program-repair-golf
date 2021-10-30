@@ -36,13 +36,18 @@ def post_csharp_challenges():
         new_challenge['source_code_file'].save(new_source_code_path)
         new_challenge['test_suite_file'].save(new_test_suite_path)
         validate_response = validate_challenge(new_source_code_path, new_test_suite_path)
+        new_code_exe_path = new_source_code_path.replace('.cs', '.exe')
+        new_test_dll_path = new_test_suite_path.replace('.cs', '.dll')
         if validate_response == 0 :
+            remove_path([new_source_code_path, new_test_suite_path, new_code_exe_path, new_test_dll_path])
             return make_response(jsonify({'Test': 'At least one has to fail'}), 409)
         elif validate_response == 1 :
-            return make_response(jsonify({'Data': 'Valid'}), 200)
+            remove_path([new_source_code_path, new_test_suite_path, new_code_exe_path, new_test_dll_path])
         elif validate_response == 2 :
+            remove_path([new_source_code_path, new_test_suite_path, new_code_exe_path])
             return make_response(jsonify({'Test': 'Sintax errors'}), 409)
         else:
+            remove_path([new_source_code_path, new_test_suite_path])
             return make_response(jsonify({'Challenge': 'Sintax errors'}), 409)
         if new_challenge['complexity'] < 1 or new_challenge['complexity'] > 5 :
             return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
@@ -52,7 +57,6 @@ def post_csharp_challenges():
         os.mkdir(CHALLENGE_SAVE_PATH, new_challenge['source_code_file_name'])
     except FileExistsError:
         return make_response(jsonify({'Challenge': 'Already exists'}), 409)
-
 
     #Save validated data
     
