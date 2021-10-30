@@ -95,7 +95,6 @@ def update_challenge(id):
         return make_response(jsonify({"challenge":"there is no challenge with that id"}),404)
 
     response = PythonChallenge.to_dict(req_challenge).copy()   #start creating response for the endpoint
-    response.pop('best_score', None)
 
     new_code = request.files.get('source_code_file')
     new_test = request.files.get('test_suite_file')
