@@ -25,24 +25,19 @@ def update_challenge_js(id):
     
     if files_controller.is_file_suffix(source_code_file_upd, FILE_JS_EXTENSION):
         code_path_upd = files_controller.upload(source_code_file_upd,file_test_path_upd)
-        #compiles_out_err = files_controller.compile_js(file_test_path_upd)    
+        compiles_out_err = files_controller.compile_js(file_test_path_upd)    
 
     if files_controller.is_file_suffix(test_suite_file_upd, FILE_JS_EXTENSION):
         test_path_upd = files_controller.upload(test_suite_file_upd, file_test_path_upd)
-        #test_out = files_controller.run_test(file_test_path_upd)  
+        test_out = files_controller.run_test(file_test_path_upd)  
 
-    
-    # models_js.compileRunTest(file_test_path_upd, test_out)
-    
-    """
-    #si los archivos no compilan tendra un msj de salida y se eliminaran los archivos
+    #si los archivos no compomilan tendra un msj de salida y se eliminaran los archivos
     #El test devera fallar almenos una vez en caso contrario tendra un msj de salida y se eliminaran los archivos    
     if compiles_out_err or not files_controller.test_fail(test_out):
         files_controller.remove_files(code_path_upd, test_path_upd)
         err = f'Error File not compile {compiles_out_err}' if compiles_out_err else f'The test has to fail at least once {test_out}'
         return make_response(jsonify({'challenge': f'Error File not compile {err}'}), 404)
 
-    """
     if files_controller.exist_file(file_code_path_upd):
         files_controller.rename_file(file_code_path_upd, challenge.code)
     

@@ -2,7 +2,6 @@ from flask import jsonify, make_response,request
 from .. import db
 from .models_js import JavascriptChallenge
 from ..javascript import files_controller
-from ..javascript import models_js
 import json
 from .folders_and_files import CODES_PATH, FILE_JS_EXTENSION
 
@@ -35,9 +34,6 @@ def create_challenge_js():
     files_controller.upload(source_code_file, code_file_path)
     files_controller.upload(test_suite_file, test_file_path)
 
-    # models_js.compileRunTest(code_file_path, test_file_path)
-
-    """
     compiles_out = files_controller.compile_js(code_file_path)
     
     if compiles_out:
@@ -49,7 +45,6 @@ def create_challenge_js():
         files_controller.remove_files(code_file_path,test_file_path)
         return make_response(jsonify({'challenge': f'The test has to fail at least once {test_out}'}), 404)
     
-    """
     challenge = JavascriptChallenge(code = code_file_path,
                                     tests_code = test_file_path,
                                     repair_objective = challenge_json['repair_objective'],
