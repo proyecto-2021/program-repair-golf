@@ -22,3 +22,7 @@ class RubyChallenge(object):
 
 	def tests_code_compiles(self):
 		return self.tests_code.compiles()
+
+	def is_valid(self):
+		return self.code_compiles() and self.tests_code_compiles() \
+			   and self.tests_fail() and self.tests_fail()
