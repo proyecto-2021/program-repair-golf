@@ -12,7 +12,7 @@ NUNIT_PATH="./app/cSharp/lib/NUnit.3.13.2/lib/net35/"
 NUNIT_LIB="./app/cSharp/lib/NUnit.3.13.2/lib/net35/nunit.framework.dll"
 NUNIT_CONSOLE_RUNNER="./app/cSharp/lib/NUnit.ConsoleRunner.3.12.0/tools/nunit3-console.exe"
 CHALLENGE_SAVE_PATH = "example-challenges/c-sharp-challenges/"
-CHALLENGE_VALIDATION_PATH = "./app/cSharp/temp/"
+CHALLENGE_VALIDATION_PATH = "./public/challenges/"
 
 @cSharp.route('/login')
 def login():
@@ -32,21 +32,25 @@ def post_csharp_challenges():
     required_keys = ('source_code_file_name', 'test_suite_file_name', 'source_code_file', 'test_suite_file', 'repair_objective', 'complexity')
     if all (key in new_challenge for key in required_keys):
         new_source_code_path = CHALLENGE_VALIDATION_PATH + new_challenge['source_code_file_name'] + ".cs"
-        #new_test_suite_path = CHALLENGE_VALIDATION_PATH + new_challenge['test_suite_file_name'] + ".cs"
+        new_test_suite_path = CHALLENGE_VALIDATION_PATH + new_challenge['test_suite_file_name'] + ".cs"
         new_challenge['source_code_file'].save(new_source_code_path)
-        #new_challenge['test_suite_file'].save(new_test_suite_path)
-        cmd_compile_challenge = 'mcs ' + new_source_code_path
-        if (subprocess.call(cmd_compile_challenge, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0):
-            return make_response(jsonify({'Challenge': 'Source code compiled successfully'}), 200)
+        new_challenge['test_suite_file'].save(new_test_suite_path)
+        validate_response = validate_challenge(new_source_code_path, new_test_suite_path)
+        if validate_response == 0 :
+            return make_response(jsonify({'Test': 'At least one has to fail'}), 409)
+        elif validate_response == 1 :
+            return make_response(jsonify({'Data': 'Valid'}), 200)
+        elif validate_response == 2 :
+            return make_response(jsonify({'Test': 'Sintax errors'}), 409)
         else:
-            return make_response(jsonify({'Challenge': 'Source code has sintax errors'}), 409)
+            return make_response(jsonify({'Challenge': 'Sintax errors'}), 409)
     else:
         return make_response(jsonify({'challenge': 'Data not found'}), 404)
     try:
         os.mkdir(CHALLENGE_SAVE_PATH, new_challenge['source_code_file_name'])
     except FileExistsError:
         return make_response(jsonify({'Challenge': 'Already exists'}), 409)
-    
+
     #Save validated data
     
     return make_response(jsonify({'Method': 'Not implemented'}), 405)
@@ -129,3 +133,21 @@ def get_csharp_challenges():
         return jsonify({'challenges': show})
     else:
         return jsonify({'challenges': 'None Loaded'})
+
+def validate_challenge(path_challenge,path_test):
+    command ='mcs '+ path_challenge
+    if (subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0):
+        test_dll= path_test.replace('.cs','.dll')
+        cmd_export = 'export MONO_PATH=' + NUNIT_PATH
+        cmd_compile = command + ' ' + path_test + ' -target:library -r:' + NUNIT_LIB + ' -out:' + test_dll
+        if(subprocess.call(cmd_compile, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0):
+            cmd_execute = 'mono ' + NUNIT_CONSOLE_RUNNER + ' ' + test_dll + ' -noresult'
+            cmd_run_test = cmd_export + ' && ' + cmd_compile + ' && ' + cmd_execute 
+            if subprocess.call(cmd_run_test, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0:
+                return 0
+            else:
+                return 1
+        else:
+            return 2
+    else: 
+        return -1
