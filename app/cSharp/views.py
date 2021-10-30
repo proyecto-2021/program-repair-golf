@@ -26,7 +26,7 @@ def repair_Candidate(id):
         file = request.files['source_code_file']
         repair_path = 'public/challenges/' + challenge_name
         file.save(dst=repair_path)
-        validation_result = validate_repair(challenge['code'],repair_path,challenge['tests_code'])
+        validation_result = validate_repair(challenge['code'],challenge['tests_code'],repair_path)
         if validation_result == -1:
             remove_path([repair_path])
             return make_response(jsonify({'repair candidate:' : 'Sintax error'}), 409)
@@ -35,14 +35,9 @@ def repair_Candidate(id):
             remove_path([repair_path, repair_path.replace('.cs','.exe'),challenge['tests_code'].replace(".cs",".dll")])
             return make_response(jsonify({'Repair candidate:' : 'Tests not passed'}), 409)
         else:
-            #scoring script
-            challenge_script = open(challenge['code'], "r").readlines()
-            repair_script = open(repair_path,"r").readlines()
-            score = nltk.edit_distance(challenge_script, repair_script)
+            score = calculate_score(challenge['code'], repair_path)
 
-            if int(challenge['best_score']) == 0 or int(challenge['best_score']) > score:
-                db.session.query(CSharp_Challenge).filter_by(id=id).update(dict(best_score=score))
-                db.session.commit()
+            if save_best_score(score, challenge['best_score'], id) == 0:
                 challenge['best_score'] = score
 
             challenge_data = {
@@ -82,22 +77,37 @@ def remove_path(path_list):
     for path in path_list:
         os.remove(path)
 
-def validate_repair(path_challenge,repair_path,path_test):
-    command ='mcs '+ repair_path
+def validate_repair(path_challenge,path_test,repair_path=None):
+    if repair_path is None:
+        command = 'mcs '+ path_challenge
+    else:
+        command = 'mcs '+ repair_path
+
     if (subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0):
         test_dll= path_test.replace('.cs','.dll')
         cmd_export = 'export MONO_PATH=' + NUNIT_PATH
         cmd_compile = command + ' ' + path_test + ' -target:library -r:' + NUNIT_LIB + ' -out:' + test_dll
-        cmd_execute = 'mono ' + NUNIT_CONSOLE_RUNNER + ' ' + test_dll + ' -noresult'
-        cmd_run_test = cmd_export + ' && ' + cmd_compile + ' && ' + cmd_execute 
-        if subprocess.call(cmd_run_test, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0:
-            #remove_path([repair_path, repair_path.replace('.cs','.exe'),test_dll])
-            return 0
+        if(subprocess.call(cmd_compile, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0):
+            cmd_execute = 'mono ' + NUNIT_CONSOLE_RUNNER + ' ' + test_dll + ' -noresult'
+            cmd_run_test = cmd_export + ' && ' + cmd_compile + ' && ' + cmd_execute 
+            if subprocess.call(cmd_run_test, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0:
+                return 0
+            else:
+                return 1
         else:
-            #remove_path([repair_path, repair_path.replace('.cs','.exe'),test_dll])  
-            return 1
+            return 2
     else: 
-        #remove_path([repair_path]) 
         return -1
 
-        
+def calculate_score(challenge_path, repair_candidate_path):
+    challenge_script = open(challenge_path, "r").readlines()
+    repair_script = open(repair_candidate_path,"r").readlines()
+    return nltk.edit_distance(challenge_script, repair_script)
+
+def save_best_score(score, previous_best_score, challenge_id):
+    if previous_best_score == 0 or previous_best_score > score:
+        db.session.query(CSharp_Challenge).filter_by(id=challenge_id).update(dict(best_score=score))
+        db.session.commit()
+        return 0
+    else: 
+        return 1
