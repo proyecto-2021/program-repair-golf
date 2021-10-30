@@ -59,6 +59,8 @@ def post_csharp_challenges():
         return make_response(jsonify({'Challenge': 'Already exists'}), 409)
 
     #Save validated data
+    save_path = CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'] + '/'
+    save_challenge(new_challenge, save_path)
     
     return make_response(jsonify({'Method': 'Not implemented'}), 405)
 
@@ -155,3 +157,12 @@ def save_best_score(score, previous_best_score, challenge_id):
         return 0
     else: 
         return 1
+
+def save_challenge(challenge_data,save_path):
+    source_code_path = save_path + challenge_data['source_code_file_name'] + '.cs'
+    test_path = save_path + challenge_data['test_suite_file_name'] + '.cs'
+    new_challenge = CSharp_Challenge(code = source_code_path, tests_code = test_path, repair_objetive = challenge_data['repair_objective'], complexity = int(challenge_data['complexity']), best_score = 0)
+    challenge_data['source_code_file'].save(source_code_path)
+    challenge_data['test_suite_file'].save(test_path)
+    db.session.add(new_challenge)
+    db.session.commit()
