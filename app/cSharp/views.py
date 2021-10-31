@@ -46,20 +46,24 @@ def post_csharp_challenges():
         if validate_response == 0 :
             shutil.rmtree(CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'])
             return make_response(jsonify({'Test': 'At least one has to fail'}), 409)
+
         elif validate_response == 1 :
             remove_path([new_code_exe_path, new_test_dll_path])
-            #Save validated data
-            save_challenge(new_challenge, new_source_code_path, new_test_suite_path)
-            return make_response(jsonify({'Method': 'Not implemented'}), 405)
+            new_data_id = save_challenge(new_challenge, new_source_code_path, new_test_suite_path)
+            return make_response(jsonify({'challenge': get_challenge_data(new_data_id)}))
+
         elif validate_response == 2 :
             shutil.rmtree(CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'])
             return make_response(jsonify({'Test': 'Sintax errors'}), 409)
+
         else:
             shutil.rmtree(CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'])
             return make_response(jsonify({'Challenge': 'Sintax errors'}), 409)
+
         if int(new_challenge['complexity']) < 1 or int(new_challenge['complexity']) > 5 :
             shutil.rmtree(CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'])
             return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
+
     else:
         return make_response(jsonify({'challenge': 'Data not found'}), 404)
 
@@ -98,9 +102,7 @@ def get_challenge(id):
     if db.session.query(CSharp_Challenge).get(id) is None:
         return make_response(jsonify({'Challenge': 'Not found'}), 404)
     else:
-        challenge = db.session.query(CSharp_Challenge).get(id).__repr__()
-        challenge['code'] = open(challenge['code'], "r").read()
-        challenge['tests_code'] = open(challenge['tests_code'], "r").read()
+        challenge = get_challenge_data(id)
         return jsonify({ 'Challenge': challenge })
 
 @cSharp.route('/c-sharp-challenges', methods=['GET'])
@@ -161,3 +163,10 @@ def save_challenge(challenge_data, source_code_path, test_path):
     new_challenge = CSharp_Challenge(code = source_code_path, tests_code = test_path, repair_objetive = challenge_data['repair_objective'], complexity = int(challenge_data['complexity']), best_score = 0)
     db.session.add(new_challenge)
     db.session.commit()
+    return new_challenge.id
+
+def get_challenge_data(id):
+    challenge = db.session.query(CSharp_Challenge).get(id).__repr__()
+    challenge['code'] = open(challenge['code'], "r").read()
+    challenge['tests_code'] = open(challenge['tests_code'], "r").read()
+    return challenge
