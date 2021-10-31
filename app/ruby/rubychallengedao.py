@@ -21,7 +21,7 @@ class RubyChallengeDAO(object):
     	)
 		db.session.add(challenge)
 		db.session.commit()
-		return challenge.get_dict()
+		return challenge.get_dict()['id']
 
 	def update_challenge(self, id, changes):
 		if len(changes) == 0:
