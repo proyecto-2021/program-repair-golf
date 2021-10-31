@@ -7,15 +7,17 @@ import json, os
 import nltk
 from .filemanagement import *
 from tempfile import gettempdir
+from .controller import Controller
 
 class RubyChallengeAPI(MethodView):
 
     def __init__(self):
         self.files_path = current_app.config.get('FILES_PATH')
+        self.controller = Controller(self.files_path)
 
     def post(self, id):
         if id is None:
-
+            '''
             dictionary = json.loads(request.form.get('challenge'))['challenge']
 
             file = request.files['source_code_file']
@@ -52,6 +54,8 @@ class RubyChallengeAPI(MethodView):
             new_challenge['tests_code'] = get_content(new_challenge['tests_code'])
 
             return jsonify({'challenge': new_challenge})
+            '''
+            return self.controller.post_challenge(request)
         else:
             if not exists(id):
                 return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
