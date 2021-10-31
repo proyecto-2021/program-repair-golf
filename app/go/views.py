@@ -29,3 +29,6 @@ def from_file_to_str(challenge, attribute):
 
 def compiles(commands, path):
     return (subprocess.run(commands, cwd=path, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL).returncode == 0)
+
+def compiles(command):
+    return (subprocess.call(command, shell=True, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL) == 0)
