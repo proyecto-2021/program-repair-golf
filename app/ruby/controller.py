@@ -1,7 +1,6 @@
 from .rubychallenge import RubyChallenge
-from .rubycode import RubyCode
 from .rubychallengedao import RubyChallengeDAO
-from flask import jsonify
+from flask import jsonify, make_response
 import json
 
 class Controller:
@@ -11,13 +10,34 @@ class Controller:
 
     def post_challenge(self, request):
         data = json.loads(request.form.get('challenge'))['challenge']
-        code = RubyCode(self.files_path, data['source_code_file_name'], request.files['source_code_file'])
-        tests_code = RubyCode(self.files_path, data['test_suite_file_name'], request.files['test_suite_file'])
 
-        code.save()
-        tests_code.save()
+        challenge = RubyChallenge(data['repair_objective'], data['complexity'])
+        challenge.set_code(self.files_path, data['source_code_file_name'], request.files['source_code_file'])
+        challenge.set_tests_code(self.files_path, data['test_suite_file_name'], request.files['test_suite_file'])
 
-        data = self.dao.create_challenge(code.get_full_name(), tests_code.get_full_name(), data['repair_objective'], data['complexity'])
-        challenge = RubyChallenge(data['id'], code, tests_code, data['repair_objective'], data['complexity'], data['best_score'])
+        if not challenge.save_code():
+            return make_response(jsonify({'challenge': 'source_code is already exist'}), 409)
 
-        return jsonify({'challenge': challenge.get_content()})
+        if not challenge.save_tests_code():
+            challenge.remove_code()
+            return make_response(jsonify({'challenge': 'test_suite is already exist'}), 409)
+
+        if not challenge.codes_compiles():
+            challenge.remove_code()
+            challenge.remove_tests_code()
+            return make_response(jsonify({'challenge': 'source_code and/or test_suite not compile'}), 400)
+
+        if not challenge.dependencies_ok():
+            challenge.remove_code()
+            challenge.remove_tests_code()
+            return make_response(jsonify({'challenge': 'test_suite dependencies are wrong'}), 400)
+
+        if not challenge.tests_fail():
+            challenge.remove_code()
+            challenge.remove_tests_code()
+            return make_response(jsonify({'challenge': 'test_suite does not fail'}),400)
+
+        response = challenge.get_content()
+        response['id'] = self.dao.create_challenge(**challenge.get_content_for_db())
+
+        return jsonify({'challenge': response})
