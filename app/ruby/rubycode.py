@@ -21,6 +21,9 @@ class RubyCode:
 		self.file.save(dst=self.get_full_name())
 		return True
 
+	def remove(self):
+		os.remove(self.get_full_name())
+
 	def get_content(self):
 		with open(self.get_full_name()) as f:
 			return f.read()
