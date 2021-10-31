@@ -27,7 +27,7 @@ class RubyChallenge:
 	def remove_tests_code(self):
 		self.tests_code.remove()
 
-	def codes_compiles(self):
+	def codes_compile(self):
 		return self.code.compiles() and self.tests_code.compiles()
 
 	def dependencies_ok(self):
