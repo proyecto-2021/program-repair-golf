@@ -1,6 +1,6 @@
 import os, subprocess
 
-class RubyCode(object):
+class RubyCode:
 	def __init__(self, path, file_name, file):
 		self.path = path
 		self.file_name = file_name
@@ -9,16 +9,16 @@ class RubyCode(object):
 	def get_path(self):
 		return self.path
 
-	def file_name(self):
+	def get_file_name(self):
 		return self.file_name
 
 	def get_full_name(self):
-		return self.path + self.file_name
+		return self.path + self.file_name + '.rb'
 
 	def save(self):
 		if os.path.isfile(self.get_full_name()):
 			return False
-		self.file.save(dst=get_full_name())
+		self.file.save(dst=self.get_full_name())
 		return True
 
 	def get_content(self):
