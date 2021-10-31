@@ -1,7 +1,7 @@
 from . import python
 from .. import db
 from flask import request, make_response, jsonify
-from .models import PythonChallenge
+from .models import PythonChallengeModel
 from json import loads
 from os import path
 import subprocess
@@ -14,7 +14,7 @@ def login():
 @python.route('/api/v1/python-challenges', methods=['GET'])
 def return_challenges(): 
     #Get all the challanges
-    all_challenges = PythonChallenge.query.all()
+    all_challenges = PythonChallengeModel.query.all()
     challenge_list = [] 
     for challenge in all_challenges:
         #Get row as a dictionary
@@ -29,13 +29,13 @@ def return_challenges():
 @python.route('/api/v1/python-challenges/<id>', methods=['GET'])
 def return_challange_id(id):
     #Get challenge with given id 
-    challenge = PythonChallenge.query.filter_by(id = id).first()
+    challenge = PythonChallengeModel.query.filter_by(id = id).first()
     
     if challenge is None:
         return make_response(jsonify({"Challenge": "Not found"}), 404)
 
     #Dictionary auxiliary to modify the keys
-    response = PythonChallenge.to_dict(challenge)  
+    response = PythonChallengeModel.to_dict(challenge)  
     #Get tests code from file
     response['code'] = read_file(response['code'], "r")
     response['tests_code'] = read_file(response['tests_code'], "r")
@@ -65,7 +65,7 @@ def create_new_challenge():
     save_file(new_tests_path, "wb", tests_source_code)
    
     #create row for database with the new challenge
-    new_challenge = PythonChallenge(code=new_code_path,
+    new_challenge = PythonChallengeModel(code=new_code_path,
         tests_code=new_tests_path,
         repair_objective=challenge_data['repair_objective'],
         complexity=challenge_data['complexity'],
@@ -75,8 +75,8 @@ def create_new_challenge():
     db.session.commit()
 
     #create response
-    req_challenge = PythonChallenge.query.filter_by(id=new_challenge.id).first()
-    response = PythonChallenge.to_dict(req_challenge)
+    req_challenge = PythonChallengeModel.query.filter_by(id=new_challenge.id).first()
+    response = PythonChallengeModel.to_dict(req_challenge)
     #adding source codes to response
     response['code'] = challenge_source_code.decode()
     response['tests_code'] = tests_source_code.decode()
@@ -89,12 +89,12 @@ def update_challenge(id):
     if challenge_data != None: challenge_data = loads(challenge_data)['challenge']
     save_to = "public/challenges/"  #general path were code will be saved
 
-    req_challenge = PythonChallenge.query.filter_by(id=id).first()
+    req_challenge = PythonChallengeModel.query.filter_by(id=id).first()
 
     if req_challenge is None:   #case id is not in database
         return make_response(jsonify({"challenge":"there is no challenge with that id"}),404)
 
-    response = PythonChallenge.to_dict(req_challenge).copy()   #start creating response for the endpoint
+    response = PythonChallengeModel.to_dict(req_challenge).copy()   #start creating response for the endpoint
 
     new_code = request.files.get('source_code_file')
     new_test = request.files.get('test_suite_file')
@@ -113,7 +113,7 @@ def update_challenge(id):
             response['complexity'] = challenge_data['complexity']
     
     #updating challenge in db with data in response
-    db.session.query(PythonChallenge).filter_by(id=id).update(dict(response))
+    db.session.query(PythonChallengeModel).filter_by(id=id).update(dict(response))
     db.session.commit()
 
     #in case contents of files were changed update 'code' and 'tests_code' keys of response with code
