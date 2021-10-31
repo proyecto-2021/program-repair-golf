@@ -6,6 +6,7 @@ from json import loads
 from os import path
 import subprocess
 from .file_utils import *
+from .subprocess_utils import *
 
 @python.route('/login', methods=['GET'])
 def login():
@@ -125,33 +126,6 @@ def update_challenge(id):
 
     return jsonify({"challenge" : response})
 
-def valid_python_challenge(code_path,test_path):
-    #checks for any syntax errors in code
-    if not no_syntax_errors(code_path):
-        return {"Error": "Syntax error at " + code_path}
-    #checks for any syntax errors in tests code
-    elif not no_syntax_errors(test_path):
-        return {"Error": "Syntax error at " + test_path}
-    #checks if at least one test don't pass
-    elif not tests_fail(test_path):
-        return {"Error": "At least one test must fail"}
-    else:   #program is fine 
-        return { 'Result': 'ok' }
-
-def no_syntax_errors(code_path):
-    try:
-        p = subprocess.call("python -m py_compile " + code_path ,stdout=subprocess.PIPE, shell=True)
-        return p == 0   #0 is no syntax errors, 1 is the opposite
-    except CalledProcessError as err:
-        return False
-
-def  tests_fail(test_path):
-    try:
-        p = subprocess.call("python -m pytest " + test_path ,stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        return p != 0 #0 means all tests passed, other value means some test/s failed
-    except CalledProcessError as err:
-        return True
-  
 #checks for name or content change reuqest
 def file_changes_required(names, code, tests):
     return code is None or tests is None or 'source_code_file_name' in names or 'test_suite_file_name' in names
@@ -173,8 +147,8 @@ def update_files(names, new_code, new_test, old_paths, response):
         return validation_result
     #old challenge files deletion
     try:
-        subprocess.call("rm " + old_paths.code, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        subprocess.call("rm " + old_paths.tests_code, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        delete_file(old_paths.code)
+        delete_file(old_paths.tests_code)
     except CalledProcessError as err:
         return {"Error": "Internal Server Error"}
     #new challenge files saving
@@ -186,8 +160,8 @@ def update_files(names, new_code, new_test, old_paths, response):
     
     #deletion of files at temp
     try:
-        subprocess.call("rm " + temp_code_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        subprocess.call("rm " + temp_test_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        delete_file(temp_code_path)
+        delete_file(temp_test_path)
     except CalledProcessError as err:
         return {"Error": "Internal Server Error"}
 
