@@ -23,12 +23,13 @@ def login():
 @cSharp.route('/c-sharp-challenges/<int:id>', methods=['PUT'])
 def put_csharp_challenges():
     update_request = request.files
-    challenge = CSharp_Challenge.query.get(id)._repr_()
+    challenge = db.session.query(CSharp_Challenge).filter_by(id=id).first()
     if challenge is None:
-        return make_response(jsonify({"challenge":"There is no challenge for this id"}), 404)  
+        return make_response(jsonify({"challenge":"There is no challenge for this id"}), 404) 
+    challenge_dict = challenge._repr_()
     files_keys = ("source_code_file", "test_suite_file")
-    challenge_name = os.path.basename(challenge['code'])
-    test_name = os.path.basename(challenge['tests_code'])
+    challenge_name = os.path.basename(challenge_dict['code'])
+    test_name = os.path.basename(challenge_dict['tests_code'])
     old_challenge_path = CHALLENGE_SAVE_PATH + challenge_name.replace('.cs','/') + challenge_name
     old_test_path = CHALLENGE_SAVE_PATH + challenge_name.replace('.cs','/') + test_name
     new_challenge_path = CHALLENGE_VALIDATION_PATH + challenge_name
@@ -71,7 +72,7 @@ def put_csharp_challenges():
         else:
             remove_path([new_challenge_exe_path, old_test_path.replace('.cs', '.dll'), old_challenge_path])
             shutil.move(new_challenge_path, old_challenge_path)
-            
+
     elif 'test_suite_file' in update_request:
         new_test = update_request['test_suite_file'] 
 
@@ -87,8 +88,17 @@ def put_csharp_challenges():
         else:
             remove_path([new_test_dll_path, old_challenge_path.replace('.cs', '.exe'), old_test_path])
             shutil.move(new_test_path, old_test_path)
+    
+    if 'repair_objective' in update_request:
+        db.session.query(CSharp_Challenge).filter_by(id=id).update(dict(repair_objetive=update_request['repair_objective']))
+        db.session.commit()
 
-    return make_response(jsonify({'Method': 'Not Yet Implemented'}), 501)
+    if 'complexity' in update_request:
+        if int(update_request['complexity']) < 1 or int(update_request['complexity']) > 5 :
+            return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
+        else:
+            db.session.query(CSharp_Challenge).filter_by(id=id).update(dict(complexity=int(update_request['complexity'])))
+            db.session.commit()
 
     
 
