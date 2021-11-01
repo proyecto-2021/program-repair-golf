@@ -67,25 +67,8 @@ class RubyChallengeAPI(MethodView):
 
     def get(self, id):
         if id is None:
-            challenges = get_challenges()
-
-            for c in challenges:
-                delete_keys([c], ['tests_code'])
-                c['code'] = get_content(c['code'])
-
-            return jsonify({'challenges': challenges})
+            return self.controller.get_all_challenges()
         else:
-            '''
-            if not exists(id):
-                return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
-
-            challenge = get_challenge(id)
-            delete_keys([challenge], ['id'])
-            challenge['code'] = get_content(challenge['code'])
-            challenge['tests_code'] = get_content(challenge['tests_code'])
-
-            return jsonify({'challenge': challenge})
-            '''
             return self.controller.get_challenge(id)
 
     def put(self, id):

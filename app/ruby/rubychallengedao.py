@@ -9,10 +9,18 @@ class RubyChallengeDAO(object):
 		return db.session.query(RubyChallenge).filter_by(id=id).first().get_dict()
 
 	def get_challenge_data(self, id):
-		return db.session.query(RubyChallenge).filter_by(id=id).first().get_data()
+		challenge = db.session.query(RubyChallenge).filter_by(id=id).first().get_data()
+		del challenge['id']
+		return challenge
 
 	def get_challenges(self):
 		return [challenge.get_dict() for challenge in db.session.query(RubyChallenge).all()]
+
+	def get_challenges_data(self):
+		challenges = [challenge.get_data() for challenge in db.session.query(RubyChallenge).all()]
+		for c in challenges:
+			del c['tests_code']
+		return challenges
 
 	def create_challenge(self, code, tests_code, repair_objective, complexity):
 		challenge = RubyChallenge(

@@ -43,5 +43,8 @@ class Controller:
 
     def get_challenge(self, id):
         challenge = self.dao.get_challenge_data(id)
-        del challenge['id']
-        return {'challenge': challenge}
+        return jsonify({'challenge': challenge})
+
+    def get_all_challenges(self):
+        challenges = self.dao.get_challenges_data()
+        return jsonify({'challenges': challenges})
