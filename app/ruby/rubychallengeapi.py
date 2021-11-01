@@ -3,55 +3,25 @@ from . import ruby
 from .models import *
 from flask import jsonify, request, make_response, current_app
 from shutil import copy
-import json, os
+import os
+from json import loads
 import nltk
 from .filemanagement import *
 from tempfile import gettempdir
+from .controller import Controller
 
 class RubyChallengeAPI(MethodView):
 
     def __init__(self):
         self.files_path = current_app.config.get('FILES_PATH')
+        self.controller = Controller(self.files_path)
 
     def post(self, id):
         if id is None:
-
-            dictionary = json.loads(request.form.get('challenge'))['challenge']
-
-            file = request.files['source_code_file']
-            file_path = self.files_path + dictionary['source_code_file_name'] + '.rb'
-
-            test_file = request.files['test_suite_file']
-            test_file_path = self.files_path + dictionary['test_suite_file_name'] + '.rb'
-
-            #check that the same files is not posted again
-            if not save(file, file_path):
-                return make_response(jsonify({'challenge': 'source_code is already exist'}),409)
-
-            if not save(test_file, test_file_path):
-                remove([file_path])
-                return make_response(jsonify({'challenge': 'test_suite is already exist'}),409)
-
-            #check no syntax's errors
-            if not (compiles(file_path) and compiles(test_file_path)):
-                remove([file_path, test_file_path])
-                return make_response(jsonify({'challenge': 'source_code and/or test_suite not compile'}),400)
-
-            if not dependencies_ok(test_file_path, dictionary['source_code_file_name']):
-                remove([file_path, test_file_path])
-                return make_response(jsonify({'challenge': 'test_suite dependencies are wrong'}),400)
-
-            if not tests_fail(test_file_path):
-                remove([file_path, test_file_path])
-                return make_response(jsonify({'challenge': 'test_suite does not fail'}),400)
-
-            new_challenge = create_challenge(file_path, test_file_path, dictionary['repair_objective'], dictionary['complexity'])
-
-            new_challenge['code'] = get_content(new_challenge['code'])
-
-            new_challenge['tests_code'] = get_content(new_challenge['tests_code'])
-
-            return jsonify({'challenge': new_challenge})
+            code = request.files['source_code_file']
+            tests_code = request.files['test_suite_file']
+            json = loads(request.form.get('challenge'))
+            return self.controller.post_challenge(code, tests_code, json)
         else:
             if not exists(id):
                 return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
@@ -97,28 +67,14 @@ class RubyChallengeAPI(MethodView):
 
     def get(self, id):
         if id is None:
-            challenges = get_challenges()
-
-            for c in challenges:
-                delete_keys([c], ['tests_code'])
-                c['code'] = get_content(c['code'])
-
-            return jsonify({'challenges': challenges})
+            return self.controller.get_all_challenges()
         else:
-            if not exists(id):
-                return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
-
-            challenge = get_challenge(id)
-            delete_keys([challenge], ['id'])
-            challenge['code'] = get_content(challenge['code'])
-            challenge['tests_code'] = get_content(challenge['tests_code'])
-
-            return jsonify({'challenge': challenge})
+            return self.controller.get_challenge(id)
 
     def put(self, id):
         if not exists(id):
             return make_response(jsonify({'challenge': 'NOT FOUND'}), 404)
-        update_data = json.loads(request.form.get('challenge'))['challenge']
+        update_data = loads(request.form.get('challenge'))['challenge']
         old_challenge = get_challenge(id)
         source_code_name = f"{update_data['source_code_file_name']}.rb"
         source_test_name = f"{update_data['test_suite_file_name']}.rb"
