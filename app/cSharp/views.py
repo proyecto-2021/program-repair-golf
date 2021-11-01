@@ -26,20 +26,19 @@ def put_csharp_challenges():
     challenge = CSharp_Challenge.query.get(id)._repr_()
     if challenge is None:
         return make_response(jsonify({"challenge":"There is no challenge for this id"}), 404)  
-        
     files_keys = ("source_code_file", "test_suite_file")
     challenge_name = os.path.basename(challenge['code'])
     test_name = os.path.basename(challenge['tests_code'])
     old_challenge_path = CHALLENGE_SAVE_PATH + challenge_name.replace('.cs','/') + challenge_name
     old_test_path = CHALLENGE_SAVE_PATH + challenge_name.replace('.cs','/') + test_name
+    new_challenge_path = CHALLENGE_VALIDATION_PATH + challenge_name
+    new_test_path = CHALLENGE_VALIDATION_PATH + test_name
+    new_challenge_exe_path = CHALLENGE_VALIDATION_PATH + challenge_name.replace('.cs','.exe')
+    new_test_dll_path = CHALLENGE_VALIDATION_PATH + test_name.replace('.cs','.dll')
 
     if all(key in update_request for key in files_keys):
         new_challenge = update_request['source_code_file'] 
         new_test = update_request['test_suite_file'] 
-        new_challenge_path = CHALLENGE_VALIDATION_PATH + challenge_name
-        new_test_path = CHALLENGE_VALIDATION_PATH + test_name
-        new_challenge_exe_path = CHALLENGE_VALIDATION_PATH + challenge_name.replace('.cs','.exe')
-        new_test_dll_path = CHALLENGE_VALIDATION_PATH + test_name.replace('.cs','.dll')
 
         new_challenge.save(new_challenge_path)
         new_test.save(new_test_path)
@@ -58,9 +57,39 @@ def put_csharp_challenges():
             remove_path([new_challenge_exe_path, new_test_dll_path, old_challenge_path, old_test_path])
             shutil.move(new_challenge_path, old_challenge_path)
             shutil.move(new_test_path, old_test_path)
-            return make_response(jsonify({'Method': 'Not Yet Implemented'}), 501)
-    else:
-        return make_response(jsonify({'Method': 'Not Yet Implemented'}), 501)
+
+    elif 'source_code_file' in update_request:
+        new_challenge = update_request['source_code_file']
+        new_challenge.save(new_challenge_path)
+        validation_result = validate_code(new_challenge_path, old_test_path)
+        if validation_result == -1:
+            remove_path([new_challenge_path])
+            return make_response(jsonify({'Source code': 'Sintax errors'}), 409)
+        elif validation_result == 0:
+            remove_path([new_challenge_path, new_challenge_exe_path, old_test_path.replace('.cs', '.dll')])
+            return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
+        else:
+            remove_path([new_challenge_exe_path, old_test_path.replace('.cs', '.dll'), old_challenge_path])
+            shutil.move(new_challenge_path, old_challenge_path)
+            
+    elif 'test_suite_file' in update_request:
+        new_test = update_request['test_suite_file'] 
+
+        new_test.save(new_test_path)
+
+        validation_result = validate_code(old_challenge_path, new_test_path)
+        if validation_result == 0:
+            remove_path([new_test_path, old_challenge_path.replace('.cs', '.exe'), new_test_dll_path])
+            return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
+        elif validation_result == 2:
+            remove_path([new_test_path, old_challenge_path.replace('.cs', '.exe')])
+            return make_response(jsonify({'Test': 'Sintax errors'}), 409)
+        else:
+            remove_path([new_test_dll_path, old_challenge_path.replace('.cs', '.exe'), old_test_path])
+            shutil.move(new_test_path, old_test_path)
+
+    return make_response(jsonify({'Method': 'Not Yet Implemented'}), 501)
+
     
 
 @cSharp.route('/c-sharp-challenges', methods=['POST'])
