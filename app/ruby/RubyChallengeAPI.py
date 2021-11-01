@@ -3,7 +3,8 @@ from . import ruby
 from .models import *
 from flask import jsonify, request, make_response, current_app
 from shutil import copy
-import json, os
+import os
+from json import loads
 import nltk
 from .filemanagement import *
 from tempfile import gettempdir
@@ -18,7 +19,7 @@ class RubyChallengeAPI(MethodView):
     def post(self, id):
         if id is None:
             '''
-            dictionary = json.loads(request.form.get('challenge'))['challenge']
+            dictionary = loads(request.form.get('challenge'))['challenge']
 
             file = request.files['source_code_file']
             file_path = self.files_path + dictionary['source_code_file_name'] + '.rb'
@@ -55,7 +56,10 @@ class RubyChallengeAPI(MethodView):
 
             return jsonify({'challenge': new_challenge})
             '''
-            return self.controller.post_challenge(request)
+            code = request.files['source_code_file']
+            tests_code = request.files['test_suite_file']
+            json = loads(request.form.get('challenge'))
+            return self.controller.post_challenge(code, tests_code, json)
         else:
             if not exists(id):
                 return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
@@ -122,7 +126,7 @@ class RubyChallengeAPI(MethodView):
     def put(self, id):
         if not exists(id):
             return make_response(jsonify({'challenge': 'NOT FOUND'}), 404)
-        update_data = json.loads(request.form.get('challenge'))['challenge']
+        update_data = loads(request.form.get('challenge'))['challenge']
         old_challenge = get_challenge(id)
         source_code_name = f"{update_data['source_code_file_name']}.rb"
         source_test_name = f"{update_data['test_suite_file_name']}.rb"
