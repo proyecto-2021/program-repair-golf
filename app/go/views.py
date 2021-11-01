@@ -10,7 +10,6 @@ import subprocess, os
 def hello():
     return 'Hello World!'
 
-
 @go.route('/api/v1/go-challenges/<id>', methods=['GET'])
 def return_single_challenge(id):
         challenge_by_id=GoChallenge.query.filter_by(id=id).first()
@@ -22,21 +21,11 @@ def return_single_challenge(id):
         del challenge_to_return["id"]
         return jsonify({"challenge":challenge_to_return})
 
-
 @go.route('/api/v1/go-challenges/<id>', methods=['PUT'])
 def update_a_go_challenge(id):
     challenge = GoChallenge.query.filter_by(id = id).first()
     if challenge is None:
-        return jsonify('Challenge not found', 404)
-    
-    #source_code_file = request.form['source_code_file']
-    #test_suite_file  = request.form['test_suite_file']
-    #request_data = request.form.get('challenge')
-
-    #code_path = "public/challenges/" + f"{new_code}"
-    #test_path = "public/challenges/" + f"{new_test_code}" 
-
-    # Verifico si los archivos tienen errores de sintaxis y si el test falla 
+        return jsonify('Challenge not found', 404) 
     
     try:
         request_data = json.loads(request.form.get('challenge'))['challenge']
@@ -85,25 +74,22 @@ def update_a_go_challenge(id):
             challenge.tests_code = test_path      
             changes += 1
 
-
     if 'repair_objective' in request_data and request_data['repair_objective'] != challenge['repair_objective']:
         challenge.repair_objetive = request_data['repair_objective']
 
     if 'complexity' in request_data and request_data['complexity'] != challenge['complexity']:
         challenge.complexity = request_data['complexity']
-    #####
+    
     if changes > 0: 
         challenge.best_score = 0
 
     db.session.commit()
     
-    #Retorna el codigo fuente de code y la testsuite
     challenge_dict = challenge.convert_dict()
     from_file_to_str(challenge_dict)
     from_file_to_str_tests(challenge_dict)
     del challenge_dict['id']
     return jsonify({'challenge': challenge_dict})
-
 
 def from_file_to_str(challenge):
     file= open(str(os.path.abspath(challenge["code"])),'r')
@@ -111,7 +97,6 @@ def from_file_to_str(challenge):
     file.close()
     challenge["code"]=(content)
     return challenge
-
 
 def from_file_to_str_tests(challenge):
     file= open(str(os.path.abspath(challenge["tests_code"])),'r')
