@@ -15,9 +15,92 @@ NUNIT_CONSOLE_RUNNER="./app/cSharp/lib/NUnit.ConsoleRunner.3.12.0/tools/nunit3-c
 CHALLENGE_SAVE_PATH = "example-challenges/c-sharp-challenges/"
 CHALLENGE_VALIDATION_PATH = "./public/challenges/"
 
+UPLOAD_FOLDER = "./example-challenges/c-sharp-challenges/"
 @cSharp.route('/login')
 def login():
     return { 'result': 'Ok' }
+
+@cSharp.route('/c-sharp-challenges/<int:id>', methods=['PUT'])
+def put_csharp_challenges():
+    update_request = request.files
+    challenge = db.session.query(CSharp_Challenge).filter_by(id=id).first()
+    if challenge is None:
+        return make_response(jsonify({"challenge":"There is no challenge for this id"}), 404) 
+    challenge_dict = challenge._repr_()
+    files_keys = ("source_code_file", "test_suite_file")
+    challenge_name = os.path.basename(challenge_dict['code'])
+    test_name = os.path.basename(challenge_dict['tests_code'])
+    old_challenge_path = CHALLENGE_SAVE_PATH + challenge_name.replace('.cs','/') + challenge_name
+    old_test_path = CHALLENGE_SAVE_PATH + challenge_name.replace('.cs','/') + test_name
+    new_challenge_path = CHALLENGE_VALIDATION_PATH + challenge_name
+    new_test_path = CHALLENGE_VALIDATION_PATH + test_name
+    new_challenge_exe_path = CHALLENGE_VALIDATION_PATH + challenge_name.replace('.cs','.exe')
+    new_test_dll_path = CHALLENGE_VALIDATION_PATH + test_name.replace('.cs','.dll')
+
+    if all(key in update_request for key in files_keys):
+        new_challenge = update_request['source_code_file'] 
+        new_test = update_request['test_suite_file'] 
+
+        new_challenge.save(new_challenge_path)
+        new_test.save(new_test_path)
+
+        validation_result = validate_code(new_challenge_path, new_test_path)
+        if validation_result == -1:
+            remove_path([new_challenge_path, new_test_path])
+            return make_response(jsonify({'Source code': 'Sintax errors'}), 409)
+        elif validation_result == 0:
+            remove_path([new_challenge_path, new_test_path, new_challenge_exe_path, new_test_dll_path])
+            return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
+        elif validation_result == 2:
+            remove_path([new_challenge_path, new_test_path, new_challenge_exe_path])
+            return make_response(jsonify({'Test': 'Sintax errors'}), 409)
+        else:
+            remove_path([new_challenge_exe_path, new_test_dll_path, old_challenge_path, old_test_path])
+            shutil.move(new_challenge_path, old_challenge_path)
+            shutil.move(new_test_path, old_test_path)
+
+    elif 'source_code_file' in update_request:
+        new_challenge = update_request['source_code_file']
+        new_challenge.save(new_challenge_path)
+        validation_result = validate_code(new_challenge_path, old_test_path)
+        if validation_result == -1:
+            remove_path([new_challenge_path])
+            return make_response(jsonify({'Source code': 'Sintax errors'}), 409)
+        elif validation_result == 0:
+            remove_path([new_challenge_path, new_challenge_exe_path, old_test_path.replace('.cs', '.dll')])
+            return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
+        else:
+            remove_path([new_challenge_exe_path, old_test_path.replace('.cs', '.dll'), old_challenge_path])
+            shutil.move(new_challenge_path, old_challenge_path)
+
+    elif 'test_suite_file' in update_request:
+        new_test = update_request['test_suite_file'] 
+
+        new_test.save(new_test_path)
+
+        validation_result = validate_code(old_challenge_path, new_test_path)
+        if validation_result == 0:
+            remove_path([new_test_path, old_challenge_path.replace('.cs', '.exe'), new_test_dll_path])
+            return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
+        elif validation_result == 2:
+            remove_path([new_test_path, old_challenge_path.replace('.cs', '.exe')])
+            return make_response(jsonify({'Test': 'Sintax errors'}), 409)
+        else:
+            remove_path([new_test_dll_path, old_challenge_path.replace('.cs', '.exe'), old_test_path])
+            shutil.move(new_test_path, old_test_path)
+    
+    if 'repair_objective' in update_request:
+        db.session.query(CSharp_Challenge).filter_by(id=id).update(dict(repair_objetive=update_request['repair_objective']))
+        db.session.commit()
+
+    if 'complexity' in update_request:
+        if int(update_request['complexity']) < 1 or int(update_request['complexity']) > 5 :
+            return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
+        else:
+            db.session.query(CSharp_Challenge).filter_by(id=id).update(dict(complexity=int(update_request['complexity'])))
+            db.session.commit()
+
+    
 
 @cSharp.route('/c-sharp-challenges', methods=['POST'])
 def post_csharp_challenges():
@@ -170,3 +253,4 @@ def get_challenge_data(id):
     challenge['code'] = open(challenge['code'], "r").read()
     challenge['tests_code'] = open(challenge['tests_code'], "r").read()
     return challenge
+
