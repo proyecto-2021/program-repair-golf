@@ -16,7 +16,6 @@ def return_single_challenge(id):
         challenge_to_return=challenge_by_id.convert_dict()
         from_file_to_str(challenge_to_return, "code")
         from_file_to_str(challenge_to_return, "tests_code")
-        from_file_to_str_tests(challenge_to_return)
         del challenge_to_return["id"]
         return jsonify({"challenge":challenge_to_return})
 
