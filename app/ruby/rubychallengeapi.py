@@ -18,44 +18,6 @@ class RubyChallengeAPI(MethodView):
 
     def post(self, id):
         if id is None:
-            '''
-            dictionary = loads(request.form.get('challenge'))['challenge']
-
-            file = request.files['source_code_file']
-            file_path = self.files_path + dictionary['source_code_file_name'] + '.rb'
-
-            test_file = request.files['test_suite_file']
-            test_file_path = self.files_path + dictionary['test_suite_file_name'] + '.rb'
-
-            #check that the same files is not posted again
-            if not save(file, file_path):
-                return make_response(jsonify({'challenge': 'source_code is already exist'}),409)
-
-            if not save(test_file, test_file_path):
-                remove([file_path])
-                return make_response(jsonify({'challenge': 'test_suite is already exist'}),409)
-
-            #check no syntax's errors
-            if not (compiles(file_path) and compiles(test_file_path)):
-                remove([file_path, test_file_path])
-                return make_response(jsonify({'challenge': 'source_code and/or test_suite not compile'}),400)
-
-            if not dependencies_ok(test_file_path, dictionary['source_code_file_name']):
-                remove([file_path, test_file_path])
-                return make_response(jsonify({'challenge': 'test_suite dependencies are wrong'}),400)
-
-            if not tests_fail(test_file_path):
-                remove([file_path, test_file_path])
-                return make_response(jsonify({'challenge': 'test_suite does not fail'}),400)
-
-            new_challenge = create_challenge(file_path, test_file_path, dictionary['repair_objective'], dictionary['complexity'])
-
-            new_challenge['code'] = get_content(new_challenge['code'])
-
-            new_challenge['tests_code'] = get_content(new_challenge['tests_code'])
-
-            return jsonify({'challenge': new_challenge})
-            '''
             code = request.files['source_code_file']
             tests_code = request.files['test_suite_file']
             json = loads(request.form.get('challenge'))
@@ -113,6 +75,7 @@ class RubyChallengeAPI(MethodView):
 
             return jsonify({'challenges': challenges})
         else:
+            '''
             if not exists(id):
                 return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
 
@@ -122,6 +85,8 @@ class RubyChallengeAPI(MethodView):
             challenge['tests_code'] = get_content(challenge['tests_code'])
 
             return jsonify({'challenge': challenge})
+            '''
+            return self.controller.get_challenge(id)
 
     def put(self, id):
         if not exists(id):

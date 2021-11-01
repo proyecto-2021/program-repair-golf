@@ -40,3 +40,8 @@ class Controller:
         response['id'] = self.dao.create_challenge(**challenge.get_content_for_db())
 
         return jsonify({'challenge': response})
+
+    def get_challenge(self, id):
+        challenge = self.dao.get_challenge_data(id)
+        del challenge['id']
+        return {'challenge': challenge}
