@@ -1,9 +1,10 @@
 from shutil import copy
 import subprocess, os, sys
 
-def delete_keys(dictionary, key_list):
-    for key in key_list:
-        del dictionary[key]
+def delete_keys(dictionary_list, key_list):
+    for dictionary in dictionary_list:
+        for key in key_list:
+            del dictionary[key]
 
 def save(file, path):
     if os.path.isfile(path):
@@ -39,3 +40,12 @@ def dependencies_ok(test_file_path, file_name):
     p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     dependence_name = (p.communicate()[0].decode(sys.stdout.encoding).strip().split("'")[1])
     return dependence_name == file_name
+    
+def get_content(path):
+    with open(path) as f:
+        return f.read()
+
+def remove(paths):
+    for f in paths:
+        if file_exists(f):
+            os.remove(f)

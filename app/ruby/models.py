@@ -19,14 +19,26 @@ class RubyChallenge(db.Model):
             "best_score":self.best_score
         }
 
+    def get_data(self):
+        with open(self.code) as f1:
+            code_content = f1.read()
+        with open(self.tests_code) as f2:
+            tests_code_content = f2.read()
+
+        return {
+            "id":self.id,
+            "code":code_content,
+            "tests_code":tests_code_content,
+            "repair_objective":self.repair_objective,
+            "complexity":self.complexity,
+            "best_score":self.best_score
+        }
+
 def get_challenge(id):
-    return db.session.query(RubyChallenge).filter_by(id=id).first()
+    return db.session.query(RubyChallenge).filter_by(id=id).first().get_dict()
 
 def get_challenges():
-    return db.session.query(RubyChallenge).all()
-
-def get_all_challenges_dict():
-    return list(map(lambda x: x.get_dict(), get_challenges()))
+    return [challenge.get_dict() for challenge in db.session.query(RubyChallenge).all()]
 
 def create_challenge(code, tests_code, repair_objective, complexity):
     challenge = RubyChallenge(

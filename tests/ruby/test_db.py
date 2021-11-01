@@ -35,7 +35,7 @@ def test_update_challenge(client):
     challenge = create_challenge('code', 'tests_code', 'repair_objective', '5')
     update = {'code': 'changed', 'tests_code': 'changed', 'repair_objective': 'changed', 'complexity': 'changed'}
     n_changes = update_challenge(challenge['id'], update)
-    updated_challenge = get_challenge(challenge['id']).get_dict()
+    updated_challenge = get_challenge(challenge['id'])
     assert n_changes == 1
     assert updated_challenge['code'] == 'changed'
     assert updated_challenge['tests_code'] == 'changed'

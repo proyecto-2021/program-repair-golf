@@ -18,16 +18,12 @@ UPLOAD_FOLDER = './public/challenges/'
 PATHLIBRERIA = 'app/java/lib/junit-4.13.2.jar:public/challenges'
 PATHEXECUTE = 'org.junit.runner.JUnitCore'
 ALLOWED_EXTENSIONS = {'java'}
-
-PATHCLASSJAVA = './example-challenges/java-challenges/Median.java'
-DASINJAVA = './example-challenges/java-challenges/MedianTest.java'
-
+EJECUTARFILE= 'app/java/lib/hamcrest-all-1.3.jar:app/java/lib/junit-4.13.2.jar:public/challenges/'
 
 @java.route('/prueba')
 def login():
     return { 'result': 'funciona' }
 
-# GET 'http://localhost:4000/api/v1/java-challenges'
 @java.route('/java-challenges',methods=['GET'])
 def ViewAllChallenges():
     challenge = {"challenges":[]}
@@ -83,27 +79,43 @@ def UpdateChallenge(id):
     if challenge is None:
         return make_response(jsonify({"challenge":"Not Found!"}),404)
     else:
-        #Recupero los datos para actualizar
-        code_file_upd = request.files['source_code_file']
-        test_suite_upd = request.files['test_suite_file']
-        
         challenge_json = loads(request.form.get('challenge'))
         challenge_upd= challenge_json['challenge']
-        repair_objective_upd=challenge_upd['repair_objective']
-        complexity_upd=challenge_upd['complexity']
-
-        #Controlo si se obtuvieron datos para actualizar
-        if code_file_upd is not None:
-            challenge.code=os.path.split(code_file_upd.filename)[-1].split('.')[0]
-            #os.path.basename(code_file_upd.filename)
-            upload_file_1(code_file_upd, UPLOAD_FOLDER)
-        if test_suite_upd is not None: 
-            challenge.tests_code=os.path.split(test_suite_upd.filename)[-1].split('.')[0]
-            upload_file_1(test_suite_upd, UPLOAD_FOLDER)
-        if repair_objective_upd is not None:
+        
+        if 'repair_objective' in request.form.get('challenge'):
+            repair_objective_upd=challenge_upd['repair_objective']
             challenge.repair_objective=repair_objective_upd
-        if complexity_upd is not None:
+            
+        if 'complexity' in request.form.get('challenge'):
+            complexity_upd=challenge_upd['complexity']
             challenge.complexity=complexity_upd
+
+        if 'source_code_file_name' in request.form:    
+            code_file_upd_name=challenge_upd['source_code_file_name']
+
+        if 'test_suite_file_name' in request.form:
+            test_suite_upd_name=challenge_upd['test_suite_file_name']
+
+        if 'source_code_file' in request.files:
+            code_file_upd = request.files['source_code_file']
+            path_file_java = UPLOAD_FOLDER + code_file_upd.filename
+            if class_java_compile(path_file_java):
+                challenge.code=os.path.split(code_file_upd.filename)[-1].split('.')[0]
+                print(challenge.code)
+                upload_file_1(code_file_upd, UPLOAD_FOLDER)
+            else:
+                return make_response(jsonify("Class java not compile"))
+
+        if 'test_suite_file' in request.files:
+            test_suite_upd = request.files['test_suite_file']
+            path_test_java = UPLOAD_FOLDER +  test_suite_upd.filename
+            if file_compile(path_test_java, path_file_java):
+                if execute_test(code_file_upd_name, test_suite_upd_name):
+                        return make_response(jsonify("La test suite debe fallar en almenos un caso de test para poder subirlo"))
+                else:
+                    challenge.tests_code=os.path.split(test_suite_upd.filename)[-1].split('.')[0]
+                    upload_file_1(test_suite_upd, UPLOAD_FOLDER)
+
         
         db.session.commit()
         return jsonify({"challenge":Challenge_java.__repr__(challenge)})
@@ -135,12 +147,12 @@ def create_challenge():
                 # upload test suite java and compile
                 upload_file_1(test_suite, UPLOAD_FOLDER)
                 path_test_java = UPLOAD_FOLDER + test_suite.filename
-                #test_file_compile(path_test_java, path_file_java)
-                
+                #file_compile(path_test_java, path_file_java)
+            
                 # excute test suite java
                 # excute_java_test return true if pass all test
-                if test_file_compile(path_test_java, path_file_java):
-                    if execute_java_test(path_test_java):
+                if file_compile(path_test_java, path_file_java):
+                    if execute_test(test_suite_file_name, code_file_name):
                         return make_response(jsonify("La test suite debe fallar en almenos un caso de test para poder subirlo"))
                     else:
                         #upload_file(file, test_suite)
@@ -228,7 +240,7 @@ def class_java_compile(path_file_java):
 
 # given an path file test and path file class
 # if not compile file test remove the files and return exception
-def test_file_compile(path_test_java, path_file_java):
+def file_compile(path_test_java, path_file_java):
     try:
         compile_java_test(path_test_java)
     except Exception:
@@ -237,7 +249,26 @@ def test_file_compile(path_test_java, path_file_java):
         return False
     return True
 
+# if pass all test not save file and remove all files in public/challenges
+def execute_test(name, code_file_name):
+    rm_java = UPLOAD_FOLDER + name + '.java'
+    rm_class = UPLOAD_FOLDER + name + '.class'
+    rm_java_class = UPLOAD_FOLDER + code_file_name + '.java'
+    rm_java_java = UPLOAD_FOLDER + code_file_name + '.class'
+    if execute_java_test(name):
+        # remove all files
+        delete_path(rm_java)
+        delete_path(rm_class)
+        # remove class java
+        delete_path(rm_java_class)
+        delete_path(rm_java_java)
+        return True
+    else:
+        delete_path(rm_class)
+        delete_path(rm_java_java)
+    return False
 
+# remove the of file in directory
 def delete_path(file_rm):
     if path.exists(file_rm):
         remove(file_rm)
@@ -272,14 +303,18 @@ def execute_java(java_file):
 def compile_java_test(java_file):
     subprocess.check_call(['javac', '-cp', PATHLIBRERIA, java_file])
     
+# return True if pass all test alse false
 def execute_java_test(java_file):
-    cmd=['java', '-cp', PATHLIBRERIA , PATHEXECUTE, java_file]
+    cmd=['java', '-cp', EJECUTARFILE , PATHEXECUTE, java_file]
     proc=subprocess.Popen(cmd, stdout = PIPE, stderr = STDOUT)
-    input = subprocess.Popen(cmd, stdin = PIPE)
-    if input:
-        print("No pasa los test exitosamente")
-        return False
-    else:
-        print("Paso exitosamente los tests")
+    child = subprocess.Popen(cmd, stdin = PIPE)
+    streamdata = child.communicate()[0]
+    rc = child.returncode
+    if rc == 0:
         return True
+    else:
+        return False
+    
+    
+    
 
