@@ -24,7 +24,6 @@ EJECUTARFILE= 'app/java/lib/hamcrest-all-1.3.jar:app/java/lib/junit-4.13.2.jar:p
 def login():
     return { 'result': 'funciona' }
 
-# GET 'http://localhost:4000/api/v1/java-challenges'
 @java.route('/java-challenges',methods=['GET'])
 def ViewAllChallenges():
     challenge = {"challenges":[]}
