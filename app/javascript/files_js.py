@@ -5,11 +5,15 @@ import json
 from ..javascript import folders_and_files
 from ..javascript import dependences
 
+#devuelve el nombre del archivo sin su sufijo 
 def get_name_file(path):
     return PurePosixPath(path).stem
 
+def get_name_file_with_suffix(path_file):
+    return PurePosixPath(path_file).name
+
 def valid(file):
-    return  file and PurePath(file.filename).suffix == folders_and_files.FILE_JS_EXTENSION
+    return file and PurePath(file.filename).suffix == folders_and_files.FILE_JS_EXTENSION
 
 def upload(file,file_name):
     
@@ -34,6 +38,7 @@ def exist_file(file_name):
 def open_file(path):
     with open(path) as f:
         content = f.read()
+        f.close()
     return content
 
 def compile_js(path_file):
@@ -65,3 +70,12 @@ def run_commands(command):
 def remove_files(*args): 
     for path_file in args:
         if os.path.lexists(path_file): os.remove(path_file)
+
+def rename_file(path_file,file_new_name):
+    
+    if not os.path.isfile(file_new_name):
+        file_new_name += folders_and_files.FILE_JS_EXTENSION
+    
+    directory = PurePosixPath(path_file).parent #devuelve el direcrorio padre del archivo
+    new_path_file = directory.joinpath(file_new_name)
+    os.rename(path_file, new_path_file)
