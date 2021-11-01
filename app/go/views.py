@@ -14,22 +14,21 @@ def return_single_challenge(id):
         if challenge_by_id is None:
             return "ID Not Found", 404
         challenge_to_return=challenge_by_id.convert_dict()
-        from_file_to_str(challenge_to_return)
-        from_file_to_str_tests(challenge_to_return)
+        from_file_to_str(challenge_to_return, "code")
+        from_file_to_str(challenge_to_return, "tests_code")
         del challenge_to_return["id"]
         return jsonify({"challenge":challenge_to_return})
 
-
-def from_file_to_str(challenge):
-    file= open(str(os.path.abspath(challenge["code"])),'r')
+def from_file_to_str(challenge, attribute):
+    file= open(str(os.path.abspath(challenge[attribute])),'r')
     content=file.readlines()
     file.close()
-    challenge["code"]=content
+    challenge[attribute]=(content)
     return challenge
 
-def from_file_to_str_tests(challenge):
-    file= open(str(os.path.abspath(challenge["tests_code"])),'r')
-    content=file.readlines()
-    file.close()
-    challenge["tests_code"]=content
-    return challenge
+def compiles(commands, path):
+    return (subprocess.run(commands, cwd=path, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL).returncode == 0)
+
+def compiles(command):
+    return (subprocess.call(command, shell=True, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL) == 0)
+
