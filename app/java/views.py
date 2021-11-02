@@ -1,6 +1,7 @@
 import re
 from flask.helpers import make_response
-from app.java.models_java import Challenge_java
+from app.java import *
+from app.java.controller import *
 from . import java
 from app import db
 import os
