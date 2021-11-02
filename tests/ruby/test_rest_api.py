@@ -228,3 +228,41 @@ def test_post_bad_dependencies(client):
 
     assert r.status_code == 400
     assert response == 'test_suite dependencies are wrong'
+
+def test_post_existent_challenge(client):
+    url = '/ruby/challenge'
+    data = {
+        'source_code_file': open('tests/ruby/tests-data/example8.rb', 'rb'),
+        'test_suite_file': open('tests/ruby/tests-data/example_test8.rb', 'rb'),
+        'challenge': '{ \
+            "challenge": { \
+                "source_code_file_name" : "example8", \
+                "test_suite_file_name" : "example_test8", \
+                "repair_objective" : "Testing repeated post", \
+                "complexity" : "4" \
+            } \
+        }'
+    }
+
+    r = client.post(url, data=data)
+
+    url = '/ruby/challenge'
+    data = {
+        'source_code_file': open('tests/ruby/tests-data/example8.rb', 'rb'),
+        'test_suite_file': open('tests/ruby/tests-data/example_test8.rb', 'rb'),
+        'challenge': '{ \
+            "challenge": { \
+                "source_code_file_name" : "example8", \
+                "test_suite_file_name" : "example_test8", \
+                "repair_objective" : "Testing repeated post", \
+                "complexity" : "4" \
+            } \
+        }'
+    }
+
+    r2 = client.post(url, data=data)
+    response = r2.json['challenge']
+
+    assert r.status_code == 200
+    assert r2.status_code == 409
+    assert response == 'source_code already exists'
