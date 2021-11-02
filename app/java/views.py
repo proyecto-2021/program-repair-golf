@@ -26,22 +26,10 @@ def login():
 
 @java.route('/java-challenges',methods=['GET'])
 def ViewAllChallenges():
-    challenge = {"challenges":[]}
-    challenge ['challenges'] = Challenge_java.query.all()
-    all_challenges=[]
-    for i in challenge['challenges']:
-        aux_challenge = Challenge_java.__repr__(i)
-        nombre_code = aux_challenge['code']
-        path='public/challenges/' + nombre_code + '.java'
-        file = open (path,mode='r',encoding='utf-8')
-        filemostrar=file.read()
-        file.close()
-        aux_challenge['code']=filemostrar
-        aux_challenge.pop('tests_code',None)
-        all_challenges.append(aux_challenge)
-    return make_response(jsonify({"challenges":all_challenges}))
-  
-
+   def ViewAllChallenges():
+    return controller.list_challenges_java()
+    
+ 
 # Get Assignment by ID
 @java.route('/java-challenges/<int:id>',methods=['GET'])
 def View_Challenges(id):
