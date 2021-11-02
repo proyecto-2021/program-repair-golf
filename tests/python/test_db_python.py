@@ -3,7 +3,7 @@ from app import create_app, db
 from app.python.models import *
 from . import client
 
-
+#testing of Saved challenge
 def test_db_saved_data(client):
   #arrange
   new_challenge = PythonChallenge(
@@ -18,7 +18,7 @@ def test_db_saved_data(client):
   
   assert len(PythonChallenge.query.all()) > 0
 
-
+#testing of delete challenge
 def test_db_delete_all_data(client):
   
   db.session.query(PythonChallenge).delete()
