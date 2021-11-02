@@ -3,6 +3,7 @@ from . import cSharp
 from json import loads
 from app import db
 from .models import CSharp_Challenge
+from models import *
 from  flask import jsonify, make_response, json, request
 import subprocess, os
 from subprocess import PIPE
@@ -23,13 +24,12 @@ def login():
 @cSharp.route('/c-sharp-challenges/<int:id>', methods=['PUT'])
 def put_csharp_challenges():
     update_request = request.files
-    challenge = db.session.query(CSharp_Challenge).filter_by(id=id).first()
-    if challenge is None:
+    challenge = get_challenge(id)
+    if not exist(id):
         return make_response(jsonify({"challenge":"There is no challenge for this id"}), 404) 
-    challenge_dict = challenge._repr_()
     files_keys = ("source_code_file", "test_suite_file")
-    challenge_name = os.path.basename(challenge_dict['code'])
-    test_name = os.path.basename(challenge_dict['tests_code'])
+    challenge_name = os.path.basename(challenge['code'])
+    test_name = os.path.basename(challenge['tests_code'])
     old_challenge_path = CHALLENGE_SAVE_PATH + challenge_name.replace('.cs','/') + challenge_name
     old_test_path = CHALLENGE_SAVE_PATH + challenge_name.replace('.cs','/') + test_name
     new_challenge_path = CHALLENGE_VALIDATION_PATH + challenge_name
@@ -90,15 +90,14 @@ def put_csharp_challenges():
             shutil.move(new_test_path, old_test_path)
     
     if 'repair_objective' in update_request:
-        db.session.query(CSharp_Challenge).filter_by(id=id).update(dict(repair_objetive=update_request['repair_objective']))
-        db.session.commit()
+        update_challenge_data(id,{'repair_objetive':update_request['repair_objective']})
 
     if 'complexity' in update_request:
-        if int(update_request['complexity']) < 1 or int(update_request['complexity']) > 5 :
+        complexity = int(update_request['complexity'])
+        if complexity < 1 or complexity > 5 :
             return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
         else:
-            db.session.query(CSharp_Challenge).filter_by(id=id).update(dict(complexity=int(update_request['complexity'])))
-            db.session.commit()
+            update_challenge_data(id,{'complexity': complexity})
 
     
 @cSharp.route('/c-sharp-challenges', methods=['POST'])
@@ -132,7 +131,7 @@ def post_csharp_challenges():
         elif validate_response == 1 :
             remove_path([new_code_exe_path, new_test_dll_path])
             new_data_id = save_challenge(new_challenge, new_source_code_path, new_test_suite_path)
-            return make_response(jsonify({'challenge': get_challenge_data(new_data_id)}))
+            return make_response(jsonify({'challenge': get_challenge(new_data_id, show_files_content = True)}))
 
         elif validate_response == 2 :
             shutil.rmtree(CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'])
@@ -142,9 +141,9 @@ def post_csharp_challenges():
             shutil.rmtree(CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'])
             return make_response(jsonify({'Challenge': 'Sintax errors'}), 409)
 
-        if int(new_challenge['complexity']) < 1 or int(new_challenge['complexity']) > 5 :
-            shutil.rmtree(CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'])
-            return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
+    if int(new_challenge['complexity']) < 1 or int(new_challenge['complexity']) > 5 :
+        shutil.rmtree(CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'])
+        return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
 
     else:
         return make_response(jsonify({'challenge': 'Data not found'}), 404)
@@ -152,8 +151,8 @@ def post_csharp_challenges():
 @cSharp.route('c-sharp-challenges/<int:id>/repair', methods=['POST'])
 def repair_Candidate(id):
     # verify challenge's existence 
-    if db.session.query(CSharp_Challenge).get(id) is not None:
-        challenge = db.session.query(CSharp_Challenge).get(id).__repr__()
+    if exist(id):
+        challenge = get_challenge(id)
         challenge_name = os.path.basename(challenge['code'])
         file = request.files['source_code_file']
         repair_path = 'public/challenges/' + challenge_name
@@ -181,11 +180,10 @@ def repair_Candidate(id):
 
 @cSharp.route('/c-sharp-challenges/<int:id>', methods = ['GET'])
 def get_challenge(id):
-    if db.session.query(CSharp_Challenge).get(id) is None:
-        return make_response(jsonify({'Challenge': 'Not found'}), 404)
+    if exist(id):
+        return jsonify({ 'Challenge': get_challenge(id, show_files_content = True) })       
     else:
-        challenge = get_challenge_data(id)
-        return jsonify({ 'Challenge': challenge })
+        return make_response(jsonify({'Challenge': 'Not found'}), 404)       
 
 @cSharp.route('/c-sharp-challenges', methods=['GET'])
 def get_csharp_challenges():
@@ -240,18 +238,6 @@ def save_best_score(score, previous_best_score, challenge_id):
         return 0
     else: 
         return 1
-
-def save_challenge(challenge_data, source_code_path, test_path):
-    new_challenge = CSharp_Challenge(code = source_code_path, tests_code = test_path, repair_objetive = challenge_data['repair_objective'], complexity = int(challenge_data['complexity']), best_score = 0)
-    db.session.add(new_challenge)
-    db.session.commit()
-    return new_challenge.id
-
-def get_challenge_data(id):
-    challenge = db.session.query(CSharp_Challenge).get(id).__repr__()
-    challenge['code'] = open(challenge['code'], "r").read()
-    challenge['tests_code'] = open(challenge['tests_code'], "r").read()
-    return challenge
 
 def save_file_for_post(dictionary):
     #TODO: Implement method
