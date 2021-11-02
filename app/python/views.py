@@ -171,11 +171,3 @@ def update_files(names, new_code, new_test, old_paths, response):
     
     return { 'Result': 'ok' }    
 
-#saves a file with new name and new content
-#if not a new name it uses the old one, same for content
-def save_changes(new_name, file_content, old_file_path, base_path):
-	new_path = determine_path(new_name, base_path, old_file_path)
-	#gets new or old content
-	source_code = determine_content(file_content, old_file_path)
-	save_file(new_path, "wb", source_code)
-	return new_path
