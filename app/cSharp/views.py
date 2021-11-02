@@ -120,8 +120,7 @@ def post_csharp_challenges():
             return make_response(jsonify({'Challenge': 'Already exists'}), 409)
         new_source_code_path = CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'] + "/" + new_challenge['source_code_file_name'] + ".cs"
         new_test_suite_path = CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'] + "/" + new_challenge['test_suite_file_name'] + ".cs"
-        new_challenge['source_code_file'].save(new_source_code_path)
-        new_challenge['test_suite_file'].save(new_test_suite_path)
+        save_challenge_files(new_challenge['source_code_file'], new_source_code_path, new_challenge['test_suite_file'], new_test_suite_path)
         validate_response = validate_code(new_source_code_path, new_test_suite_path)
         new_code_exe_path = new_source_code_path.replace('.cs', '.exe')
         new_test_dll_path = new_test_suite_path.replace('.cs', '.dll')
@@ -253,6 +252,7 @@ def get_challenge_data(id):
     challenge['tests_code'] = open(challenge['tests_code'], "r").read()
     return challenge
 
-def save_file_for_post(dictionary):
-    #TODO: Implement method
-    pass 
+def save_challenge_files(source_code, source_code_path, test_suite, test_suite_path):
+    source_code.save(source_code_path)
+    test_suite.save(test_suite_path)
+    
