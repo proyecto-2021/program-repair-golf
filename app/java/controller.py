@@ -1,5 +1,6 @@
 import re
 from flask.helpers import make_response
+from app.java.DAO_java_challenge import DAO_java_challenge
 from app.java.models_java import Challenge_java
 from . import java
 from app import db
@@ -18,7 +19,7 @@ class controller():
 
     def list_challenges_java():
         challenge = {"challenges":[]}
-        challenge ['challenges'] = Challenge_java.query.all()
+        challenge ['challenges'] = DAO_java_challenge.all_challenges_java()
         all_challenges=[]
         for i in challenge['challenges']:
             aux_challenge = Challenge_java.__repr__(i)
