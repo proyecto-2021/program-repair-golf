@@ -16,3 +16,11 @@ class PythonController:
 
     return challenge_list
 
+  def get_single_challenge(id):
+    raw_challenge = PythonChallengeDAO.get_challenge(id)
+    if raw_challenge is None:
+      return make_response(jsonify({"Challenge": "Not found"}), 404)
+
+    response = PythonChallenge(challenge_data=raw_challenge).to_json()
+    return response
+
