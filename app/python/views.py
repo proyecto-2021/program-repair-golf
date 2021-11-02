@@ -152,10 +152,10 @@ def update_files(names, new_code, new_test, old_paths, response):
     except CalledProcessError as err:
         return {"Error": "Internal Server Error"}
     #new challenge files saving
-    new_code_path = "public/challenges/" + (lambda x: x.split('/')[-1]) (temp_code_path)
+    new_code_path = "public/challenges/" + get_filename(temp_code_path)
     save_file(new_code_path, "wb", read_file(temp_code_path, "rb")) #read file in temp and save it in challenges
 
-    new_test_path = "public/challenges/" + (lambda x: x.split('/')[-1]) (temp_test_path)
+    new_test_path = "public/challenges/" + get_filename(temp_test_path)
     save_file(new_test_path, "wb", read_file(temp_test_path, "rb")) #read file in temp and save it in challenges
     
     #deletion of files at temp

@@ -10,10 +10,14 @@ def save_file(path, mode, content):
 	file.write(content)
 	file.close()
 
+#gets the filename from a path containing it
+def get_filename(path):
+	return path.split('/')[-1]
+
 #returns a new path, if no filename, takes the original name from a path
 def determine_path(filename, base_path, old_path):
 	if filename is None:
-		return base_path + (lambda x: x.split('/')[-1]) (old_path)
+		return base_path + get_filename(old_path)
 	else:
 		return base_path + filename
 
