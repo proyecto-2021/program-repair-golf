@@ -15,9 +15,6 @@ class RubyChallengeDAO(object):
 		del challenge['id']
 		return challenge
 
-	def get_challenges(self):
-		return [challenge.get_dict() for challenge in db.session.query(RubyChallenge).all()]
-
 	def get_challenges_data(self):
 		challenges = [challenge.get_data() for challenge in db.session.query(RubyChallenge).all()]
 		for c in challenges:
