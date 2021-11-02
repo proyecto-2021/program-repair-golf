@@ -3,7 +3,7 @@ from . import client
 def test_post_challenge(client):
     url = '/ruby/challenge'
     data = {
-        'source_code_file': open('tests/ruby/tests-data/example1.rb','rb'),
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb','rb'),
         'test_suite_file': open('tests/ruby/tests-data/example_test1.rb','rb'),
         'challenge': '{ \
             "challenge": { \
@@ -15,7 +15,7 @@ def test_post_challenge(client):
         }'
     }
 
-    with open('tests/ruby/tests-data/example1.rb') as f:
+    with open('tests/ruby/tests-data/example_challenge.rb') as f:
         content_code = f.read()
     with open('tests/ruby/tests-data/example_test1.rb') as f:
         content_tests_code = f.read()
@@ -36,7 +36,7 @@ def test_post_challenge(client):
 def test_get_one_after_post(client):
     url = '/ruby/challenge'
     data = {
-        'source_code_file': open('tests/ruby/tests-data/example2.rb', 'rb'),
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb', 'rb'),
         'test_suite_file': open('tests/ruby/tests-data/example_test2.rb', 'rb'),
         'challenge': '{ \
             "challenge": { \
@@ -68,7 +68,7 @@ def test_get_all_after_post(client):
 
     url = '/ruby/challenge'
     data = {
-        'source_code_file': open('tests/ruby/tests-data/example3.rb', 'rb'),
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb', 'rb'),
         'test_suite_file': open('tests/ruby/tests-data/example_test3.rb', 'rb'),
         'challenge': '{ \
             "challenge": { \
@@ -94,7 +94,7 @@ def test_get_all_after_post(client):
 def test_post_repair(client):
     url = '/ruby/challenge'
     data = {
-        'source_code_file': open('tests/ruby/tests-data/example4.rb', 'rb'),
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb', 'rb'),
         'test_suite_file': open('tests/ruby/tests-data/example_test4.rb', 'rb'),
         'challenge': '{ \
                 "challenge": { \
@@ -119,7 +119,7 @@ def test_post_repair(client):
 def test_put_after_post(client):
     url = '/ruby/challenge'
     data = {
-        'source_code_file': open('tests/ruby/tests-data/example5.rb', 'rb'),
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb', 'rb'),
         'test_suite_file': open('tests/ruby/tests-data/example_test5.rb', 'rb'),
         'challenge': '{ \
             "challenge": { \
@@ -169,7 +169,7 @@ def test_put_after_post(client):
 def test_post_existent_challenge(client):
     url = '/ruby/challenge'
     data = {
-        'source_code_file': open('tests/ruby/tests-data/example7.rb', 'rb'),
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb', 'rb'),
         'test_suite_file': open('tests/ruby/tests-data/example_test7.rb', 'rb'),
         'challenge': '{ \
             "challenge": { \
@@ -185,7 +185,7 @@ def test_post_existent_challenge(client):
 
     url = '/ruby/challenge'
     data = {
-        'source_code_file': open('tests/ruby/tests-data/example7.rb', 'rb'),
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb', 'rb'),
         'test_suite_file': open('tests/ruby/tests-data/example_test7.rb', 'rb'),
         'challenge': '{ \
             "challenge": { \
@@ -228,7 +228,7 @@ def test_post_code_not_compiles1(client):
 def test_post_code_not_compiles2(client):
     url = '/ruby/challenge'
     data = {
-        'source_code_file': open('tests/ruby/tests-data/example8.rb', 'rb'),
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb', 'rb'),
         'test_suite_file': open('tests/ruby/tests-data/example_not_compile_test8.rb', 'rb'),
         'challenge': '{ \
             "challenge": { \
@@ -249,7 +249,7 @@ def test_post_code_not_compiles2(client):
 def test_post_bad_dependencies(client):
     url = '/ruby/challenge'
     data = {
-        'source_code_file': open('tests/ruby/tests-data/example8.rb', 'rb'),
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb', 'rb'),
         'test_suite_file': open('tests/ruby/tests-data/example_dependencies_not_okay_test8.rb', 'rb'),
         'challenge': '{ \
             "challenge": { \
