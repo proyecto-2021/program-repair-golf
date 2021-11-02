@@ -165,3 +165,45 @@ def test_put_after_post(client):
                         "complexity": "3",
                         "best_score": 0
                     }
+
+def test_post_code_not_compiles1(client):
+    url = '/ruby/challenge'
+    data = {
+        'source_code_file': open('tests/ruby/tests-data/example_not_compile7.rb', 'rb'),
+        'test_suite_file': open('tests/ruby/tests-data/example_test7.rb', 'rb'),
+        'challenge': '{ \
+            "challenge": { \
+                "source_code_file_name" : "example7", \
+                "test_suite_file_name" : "example_test7", \
+                "repair_objective" : "Testing Compilation error", \
+                "complexity" : "4" \
+            } \
+        }'
+    }
+
+    r = client.post(url, data=data)
+    response = r.json['challenge']
+
+    assert r.status_code == 400
+    assert response == 'source_code and/or test_suite not compile'
+
+def test_post_code_not_compiles2(client):
+    url = '/ruby/challenge'
+    data = {
+        'source_code_file': open('tests/ruby/tests-data/example7.rb', 'rb'),
+        'test_suite_file': open('tests/ruby/tests-data/example_not_compile_test7.rb', 'rb'),
+        'challenge': '{ \
+            "challenge": { \
+                "source_code_file_name" : "example7", \
+                "test_suite_file_name" : "example_test7", \
+                "repair_objective" : "Testing Compilation error", \
+                "complexity" : "4" \
+            } \
+        }'
+    }
+
+    r = client.post(url, data=data)
+    response = r.json['challenge']
+
+    assert r.status_code == 400
+    assert response == 'source_code and/or test_suite not compile'
