@@ -1,6 +1,7 @@
 from . import python
 from .. import db
 from flask import request, make_response, jsonify
+from flask.views import MethodView
 from .models import PythonChallengeModel
 from json import loads
 from os import path
@@ -8,18 +9,18 @@ import subprocess
 from .file_utils import *
 from .subprocess_utils import *
 
-@python.route('/login', methods=['GET'])
+class PythonViews(MethodView):
+
 def login():
     return { 'result': 'ok' }
 
-@python.route('/api/v1/python-challenges', methods=['GET'])
 def return_challenges(): 
     #Get all the challanges
     all_challenges = PythonChallengeModel.query.all()
     challenge_list = [] 
     for challenge in all_challenges:
         #Get row as a dictionary
-        response = PythonChallenresponse.to_dict(challenge)
+            response = PythonChallengeModel.to_dict(challenge)
         #Get code from file
         response['code'] = read_file(response['code'], "r")
         response.pop('tests_code', None)
@@ -27,7 +28,6 @@ def return_challenges():
 
     return jsonify({"challenges": challenge_list})
 
-@python.route('/api/v1/python-challenges/<id>', methods=['GET'])
 def return_challange_id(id):
     #Get challenge with given id 
     challenge = PythonChallengeModel.query.filter_by(id = id).first()
@@ -44,7 +44,6 @@ def return_challange_id(id):
 
     return jsonify({"Challenge": response}) 
 
-@python.route('/api/v1/python-challenges', methods=['POST'])
 def create_new_challenge():
     #we get the dict with keys "source_code_file_name", "test_suite_file_name", "repair_objective", "complexity"
     challenge_data = loads(request.form.get('challenge'))['challenge']
@@ -84,7 +83,6 @@ def create_new_challenge():
     return jsonify({"challenge" : response})
 
 
-@python.route('api/v1/python-challenges/<id>', methods=['PUT'])
 def update_challenge(id):
     challenge_data = request.form.get('challenge')
     if challenge_data != None: challenge_data = loads(challenge_data)['challenge']
@@ -171,3 +169,7 @@ def update_files(names, new_code, new_test, old_paths, response):
     
     return { 'Result': 'ok' }    
 
+python_view = PythonViews.as_view('python_api')
+python.add_url_rule('/api/v1/python-challenges', view_func=python_view, methods=['GET'])
+python.add_url_rule('/api/v1/python-challenges', view_func=python_view, methods=['POST'])
+python.add_url_rule('/api/v1/python-challenges/<int:id>', view_func=python_view, methods=['GET', 'PUT'])
