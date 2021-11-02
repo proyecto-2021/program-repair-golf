@@ -11,11 +11,9 @@ from .subprocess_utils import *
 
 class PythonViews(MethodView):
 
-def login():
-    return { 'result': 'ok' }
-
-def return_challenges(): 
-    #Get all the challanges
+    def get(self, id): 
+        if id is None:
+            Get all the challanges
     all_challenges = PythonChallengeModel.query.all()
     challenge_list = [] 
     for challenge in all_challenges:
@@ -25,10 +23,9 @@ def return_challenges():
         response['code'] = read_file(response['code'], "r")
         response.pop('tests_code', None)
         challenge_list.append(response)
-
     return jsonify({"challenges": challenge_list})
 
-def return_challange_id(id):
+        else:
     #Get challenge with given id 
     challenge = PythonChallengeModel.query.filter_by(id = id).first()
     
@@ -44,7 +41,7 @@ def return_challange_id(id):
 
     return jsonify({"Challenge": response}) 
 
-def create_new_challenge():
+    def post(self):
     #we get the dict with keys "source_code_file_name", "test_suite_file_name", "repair_objective", "complexity"
     challenge_data = loads(request.form.get('challenge'))['challenge']
     save_to = "public/challenges/"  #general path were code will be saved
@@ -83,7 +80,7 @@ def create_new_challenge():
     return jsonify({"challenge" : response})
 
 
-def update_challenge(id):
+    def put(self, id):
     challenge_data = request.form.get('challenge')
     if challenge_data != None: challenge_data = loads(challenge_data)['challenge']
     save_to = "public/challenges/"  #general path were code will be saved
@@ -170,6 +167,6 @@ def update_files(names, new_code, new_test, old_paths, response):
     return { 'Result': 'ok' }    
 
 python_view = PythonViews.as_view('python_api')
-python.add_url_rule('/api/v1/python-challenges', view_func=python_view, methods=['GET'])
+python.add_url_rule('/api/v1/python-challenges', defaults={'id': None}, view_func=python_view, methods=['GET'])
 python.add_url_rule('/api/v1/python-challenges', view_func=python_view, methods=['POST'])
 python.add_url_rule('/api/v1/python-challenges/<int:id>', view_func=python_view, methods=['GET', 'PUT'])
