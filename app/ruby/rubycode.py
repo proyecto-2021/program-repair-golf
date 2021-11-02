@@ -1,10 +1,17 @@
 import os, subprocess
 
 class RubyCode:
-	def __init__(self, path, file_name, file):
-		self.path = path
-		self.file_name = file_name
-		self.file = file
+	def __init__(self, path=None, file_name=None, file=None, full_name=None):
+		if full_name is None:
+			self.path = path
+			self.file_name = file_name
+			self.file = file
+			self.full_name = path + file_name + '.rb'
+		else:
+			self.path = os.path.dirname(full_name)
+			self.file_name = os.path.basename(full_name).split('.')[0]
+			self.file = None
+			self.full_name = full_name
 
 	def get_path(self):
 		return self.path
