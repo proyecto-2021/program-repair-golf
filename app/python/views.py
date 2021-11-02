@@ -198,6 +198,7 @@ def no_syntax_errors(code_path):
 
 def  tests_fail(test_path, test_pass = False):
     try:
+        p = subprocess.call("python -m pytest " + test_path ,stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         if p == 0 and test_pass: #Caso donde quiero que pase todos los test y si pasaron los test
             return True
         elif p == 1 and not test_pass: #Caso donde no pasaron los test y no quiero que pasen todos los tests
