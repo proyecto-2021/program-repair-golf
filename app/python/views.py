@@ -83,9 +83,6 @@ def create_new_challenge():
     response['tests_code'] = tests_source_code.decode()
     return jsonify({"challenge" : response})
 
-#Primero asegurarse de que la solución candidata sea sintácticamente válida.
-#Segundo luego calcular el puntaje .
-#Tercero devolver la puntuación de la solución candidata.
 @python.route('/api/v1/python-challenges/<id>/repair', methods=['POST'])
 def repair_challenge(id):
 #Challenge in db 
@@ -123,6 +120,13 @@ def repair_challenge(id):
     player = {'username': "John Doe"}
 
     response = {'challenge': challenge_reponse, 'player': player, 'attempts': 0, 'score': score}
+
+    #Deletion of files at temp
+    try:
+        subprocess.call("rm " + temp_code_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        subprocess.call("rm " + temp_test_code_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    except CalledProcessError as err:
+        return {"Error": "Internal Server Error"}
 
     return jsonify({"repair": response})
 
