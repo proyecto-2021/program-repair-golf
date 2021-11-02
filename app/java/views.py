@@ -15,6 +15,7 @@ from subprocess import STDOUT, PIPE
 from os import remove
 from os import path
 
+
 UPLOAD_FOLDER = './public/challenges/'
 PATHLIBRERIA = 'app/java/lib/junit-4.13.2.jar:public/challenges'
 PATHEXECUTE = 'org.junit.runner.JUnitCore'
@@ -25,12 +26,22 @@ EJECUTARFILE= 'app/java/lib/hamcrest-all-1.3.jar:app/java/lib/junit-4.13.2.jar:p
 def login():
     return { 'result': 'funciona' }
 
+
+# GET 'http://localhost:4000/api/v1/java-challenges'
+
+@java.route('/java-challenges',methods=['GET'])
+def ViewAllChallenges():
+    return controller.list_challenges_java()
+    
+
+=======
 @java.route('/java-challenges',methods=['GET'])
 def ViewAllChallenges():
    def ViewAllChallenges():
     return controller.list_challenges_java()
     
  
+
 # Get Assignment by ID
 @java.route('/java-challenges/<int:id>',methods=['GET'])
 def View_Challenges(id):
