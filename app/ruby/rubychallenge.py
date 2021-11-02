@@ -2,12 +2,16 @@ from .rubycode import RubyCode
 import subprocess, sys
 
 class RubyChallenge:
-	def __init__(self, repair_objective, complexity):
-		self.code = None
-		self.tests_code = None
+	def __init__(self, repair_objective, complexity, code=None, tests_code=None):
 		self.repair_objective = repair_objective
 		self.complexity = complexity
 		self.best_score = 0
+		self.code = None
+		self.tests_code = None
+		if code is not None:
+			self.code = RubyCode(full_name=code)
+		if tests_code is not None:
+			self.tests_code = RubyCode(full_name=tests_code)
 
 	def set_code(self, files_path, file_name, file):
 		self.code = RubyCode(files_path, file_name, file)
