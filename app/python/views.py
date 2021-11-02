@@ -6,6 +6,7 @@ from json import loads
 from os import path
 import subprocess
 from .file_utils import *
+import nltk
 
 @python.route('/login', methods=['GET'])
 def login():
@@ -63,7 +64,7 @@ def create_new_challenge():
     tests_source_code = request.files.get('test_suite_file').read()
     new_tests_path = save_to + challenge_data['test_suite_file_name']
     save_file(new_tests_path, "wb", tests_source_code)
-   
+
     #create row for database with the new challenge
     new_challenge = PythonChallenge(code=new_code_path,
         tests_code=new_tests_path,
@@ -82,6 +83,29 @@ def create_new_challenge():
     response['tests_code'] = tests_source_code.decode()
     return jsonify({"challenge" : response})
 
+#Primero asegurarse de que la solución candidata sea sintácticamente válida.
+#Segundo luego calcular el puntaje .
+#Tercero devolver la puntuación de la solución candidata.
+@python.route('/api/v1/python-challenges/<id>/repair', methods=['POST'])
+def repair_challenge(id):
+    #Challenge que esta en la db 
+    challenge = PythonChallenge.query.filter_by(id=id).first()
+    #Codigo supuestamente repadado
+    code_repair = request.files.get('source_code_file')
+    #Guando temporalmente el codigo que me pasan    
+    temp_code_path = "public/temp/code-repair.py"
+    save_file(temp_path, 'wb',code_repair)
+
+    test_code = challenge.tests_code
+    content_test_code = read_file(test_code,'rb')
+    temp_test_code_path = "public/temp/test-code.py"
+    save_file(temp_test_code_path,'wb',content_test_code)
+
+    result = valid_python_challenge(temp_code_path,temp_test_code_path)    
+
+    if 'Error' in result:
+        return make_response(jsonify(result), 409)
+        
 
 @python.route('api/v1/python-challenges/<id>', methods=['PUT'])
 def update_challenge(id):
@@ -151,7 +175,7 @@ def  tests_fail(test_path):
         return p != 0 #0 means all tests passed, other value means some test/s failed
     except CalledProcessError as err:
         return True
-  
+
 #checks for name or content change reuqest
 def file_changes_required(names, code, tests):
     return code is None or tests is None or 'source_code_file_name' in names or 'test_suite_file_name' in names
