@@ -1,7 +1,6 @@
+from ..exceptions.HTTPException import HTTPException
 
-class CommandRunException(Exception):
-    def __init__(self,msj,HTTP_code):
-        self.msj = msj
-        self.HTTP_code = HTTP_code
-    def __str__(self):
-        return repr(self.msj, self.HTTP_code)
+
+class CommandRunException(HTTPException):
+    def __init__(self, msj, HTTP_code):
+        HTTPException.__init__(self, f"CommandRunException: {msj}", HTTP_code)
