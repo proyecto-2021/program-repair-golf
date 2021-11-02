@@ -27,7 +27,6 @@ def login():
 
 @java.route('/java-challenges',methods=['GET'])
 def ViewAllChallenges():
-   def ViewAllChallenges():
     return controller.list_challenges_java()
     
  
