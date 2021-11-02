@@ -2,12 +2,15 @@ import os
 from . import go
 from .models_go import GoChallenge
 from app import db
-from flask import jsonify
+from flask import jsonify, make_response
 
 
 @go.route('/api/v1/go-challenges', methods=['GET'])
 def get_all_challenges():
     challenges = db.session.query(GoChallenge).all()
+    if not challenges:
+        return make_response(jsonify({'challenges' : 'not found'}), 400)
+    
     challenges_to_show = []
     i = 0
     
