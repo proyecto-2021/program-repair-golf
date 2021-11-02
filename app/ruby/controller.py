@@ -15,11 +15,11 @@ class Controller:
         challenge.set_tests_code(self.files_path, data['test_suite_file_name'], tests_code_file)
 
         if not challenge.save_code():
-            return make_response(jsonify({'challenge': 'source_code is already exist'}), 409)
+            return make_response(jsonify({'challenge': 'source_code already exists'}), 409)
 
         if not challenge.save_tests_code():
             challenge.remove_code()
-            return make_response(jsonify({'challenge': 'test_suite is already exist'}), 409)
+            return make_response(jsonify({'challenge': 'test_suite already exists'}), 409)
 
         if not challenge.codes_compile():
             challenge.remove_code()
