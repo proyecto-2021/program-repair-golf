@@ -101,7 +101,6 @@ def put_csharp_challenges():
             db.session.commit()
 
     
-
 @cSharp.route('/c-sharp-challenges', methods=['POST'])
 def post_csharp_challenges():
        #Get new challenge data
@@ -254,3 +253,6 @@ def get_challenge_data(id):
     challenge['tests_code'] = open(challenge['tests_code'], "r").read()
     return challenge
 
+def save_file_for_post(dictionary):
+    #TODO: Implement method
+    pass 
