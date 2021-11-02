@@ -6,7 +6,9 @@ class RubyChallengeDAO(object):
 		pass
 
 	def get_challenge(self, id):
-		return db.session.query(RubyChallenge).filter_by(id=id).first().get_dict()
+		challenge = db.session.query(RubyChallenge).filter_by(id=id).first().get_dict()
+		del challenge['id']
+		return challenge
 
 	def get_challenge_data(self, id):
 		challenge = db.session.query(RubyChallenge).filter_by(id=id).first().get_data()
