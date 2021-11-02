@@ -35,7 +35,7 @@ def return_challange_id(id):
         return make_response(jsonify({"Challenge": "Not found"}), 404)
 
     #Dictionary auxiliary to modify the keys
-    aux_dict = PythonChallenge.to_dict(challenge)  
+    response = PythonChallenge.to_dict(challenge)  
     #Get tests code from file
     response['code'] = read_file(response['code'], "r")
     response['tests_code'] = read_file(response['tests_code'], "r")
@@ -57,14 +57,16 @@ def create_new_challenge():
         return make_response(jsonify(result), 409)
     #save in new path
     challenge_source_code = request.files.get('source_code_file').read()
-    save_file(code_path, "wb", challenge_source_code)
+    new_code_path = save_to + challenge_data['source_code_file_name']
+    save_file(new_code_path, "wb", challenge_source_code)
     #save in new path
     tests_source_code = request.files.get('test_suite_file').read()
-    save_file(test_path, "wb", tests_source_code)
+    new_tests_path = save_to + challenge_data['test_suite_file_name']
+    save_file(new_tests_path, "wb", tests_source_code)
    
     #create row for database with the new challenge
-    new_challenge = PythonChallenge(code=code_path,
-        tests_code=test_path,
+    new_challenge = PythonChallenge(code=new_code_path,
+        tests_code=new_tests_path,
         repair_objective=challenge_data['repair_objective'],
         complexity=challenge_data['complexity'],
         best_score=0)
@@ -83,29 +85,43 @@ def create_new_challenge():
 
 @python.route('api/v1/python-challenges/<id>', methods=['PUT'])
 def update_challenge(id):
-    challenge_data = loads(request.form.get('challenge'))['challenge']
+    challenge_data = request.form.get('challenge')
+    if challenge_data != None: challenge_data = loads(challenge_data)['challenge']
     save_to = "public/challenges/"  #general path were code will be saved
+
     req_challenge = PythonChallenge.query.filter_by(id=id).first()
-    
+
     if req_challenge is None:   #case id is not in database
         return make_response(jsonify({"challenge":"there is no challenge with that id"}),404)
 
     response = PythonChallenge.to_dict(req_challenge).copy()   #start creating response for the endpoint
-    
+
     new_code = request.files.get('source_code_file')
     new_test = request.files.get('test_suite_file')
+
     if file_changes_required(challenge_data, new_code, new_test):
-        temporary_save(challenge_data, new_code, new_test, req_challenge.code, req_challenge.tests_code)
+        update_result = update_files(challenge_data, new_code, new_test, req_challenge, response)
+        if 'Error' in update_result:
+            return make_response(jsonify(update_result), 409)
 
     #check if change for repair objective was requested
-    if 'repair_objective' in challenge_data:
-        db.session.query(PythonChallenge).filter_by(id=id).update(dict( repair_objective = challenge_data['repair_objective']))
-        db.session.commit()
-        response['repair_objective'] = challenge_data['repair_objective']
-    #check if change for repair objective was requested
-    if 'complexity' in challenge_data:
-        db.session.query(PythonChallenge).filter_by(id=id).update(dict( complexity = challenge_data['complexity']))
-        db.session.commit()    
+    if challenge_data != None:
+        if 'repair_objective' in challenge_data:
+            response['repair_objective'] = challenge_data['repair_objective']
+        #check if change for repair objective was requested
+        if 'complexity' in challenge_data:
+            response['complexity'] = challenge_data['complexity']
+    
+    #updating challenge in db with data in response
+    db.session.query(PythonChallenge).filter_by(id=id).update(dict(response))
+    db.session.commit()
+
+    #in case contents of files were changed update 'code' and 'tests_code' keys of response with code
+    if new_code != None:    #for some reason new_code (file) cannot be read again
+        response['code'] = read_file(response['code'], "r")
+
+    if new_test != None:
+        response['tests_code'] = read_file(response['tests_code'], "r")
 
     return jsonify({"challenge" : response})
 
@@ -123,14 +139,69 @@ def valid_python_challenge(code_path,test_path):
         return { 'Result': 'ok' }
 
 def no_syntax_errors(code_path):
-    p = subprocess.call("python -m py_compile " + code_path ,stdout=subprocess.PIPE, shell=True)
-    return p == 0   #0 is no syntax errors, 1 is the opposite
+    try:
+        p = subprocess.call("python -m py_compile " + code_path ,stdout=subprocess.PIPE, shell=True)
+        return p == 0   #0 is no syntax errors, 1 is the opposite
+    except CalledProcessError as err:
+        return False
 
 def  tests_fail(test_path):
-    p = subprocess.call("python -m pytest " + test_path ,stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    return p == 1 #1 is exception due a test fail, 0 the oposite
+    try:
+        p = subprocess.call("python -m pytest " + test_path ,stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        return p != 0 #0 means all tests passed, other value means some test/s failed
+    except CalledProcessError as err:
+        return True
   
 #checks for name or content change reuqest
 def file_changes_required(names, code, tests):
     return code is None or tests is None or 'source_code_file_name' in names or 'test_suite_file_name' in names
 
+def update_files(names, new_code, new_test, old_paths, response):
+    temp_path = "public/temp/"      #path to temp directory
+
+    code_name, test_name = None, None
+    if names != None:
+        code_name = names.get('source_code_file_name')
+        test_name = names.get('test_suite_file_name')
+
+    #saving changes in a temporal location for checking validation
+    temp_code_path = save_changes(code_name, new_code, old_paths.code, temp_path)
+    temp_test_path = save_changes(test_name, new_test, old_paths.tests_code, temp_path)
+    #challenge validation
+    validation_result = valid_python_challenge(temp_code_path, temp_test_path)
+    if 'Error' in validation_result:
+        return validation_result
+    #old challenge files deletion
+    try:
+        subprocess.call("rm " + old_paths.code, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        subprocess.call("rm " + old_paths.tests_code, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    except CalledProcessError as err:
+        return {"Error": "Internal Server Error"}
+    #new challenge files saving
+    new_code_path = "public/challenges/" + (lambda x: x.split('/')[-1]) (temp_code_path)
+    save_file(new_code_path, "wb", read_file(temp_code_path, "rb")) #read file in temp and save it in challenges
+
+    new_test_path = "public/challenges/" + (lambda x: x.split('/')[-1]) (temp_test_path)
+    save_file(new_test_path, "wb", read_file(temp_test_path, "rb")) #read file in temp and save it in challenges
+    
+    #deletion of files at temp
+    try:
+        subprocess.call("rm " + temp_code_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        subprocess.call("rm " + temp_test_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    except CalledProcessError as err:
+        return {"Error": "Internal Server Error"}
+
+    #adding new paths to response (response is used later to save challenge in db)
+    response['code'] = new_code_path
+    response['tests_code'] = new_test_path
+    
+    return { 'Result': 'ok' }    
+
+#saves a file with new name and new content
+#if not a new name it uses the old one, same for content
+def save_changes(new_name, file_content, old_file_path, base_path):
+	new_path = determine_path(new_name, base_path, old_file_path)
+	#gets new or old content
+	source_code = determine_content(file_content, old_file_path)
+	save_file(new_path, "wb", source_code)
+	return new_path
