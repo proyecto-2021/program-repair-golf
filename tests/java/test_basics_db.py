@@ -16,3 +16,9 @@ def test_ViewAllChallenges(client):
     else:
         assert resp == 0
    
+def test_ViewChallenges(client):
+    challenge = {"challenges":[]}
+    id=1
+    challenge ['challenges'] = View_Challenges(id)
+    resp = len(challenge)
+    assert resp == 1 

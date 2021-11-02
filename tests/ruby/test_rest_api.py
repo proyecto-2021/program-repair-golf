@@ -3,7 +3,7 @@ from . import client
 def test_post_challenge(client):
     url = '/ruby/challenge'
     data = {
-        'source_code_file': open('tests/ruby/tests-data/example1.rb','rb'),
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb','rb'),
         'test_suite_file': open('tests/ruby/tests-data/example_test1.rb','rb'),
         'challenge': '{ \
             "challenge": { \
@@ -15,7 +15,7 @@ def test_post_challenge(client):
         }'
     }
 
-    with open('tests/ruby/tests-data/example1.rb') as f:
+    with open('tests/ruby/tests-data/example_challenge.rb') as f:
         content_code = f.read()
     with open('tests/ruby/tests-data/example_test1.rb') as f:
         content_tests_code = f.read()
@@ -36,7 +36,7 @@ def test_post_challenge(client):
 def test_get_one_after_post(client):
     url = '/ruby/challenge'
     data = {
-        'source_code_file': open('tests/ruby/tests-data/example2.rb', 'rb'),
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb', 'rb'),
         'test_suite_file': open('tests/ruby/tests-data/example_test2.rb', 'rb'),
         'challenge': '{ \
             "challenge": { \
@@ -68,7 +68,7 @@ def test_get_all_after_post(client):
 
     url = '/ruby/challenge'
     data = {
-        'source_code_file': open('tests/ruby/tests-data/example3.rb', 'rb'),
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb', 'rb'),
         'test_suite_file': open('tests/ruby/tests-data/example_test3.rb', 'rb'),
         'challenge': '{ \
             "challenge": { \
@@ -94,7 +94,7 @@ def test_get_all_after_post(client):
 def test_post_repair(client):
     url = '/ruby/challenge'
     data = {
-        'source_code_file': open('tests/ruby/tests-data/example4.rb', 'rb'),
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb', 'rb'),
         'test_suite_file': open('tests/ruby/tests-data/example_test4.rb', 'rb'),
         'challenge': '{ \
                 "challenge": { \
@@ -119,7 +119,7 @@ def test_post_repair(client):
 def test_put_after_post(client):
     url = '/ruby/challenge'
     data = {
-        'source_code_file': open('tests/ruby/tests-data/example5.rb', 'rb'),
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb', 'rb'),
         'test_suite_file': open('tests/ruby/tests-data/example_test5.rb', 'rb'),
         'challenge': '{ \
             "challenge": { \
@@ -165,3 +165,125 @@ def test_put_after_post(client):
                         "complexity": "3",
                         "best_score": 0
                     }
+
+def test_post_existent_challenge(client):
+    url = '/ruby/challenge'
+    data = {
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb', 'rb'),
+        'test_suite_file': open('tests/ruby/tests-data/example_test7.rb', 'rb'),
+        'challenge': '{ \
+            "challenge": { \
+                "source_code_file_name" : "example7", \
+                "test_suite_file_name" : "example_test7", \
+                "repair_objective" : "Testing repeated post", \
+                "complexity" : "4" \
+            } \
+        }'
+    }
+
+    r = client.post(url, data=data)
+
+    url = '/ruby/challenge'
+    data = {
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb', 'rb'),
+        'test_suite_file': open('tests/ruby/tests-data/example_test7.rb', 'rb'),
+        'challenge': '{ \
+            "challenge": { \
+                "source_code_file_name" : "example7", \
+                "test_suite_file_name" : "example_test7", \
+                "repair_objective" : "Testing repeated post", \
+                "complexity" : "4" \
+            } \
+        }'
+    }
+
+    r2 = client.post(url, data=data)
+    response = r2.json['challenge']
+
+    assert r.status_code == 200
+    assert r2.status_code == 409
+    assert response == 'source_code already exists'
+
+def test_post_code_not_compiles1(client):
+    url = '/ruby/challenge'
+    data = {
+        'source_code_file': open('tests/ruby/tests-data/example_not_compile8.rb', 'rb'),
+        'test_suite_file': open('tests/ruby/tests-data/example_test8.rb', 'rb'),
+        'challenge': '{ \
+            "challenge": { \
+                "source_code_file_name" : "example8", \
+                "test_suite_file_name" : "example_test8", \
+                "repair_objective" : "Testing Compilation error", \
+                "complexity" : "4" \
+            } \
+        }'
+    }
+
+    r = client.post(url, data=data)
+    response = r.json['challenge']
+
+    assert r.status_code == 400
+    assert response == 'source_code and/or test_suite not compile'
+
+def test_post_code_not_compiles2(client):
+    url = '/ruby/challenge'
+    data = {
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb', 'rb'),
+        'test_suite_file': open('tests/ruby/tests-data/example_not_compile_test8.rb', 'rb'),
+        'challenge': '{ \
+            "challenge": { \
+                "source_code_file_name" : "example8", \
+                "test_suite_file_name" : "example_test8", \
+                "repair_objective" : "Testing Compilation error", \
+                "complexity" : "4" \
+            } \
+        }'
+    }
+
+    r = client.post(url, data=data)
+    response = r.json['challenge']
+
+    assert r.status_code == 400
+    assert response == 'source_code and/or test_suite not compile'
+
+def test_post_bad_dependencies(client):
+    url = '/ruby/challenge'
+    data = {
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb', 'rb'),
+        'test_suite_file': open('tests/ruby/tests-data/example_dependencies_not_okay_test8.rb', 'rb'),
+        'challenge': '{ \
+            "challenge": { \
+                "source_code_file_name" : "example8", \
+                "test_suite_file_name" : "example_test8", \
+                "repair_objective" : "Testing dependencies error", \
+                "complexity" : "5" \
+            } \
+        }'
+    }
+
+    r = client.post(url, data=data)
+    response = r.json['challenge']
+
+    assert r.status_code == 400
+    assert response == 'test_suite dependencies are wrong'
+
+def test_post_no_tests_fail(client):
+    url = '/ruby/challenge'
+    data = {
+        'source_code_file': open('tests/ruby/tests-data/example_fixed9.rb', 'rb'),
+        'test_suite_file': open('tests/ruby/tests-data/example_test9.rb', 'rb'),
+        'challenge': '{ \
+            "challenge": { \
+                "source_code_file_name" : "example9", \
+                "test_suite_file_name" : "example_test9", \
+                "repair_objective" : "Testing not errors to repair", \
+                "complexity" : "2" \
+            } \
+        }'
+    }
+
+    r = client.post(url, data=data)
+    response = r.json['challenge']
+
+    assert r.status_code == 400
+    assert response == 'test_suite does not fail'

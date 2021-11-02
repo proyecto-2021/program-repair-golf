@@ -1,6 +1,7 @@
 import re
 from flask.helpers import make_response
-from app.java.models_java import Challenge_java
+from app.java import *
+from app.java.controller import *
 from . import java
 from app import db
 import os
@@ -14,6 +15,7 @@ from subprocess import STDOUT, PIPE
 from os import remove
 from os import path
 
+
 UPLOAD_FOLDER = './public/challenges/'
 PATHLIBRERIA = 'app/java/lib/junit-4.13.2.jar:public/challenges'
 PATHEXECUTE = 'org.junit.runner.JUnitCore'
@@ -24,86 +26,19 @@ EJECUTARFILE= 'app/java/lib/hamcrest-all-1.3.jar:app/java/lib/junit-4.13.2.jar:p
 def login():
     return { 'result': 'funciona' }
 
-# GET 'http://localhost:4000/api/v1/java-challenges'
+
 @java.route('/java-challenges',methods=['GET'])
 def ViewAllChallenges():
-    challenge = {"challenges":[]}
-    challenge ['challenges'] = Challenge_java.query.all()
-    all_challenges=[]
-    for i in challenge['challenges']:
-        aux_challenge = Challenge_java.__repr__(i)
-        nombre_code = aux_challenge['code']
-        path='public/challenges/' + nombre_code + '.java'
-        file = open (path,mode='r',encoding='utf-8')
-        filemostrar=file.read()
-        file.close()
-        aux_challenge['code']=filemostrar
-        aux_challenge.pop('tests_code',None)
-        all_challenges.append(aux_challenge)
-    return make_response(jsonify({"challenges":all_challenges}))
-  
-
-# Get Assignment by ID
+    return controller.list_challenges_java()
+    
 @java.route('/java-challenges/<int:id>',methods=['GET'])
 def View_Challenges(id):
-    challenge=Challenge_java.query.filter_by(id=id).first()
-    if challenge is None:
-        return make_response(jsonify({"challenge": "Not exist this id"}))
-    challengeaux=Challenge_java.__repr__(challenge)
-    if (challengeaux is None):
-        return make_response(jsonify({"challenge":"Not found prueba"}),404)   
-    else: 
-        #recupero el codigojava del challenge
-        nombre_code = challengeaux['code']
-        path='public/challenges/' + nombre_code + '.java'
-        file = open (path,mode='r',encoding='utf-8')
-        filemostrar=file.read()
-        file.close()
-        challengeaux['code']=filemostrar
+    return controller.challenges_id_java(id)
+    
 
-
-        #recupero el codigojava del test
-        nombre_test =challengeaux['tests_code']
-        path='public/challenges/' + nombre_test + '.java'
-        file = open (path,mode='r',encoding='utf-8')
-        filemostrar=file.read()
-        file.close()
-        challengeaux['tests_code']=filemostrar
-
-       # challenge.append(challenge)
-           
-        return jsonify({"challenge":challengeaux})
-        
 @java.route('/java-challenges/<int:id>', methods=['PUT'])
 def UpdateChallenge(id):
-    challenge= Challenge_java.query.filter_by(id=id).first()
-    if challenge is None:
-        return make_response(jsonify({"challenge":"Not Found!"}),404)
-    else:
-        #Recupero los datos para actualizar
-        code_file_upd = request.files['source_code_file']
-        test_suite_upd = request.files['test_suite_file']
-        
-        challenge_json = loads(request.form.get('challenge'))
-        challenge_upd= challenge_json['challenge']
-        repair_objective_upd=challenge_upd['repair_objective']
-        complexity_upd=challenge_upd['complexity']
-
-        #Controlo si se obtuvieron datos para actualizar
-        if code_file_upd is not None:
-            challenge.code=os.path.split(code_file_upd.filename)[-1].split('.')[0]
-            #os.path.basename(code_file_upd.filename)
-            upload_file_1(code_file_upd, UPLOAD_FOLDER)
-        if test_suite_upd is not None: 
-            challenge.tests_code=os.path.split(test_suite_upd.filename)[-1].split('.')[0]
-            upload_file_1(test_suite_upd, UPLOAD_FOLDER)
-        if repair_objective_upd is not None:
-            challenge.repair_objective=repair_objective_upd
-        if complexity_upd is not None:
-            challenge.complexity=complexity_upd
-        
-        db.session.commit()
-        return jsonify({"challenge":Challenge_java.__repr__(challenge)})
+    return controller.challenge_upd_java(id)
 
 
 @java.route('/java-challenges', methods=['POST'])
