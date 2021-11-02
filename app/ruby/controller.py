@@ -53,7 +53,7 @@ class Controller:
 
     def modify_challenge(self, id, code_file, tests_code_file, json):
         data = json['challenge']
-        old_challenge = self.dao.get_challenge_data(id)
+        old_challenge = RubyChallenge(**self.dao.get_challenge(id))
         new_challenge = RubyChallenge(data['repair_objective'], data['complexity'])
         ruby_tmp = gettempdir() + '/ruby-tmp'
         mkdir(ruby_tmp)
