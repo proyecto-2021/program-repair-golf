@@ -127,6 +127,14 @@ def repair_challenge(id):
         subprocess.call("rm " + temp_test_code_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     except CalledProcessError as err:
         return {"Error": "Internal Server Error"}
+    
+    #Update best score for the challenge
+    if challenge.best_score == 0 or score < challenge.best_score:
+        challenge_dict = PythonChallenge.to_dict(challenge)
+        challenge_dict['best_score'] = score
+        
+        db.session.query(PythonChallenge).filter_by(id=id).update(dict(challenge_dict))
+        db.session.commit()
 
     return jsonify({"repair": response})
 
