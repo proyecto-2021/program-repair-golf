@@ -31,6 +31,12 @@ class RubyChallenge:
 	def remove_tests_code(self):
 		self.tests_code.remove()
 
+	def move_code(self, path):
+		return self.code.move(path)
+
+	def move_tests_code(self, path):
+		return self.tests_code.move(path)
+
 	def codes_compile(self):
 		return self.code.compiles() and self.tests_code.compiles()
 
