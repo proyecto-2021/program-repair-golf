@@ -88,33 +88,40 @@ def create_new_challenge():
 #Tercero devolver la puntuación de la solución candidata.
 @python.route('/api/v1/python-challenges/<id>/repair', methods=['POST'])
 def repair_challenge(id):
-    #Challenge que esta en la db 
+#Challenge in db 
     challenge = PythonChallenge.query.filter_by(id=id).first()
-    
     if challenge is None:
         return make_response(jsonify({"Challenge": "Not found"}), 404)
-    
-    #Codigo supuestamente repadado
-    code_repair = request.files.get('source_code_file')
-    #Guando temporalmente el codigo que me pasan    
-    temp_code_path = "public/temp/code-repair.py"
-    save_file(temp_code_path, 'wb',code_repair)
 
+    #Repair candidate 
+    code_repair = request.files.get('source_code_file')
+    code_repair = code_repair.read()
+
+    #Temporarily save test code and rapair candidate
+    temp_code_path = "public/temp/" + (lambda x: x.split('/')[-1]) (challenge.code)
+    save_file(temp_code_path, 'wb',code_repair)    
     test_code = challenge.tests_code
     content_test_code = read_file(test_code,'rb')
     temp_test_code_path = "public/temp/test-code.py"
     save_file(temp_test_code_path,'wb',content_test_code)
 
+    #Check if repair candidate it is valid
     result = valid_python_challenge(temp_code_path,temp_test_code_path, True)    
 
     if 'Error' in result:
         return make_response(jsonify(result), 409)
     
-    #Calculo el puntaje osea veo la distacia entre strings entre el codigo que habia y el reparado 
     code_challenge = challenge.code
-    score = edit_distance(code_challenge, code_repair)
+    code_challenge = read_file(code_challenge, 'rb')
+    
+    #Compute score of the repair solution 
+    score = nltk.edit_distance(code_challenge, code_repair)
+    
     challenge_reponse = {'repair_objective': challenge.repair_objective, 'best_score': challenge.best_score}
-    player = {'usarname': "John Doe"}
+    
+    #Player is coming in future releases 
+    player = {'username': "John Doe"}
+
     response = {'challenge': challenge_reponse, 'player': player, 'attempts': 0, 'score': score}
 
     return jsonify({"repair": response})
