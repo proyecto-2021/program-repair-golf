@@ -19,7 +19,7 @@ def return_challenges():
     challenge_list = [] 
     for challenge in all_challenges:
         #Get row as a dictionary
-        response = PythonChallenresponse.to_dict(challenge)
+        response = PythonChallenge.to_dict(challenge)
         #Get code from file
         response['code'] = read_file(response['code'], "r")
         response.pop('tests_code', None)
@@ -90,22 +90,35 @@ def create_new_challenge():
 def repair_challenge(id):
     #Challenge que esta en la db 
     challenge = PythonChallenge.query.filter_by(id=id).first()
+    
+    if challenge is None:
+        return make_response(jsonify({"Challenge": "Not found"}), 404)
+    
     #Codigo supuestamente repadado
     code_repair = request.files.get('source_code_file')
     #Guando temporalmente el codigo que me pasan    
     temp_code_path = "public/temp/code-repair.py"
-    save_file(temp_path, 'wb',code_repair)
+    save_file(temp_code_path, 'wb',code_repair)
 
     test_code = challenge.tests_code
     content_test_code = read_file(test_code,'rb')
     temp_test_code_path = "public/temp/test-code.py"
     save_file(temp_test_code_path,'wb',content_test_code)
 
-    result = valid_python_challenge(temp_code_path,temp_test_code_path)    
+    result = valid_python_challenge(temp_code_path,temp_test_code_path, True)    
 
     if 'Error' in result:
         return make_response(jsonify(result), 409)
-        
+    
+    #Calculo el puntaje osea veo la distacia entre strings entre el codigo que habia y el reparado 
+    code_challenge = challenge.code
+    score = edit_distance(code_challenge, code_repair)
+    challenge_reponse = {'repair_objective': challenge.repair_objective, 'best_score': challenge.best_score}
+    player = {'usarname': "John Doe"}
+    response = {'challenge': challenge_reponse, 'player': player, 'attempts': 0, 'score': score}
+
+    return jsonify({"repair": response})
+
 
 @python.route('api/v1/python-challenges/<id>', methods=['PUT'])
 def update_challenge(id):
@@ -149,7 +162,7 @@ def update_challenge(id):
 
     return jsonify({"challenge" : response})
 
-def valid_python_challenge(code_path,test_path):
+def valid_python_challenge(code_path,test_path,test_pass = False):
     #checks for any syntax errors in code
     if not no_syntax_errors(code_path):
         return {"Error": "Syntax error at " + code_path}
@@ -157,8 +170,11 @@ def valid_python_challenge(code_path,test_path):
     elif not no_syntax_errors(test_path):
         return {"Error": "Syntax error at " + test_path}
     #checks if at least one test don't pass
-    elif not tests_fail(test_path):
-        return {"Error": "At least one test must fail"}
+    elif not tests_fail(test_path, test_pass):
+        if test_pass:
+            return {"Error": "One test fail"}
+        else:
+            return {"Error": "At least one test must fail"}
     else:   #program is fine 
         return { 'Result': 'ok' }
 
@@ -169,10 +185,14 @@ def no_syntax_errors(code_path):
     except CalledProcessError as err:
         return False
 
-def  tests_fail(test_path):
+def  tests_fail(test_path, test_pass = False):
     try:
-        p = subprocess.call("python -m pytest " + test_path ,stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        return p != 0 #0 means all tests passed, other value means some test/s failed
+        if p == 0 and test_pass: #Caso donde quiero que pase todos los test y si pasaron los test
+            return True
+        elif p == 1 and not test_pass: #Caso donde no pasaron los test y no quiero que pasen todos los tests
+            return True 
+        else: 
+            return False #1 is exception due a test fail, 0 the oposite
     except CalledProcessError as err:
         return True
 
