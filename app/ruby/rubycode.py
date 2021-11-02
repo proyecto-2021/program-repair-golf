@@ -20,7 +20,7 @@ class RubyCode:
 		return self.file_name
 
 	def get_full_name(self):
-		return self.path + self.file_name + '.rb'
+		return self.full_name
 
 	def save(self):
 		if os.path.isfile(self.get_full_name()):
