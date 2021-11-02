@@ -266,3 +266,24 @@ def test_post_bad_dependencies(client):
 
     assert r.status_code == 400
     assert response == 'test_suite dependencies are wrong'
+
+def test_post_no_tests_fail(client):
+    url = '/ruby/challenge'
+    data = {
+        'source_code_file': open('tests/ruby/tests-data/example_fixed9.rb', 'rb'),
+        'test_suite_file': open('tests/ruby/tests-data/example_test9.rb', 'rb'),
+        'challenge': '{ \
+            "challenge": { \
+                "source_code_file_name" : "example9", \
+                "test_suite_file_name" : "example_test9", \
+                "repair_objective" : "Testing not errors to repair", \
+                "complexity" : "2" \
+            } \
+        }'
+    }
+
+    r = client.post(url, data=data)
+    response = r.json['challenge']
+
+    assert r.status_code == 400
+    assert response == 'test_suite does not fail'
