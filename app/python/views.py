@@ -3,6 +3,7 @@ from .. import db
 from flask import request, make_response, jsonify
 from flask.views import MethodView
 from .models import PythonChallengeModel
+from .PythonController import PythonController
 from json import loads
 from os import path
 import subprocess
@@ -13,16 +14,7 @@ class PythonViews(MethodView):
 
     def get(self, id): 
         if id is None:
-            Get all the challanges
-    all_challenges = PythonChallengeModel.query.all()
-    challenge_list = [] 
-    for challenge in all_challenges:
-        #Get row as a dictionary
-            response = PythonChallengeModel.to_dict(challenge)
-        #Get code from file
-        response['code'] = read_file(response['code'], "r")
-        response.pop('tests_code', None)
-        challenge_list.append(response)
+            challenge_list = PythonController.get_all_challenges()
     return jsonify({"challenges": challenge_list})
 
         else:

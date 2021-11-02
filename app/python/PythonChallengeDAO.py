@@ -1,7 +1,8 @@
+from .models import PythonChallengeModel
 
 class PythonChallengeDAO:
 
-  def get_all_challenges():
+  def get_challenges():
     return PythonChallengeModel.query.all()
 
   def get_challenge(id):
