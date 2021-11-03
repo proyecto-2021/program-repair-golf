@@ -8,4 +8,3 @@ def median(a,b,c)
     res = c
   end
   return res
-end
