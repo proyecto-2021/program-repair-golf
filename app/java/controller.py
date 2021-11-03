@@ -1,19 +1,15 @@
-import re
 from flask.helpers import make_response
 from app.java.DAO_java_challenge import DAO_java_challenge
 from app.java.models_java import Challenge_java
+from app.java.file_management import FileManagement
 from . import java
 from app import db
 import os
-from flask import Flask, flash, request, redirect, url_for, jsonify, json
-from werkzeug.utils import secure_filename
+from flask import Flask, request,jsonify, json
 from json import loads
-from types import TracebackType
 import subprocess
 import os.path
 from subprocess import STDOUT, PIPE
-from os import remove
-from os import path
 
 UPLOAD_FOLDER = './public/challenges/'
 PATHLIBRERIA = 'app/java/lib/junit-4.13.2.jar:public/challenges'
@@ -39,12 +35,11 @@ class controller():
             all_challenges.append(aux_challenge)
         return make_response(jsonify({"challenges":all_challenges}))
 
-
     def challenges_id_java(id):
-        challenge=DAO_java_challenge.challenges_id_java()
+        challenge=DAO_java_challenge.challenges_id_java(id)
         if challenge is None:
             return make_response(jsonify({"challenge": "Not exist this id"}))
-        challengeaux=Challenge_java._repr_(challenge)
+        challengeaux=Challenge_java.__repr__(challenge)
         if (challengeaux is None):
             return make_response(jsonify({"challenge":"Not found prueba"}),404)   
         else: 
@@ -56,7 +51,6 @@ class controller():
             file.close()
             challengeaux['code']=filemostrar
 
-
             #recupero el codigojava del test
             nombre_test =challengeaux['tests_code']
             path='public/challenges/' + nombre_test + '.java'
@@ -64,9 +58,6 @@ class controller():
             filemostrar=file.read()
             file.close()
             challengeaux['tests_code']=filemostrar
-
-            # challenge.append(challenge)
-           
             return jsonify({"challenge":challengeaux})
 
     def challenge_upd_java(id):
@@ -94,37 +85,37 @@ class controller():
             if 'source_code_file' in request.files:
                 code_file_upd = request.files['source_code_file']
                 path_file_java = UPLOAD_FOLDER + code_file_upd.filename
-                if class_java_compile(path_file_java):
+                if controller.class_java_compile(path_file_java):
                     challenge.code=os.path.split(code_file_upd.filename)[-1].split('.')[0]
                     print(challenge.code)
-                    upload_file_1(code_file_upd, UPLOAD_FOLDER)
+                    FileManagement.upload_file(code_file_upd, UPLOAD_FOLDER)
                 else:
                     return make_response(jsonify("Class java not compile"))
 
             if 'test_suite_file' in request.files:
                 test_suite_upd = request.files['test_suite_file']
                 path_test_java = UPLOAD_FOLDER +  test_suite_upd.filename
-                if file_compile(path_test_java, path_file_java):
-                    if execute_test(code_file_upd_name, test_suite_upd_name):
+                if controller.file_compile(path_test_java, path_file_java):
+                    if controller.execute_test(code_file_upd_name, test_suite_upd_name):
                         return make_response(jsonify("La test suite debe fallar en almenos un caso de test para poder subirlo"))
                     else:
                         challenge.tests_code=os.path.split(test_suite_upd.filename)[-1].split('.')[0]
-                        upload_file_1(test_suite_upd, UPLOAD_FOLDER)
+                        FileManagement.upload_file(test_suite_upd, UPLOAD_FOLDER)
 
             db.session.commit()
             return jsonify({"challenge":Challenge_java._repr_(challenge)})
 
-def add_challenge_java():
-        aux = request.form['challenge']
-        to_dict = json.loads(aux)
+    def add_challenge_java():
+        #aux = request.form['challenge']
+        to_dict = json.loads(request.form['challenge'])
         dict_final = to_dict['challenge']
 
         if dict_final is not None:
             code_file_name = dict_final['source_code_file_name']
             test_suite_file_name = dict_final['test_suite_file_name']
-            objective = dict_final['repair_objective']
-            complex = dict_final['complexity']
-            challenge = Challenge_java.query.filter_by(code=code_file_name).first()
+            #objective = dict_final['repair_objective']
+            #complex = dict_final['complexity']
+            challenge = DAO_java_challenge.get_challenge_by_code(code_file_name)
 
             if challenge is None:
             # check if the post request has the file part
@@ -132,28 +123,27 @@ def add_challenge_java():
                 test_suite = request.files['test_suite_file']
             
             # upload class java and compile
-                upload_file_1(file, UPLOAD_FOLDER)
+                FileManagement.upload_file(file, UPLOAD_FOLDER)
                 path_file_java = UPLOAD_FOLDER + file.filename
-                if class_java_compile(path_file_java):
+                if controller.class_java_compile(path_file_java):
                 
                     # upload test suite java and compile
-                    upload_file_1(test_suite, UPLOAD_FOLDER)
+                    FileManagement.upload_file(test_suite, UPLOAD_FOLDER)
                     path_test_java = UPLOAD_FOLDER + test_suite.filename
                 #file_compile(path_test_java, path_file_java)
             
                 # excute test suite java
                 # excute_java_test return true if pass all test
-                    if file_compile(path_test_java, path_file_java):
-                        if execute_test(test_suite_file_name, code_file_name):
+                    if controller.file_compile(path_test_java, path_file_java):
+                        if controller.execute_test(test_suite_file_name, code_file_name):
                             return make_response(jsonify("La test suite debe fallar en almenos un caso de test para poder subirlo"))
                         else:
-                            #upload_file(file, test_suite)
-                            new_chan = Challenge_java(code=code_file_name, tests_code=test_suite_file_name, repair_objective=objective, complexity=complex, score=0)
+                            DAO_java_challenge.create_challenge(dict_final)
+                            """new_chan = Challenge_java(code=code_file_name, tests_code=test_suite_file_name, repair_objective=objective, complexity=complex, score=0)
                             db.session.add(new_chan)
-                            db.session.commit()
-                    
+                            db.session.commit()"""
                             # show_codes return a dict with code class java and code test
-                            output = show_codes(code_file_name)
+                            output = FileManagement.show_codes(code_file_name)
                             return make_response(jsonify({"challenge": output}))
                     else:
                         return make_response(jsonify("Test suite not compile"))
@@ -165,122 +155,60 @@ def add_challenge_java():
             return make_response(jsonify("No ingreso los datos de los archivos java"))
 
 
-
-# given an id it gets the code of the file
-def get_code_file_by_id(id):
-    challenge_id = Challenge_java.query.filter_by(id = id).first()
-    if challenge_id is not None:
-        new_id = Challenge_java.__repr__(challenge_id)
-        name_code = new_id['code']
-        path = 'public/challenges/' + name_code + '.java'
-        file_show = get_code_file_by_path(path)
-        return file_show
-    return make_response(jsonify({"ERROR": "id not exits"}))
-    
-
-# given an path file gets the code of the file
-def get_code_file_by_path(file):
-    f = open(file, mode='r', encoding='utf-8')
-    resp = f.read()
-    f.close()
-    return resp
-
-# given a file name it returns a dictionary with the code and test_code fields as a string
-def show_codes(name_file):
-    challenge_aux = Challenge_java.query.filter_by(code = name_file).first()
-    if challenge_aux is not None:
-        new_var = Challenge_java.__repr__(challenge_aux)
-        name_code = new_var['code']
-        path = 'public/challenges/' + name_code + '.java'
-        file_show = get_code_file_by_path(path)
-        new_var['code'] = file_show
-
-        name_test = new_var['tests_code']
-        path_test = 'public/challenges/' + name_test + '.java'
-        file_show_test = get_code_file_by_path(path_test)
-        new_var['tests_code'] = file_show_test
-        return new_var
-    return make_response(jsonify({"ERROR": "name of file no exist"}))
-
-
-
-
-
-
-
-
-
-def class_java_compile(path_file_java):
-    try:
-         compile_java(path_file_java)
-    except Exception:
-          delete_path(path_file_java)
-          return False
-    return True
- 
-# given an path file test and path file class
-# if not compile file test remove the files and return exception
-def file_compile(path_test_java, path_file_java):
-    try:
-        compile_java_test(path_test_java)
-    except Exception:
-        delete_path(path_file_java)
-        delete_path(path_test_java)
-        return False
-    return True
-
-# if pass all test not save file and remove all files in public/challenges
-def execute_test(name, code_file_name):
-    rm_java = UPLOAD_FOLDER + name + '.java'
-    rm_class = UPLOAD_FOLDER + name + '.class'
-    rm_java_class = UPLOAD_FOLDER + code_file_name + '.java'
-    rm_java_java = UPLOAD_FOLDER + code_file_name + '.class'
-    if execute_java_test(name):
-        # remove all files
-        delete_path(rm_java)
-        delete_path(rm_class)
-        # remove class java
-        delete_path(rm_java_class)
-        delete_path(rm_java_java)
+    ######### CLASS CHALLENGE ##########
+    def class_java_compile(path_file_java):
+        try:
+            controller.compile_java(path_file_java)
+        except Exception:
+            FileManagement.delete_path(path_file_java)
+            return False
         return True
-    else:
-        delete_path(rm_class)
-        delete_path(rm_java_java)
-        return False
+    
+    # given an path file test and path file class
+    # if not compile file test remove the files and return exception
+    def file_compile(path_test_java, path_file_java):
+        try:
+            controller.compile_java_test(path_test_java)
+        except Exception:
+            FileManagement.delete_path(path_file_java)
+            FileManagement.delete_path(path_test_java)
+            return False
+        return True
 
-# remove the of file in directory
-def delete_path(file_rm):
-        if path.exists(file_rm):
-            remove(file_rm)
+    # if pass all test not save file and remove all files in public/challenges
+    def execute_test(name, code_file_name):
+        rm_java = UPLOAD_FOLDER + name + '.java'
+        rm_class = UPLOAD_FOLDER + name + '.class'
+        rm_java_class = UPLOAD_FOLDER + code_file_name + '.java'
+        rm_java_java = UPLOAD_FOLDER + code_file_name + '.class'
+        if controller.execute_java_test(name):
+            # remove all files
+            FileManagement.delete_path(rm_java)
+            FileManagement.delete_path(rm_class)
+            # remove class java
+            FileManagement.delete_path(rm_java_class)
+            FileManagement.delete_path(rm_java_java)
+            return True
+        else:
+            FileManagement.delete_path(rm_class)
+            FileManagement.delete_path(rm_java_java)
+            return False
 
-def upload_file_1(file, path):
-        if file is None:
-            return make_response(jsonify({"error_message": "One of the provided files has syntax errors."}))
-        if file.filename == '' :
-            return make_response(jsonify("No name of file"), 404)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(path, filename))
-
-def allowed_file(filename):
-        return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-############## Service compilation ###################
-def compile_java(java_file):
+    ############## Service compilation ###################
+    def compile_java(java_file):
         subprocess.check_call(['javac', java_file])
 
-def execute_java(java_file):
+    def execute_java(java_file):
         cmd=['java', java_file]
         proc=subprocess.Popen(cmd, stdout = PIPE, stderr = STDOUT)
         input = subprocess.Popen(cmd, stdin = PIPE)
         print(proc.stdout.read())
 
-def compile_java_test(java_file):
+    def compile_java_test(java_file):
         subprocess.check_call(['javac', '-cp', PATHLIBRERIA, java_file])
-    
-# return True if pass all test alse false
-def execute_java_test(java_file):
+        
+    # return True if pass all test alse false
+    def execute_java_test(java_file):
         cmd=['java', '-cp', EJECUTARFILE , PATHEXECUTE, java_file]
         proc=subprocess.Popen(cmd, stdout = PIPE, stderr = STDOUT)
         child = subprocess.Popen(cmd, stdin = PIPE)
@@ -290,7 +218,7 @@ def execute_java_test(java_file):
             return True
         else:
             return False
-    
-    
-    
+        
+        
+        
 

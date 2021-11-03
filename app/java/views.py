@@ -64,45 +64,7 @@ def repair_challenge(id):
     #else:
      #   return make_response(jsonify("Error al seleccionar archivo"))
 
-
-# given an id it gets the code of the file
-def get_code_file_by_id(id):
-    challenge_id = Challenge_java.query.filter_by(id = id).first()
-    if challenge_id is not None:
-        new_id = Challenge_java.__repr__(challenge_id)
-        name_code = new_id['code']
-        path = 'public/challenges/' + name_code + '.java'
-        file_show = get_code_file_by_path(path)
-        return file_show
-    return make_response(jsonify({"ERROR": "id not exits"}))
-    
-
-# given an path file gets the code of the file
-def get_code_file_by_path(file):
-    f = open(file, mode='r', encoding='utf-8')
-    resp = f.read()
-    f.close()
-    return resp
-
-
-# given a file name it returns a dictionary with the code and test_code fields as a string
-def show_codes(name_file):
-    challenge_aux = Challenge_java.query.filter_by(code = name_file).first()
-    if challenge_aux is not None:
-        new_var = Challenge_java.__repr__(challenge_aux)
-        name_code = new_var['code']
-        path = 'public/challenges/' + name_code + '.java'
-        file_show = get_code_file_by_path(path)
-        new_var['code'] = file_show
-
-        name_test = new_var['tests_code']
-        path_test = 'public/challenges/' + name_test + '.java'
-        file_show_test = get_code_file_by_path(path_test)
-        new_var['tests_code'] = file_show_test
-        return new_var
-    return make_response(jsonify({"ERROR": "name of file no exist"}))
-
-
+"""
 # given an path file, if not compile class java remove class and return exception
 def class_java_compile(path_file_java):
     try:
@@ -142,28 +104,6 @@ def execute_test(name, code_file_name):
         delete_path(rm_java_java)
     return False
 
-# remove the of file in directory
-def delete_path(file_rm):
-    if path.exists(file_rm):
-        remove(file_rm)
-
-
-def upload_file_1(file, path):
-    if file is None:
-        return make_response(jsonify({"error_message": "One of the provided files has syntax errors."}))
-    if file.filename == '' :
-        return make_response(jsonify("No name of file"), 404)
-    if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(path, filename))
-
-
-
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
 ############## Service compilation ###################
 def compile_java(java_file):
     subprocess.check_call(['javac', java_file])
@@ -188,7 +128,6 @@ def execute_java_test(java_file):
         return True
     else:
         return False
-    
-    
+"""
     
 
