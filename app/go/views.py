@@ -52,11 +52,20 @@ def repair_challengue_go(id):
 
     edit_distance = nltk.edit_distance(original_code,solution_code)
 
+    current_best_score = challengue_to_dict["best_score"]
+    if edit_distance < current_best_score:
+        challengue_original.best_score = edit_distance
+        db.session.commit()
+
+    challengue_original_updated = GoChallenge.query.filter_by(id=id).first()
+    challengue_to_dict_updated = challengue_original.convert_dict()
+        
+
     request_return = {
         "repair":{
             "challenge":{
-                "repair_objective": challengue_to_dict["repair_objective"],
-                "best_score": challengue_to_dict["best_score"]
+                "repair_objetive": challengue_to_dict["repair_objetive"],
+                "best_score": challengue_to_dict_updated["best_score"]
             },
             "score": edit_distance
         }
