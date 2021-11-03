@@ -37,6 +37,12 @@ class RubyChallenge:
 	def move_tests_code(self, path, names_match=True):
 		return self.tests_code.move(path, names_match)
 
+	def rename_code(self, new_name):
+		return self.code.rename(new_name)
+
+	def rename_tests_code(self, new_name):
+		return self.tests_code.rename(new_name)
+		
 	def codes_compile(self):
 		return self.code.compiles() and self.tests_code.compiles()
 
