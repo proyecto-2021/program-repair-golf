@@ -31,11 +31,11 @@ class RubyChallenge:
 	def remove_tests_code(self):
 		self.tests_code.remove()
 
-	def move_code(self, path):
-		return self.code.move(path)
+	def move_code(self, path, names_match=True):
+		return self.code.move(path, names_match)
 
-	def move_tests_code(self, path):
-		return self.tests_code.move(path)
+	def move_tests_code(self, path, names_match=True):
+		return self.tests_code.move(path, names_match)
 
 	def codes_compile(self):
 		return self.code.compiles() and self.tests_code.compiles()
