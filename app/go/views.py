@@ -18,6 +18,7 @@ def hello():
 @go.route('api/v1/go-challenges/<int:id>/repair', methods=['POST'])
 def repair_challengue_go(id):
     code_solution_file = request.files['source_code_file']
+    subprocess.run(["mkdir","solution"],cwd="public/challenges",stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
     code_solution_path = 'public/challenges/solution/code_solution.go'
     #Save the candidate solution for later delete this
     code_solution_file.save(code_solution_path)
@@ -28,8 +29,10 @@ def repair_challengue_go(id):
     if is_good_code_solution_file.returncode == 2:
         return make_response((jsonify({"code_solution_file":"with errors"}),409))
     
-    challengue = GoChallenge.query.filter_by(id=id).first()
-    challengue_to_dict = challengue.convert_dict()
+
+    #Chequear la existencia de este id
+    challengue_original = GoChallenge.query.filter_by(id=id).first()
+    challengue_to_dict = challengue_original.convert_dict()
     tests_code = challengue_to_dict["tests_code"]
     
     #Falta eliminar esto
@@ -44,9 +47,6 @@ def repair_challengue_go(id):
     #Esto va debajo del if
     challengue_original_code = challengue_to_dict["code"]
     
-    #file= open(str(os.path.abspath(challengue_original_code)),'r')
-
-    
     f = open (challengue_original_code,'r')
     original_code = f.read()
     f.close()
@@ -55,11 +55,18 @@ def repair_challengue_go(id):
     solution_code = f.read()
     f.close()
 
-    print(nltk.edit_distance(original_code,solution_code))
+    edit_distance = nltk.edit_distance(original_code,solution_code)
 
+    request_return = {
+        "repair":{
+            "challenge":{
+                "repair_objective": challengue_to_dict["repair_objective"],
+                "best_score": challengue_to_dict["best_score"]
+            },
+            "score": edit_distance
+        }
+    }
+
+    subprocess.run(["rm","-r","solution"],cwd="public/challenges",stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
     
-    
-    #print(type(challengue_to_dict))
-    #os.remove(code_solution_path)
-    return jsonify(the_challenge_is_solved.returncode)
-    #return make_response((jsonify({"code_solution_file":"without errors"}),409))
+    return jsonify(request_return)
