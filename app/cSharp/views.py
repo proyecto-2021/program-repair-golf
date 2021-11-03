@@ -24,7 +24,7 @@ def login():
 @cSharp.route('/c-sharp-challenges/<int:id>', methods=['PUT'])
 def put_csharp_challenges():
     update_request = request.files
-    challenge = get_challenge(id)
+    challenge = get_challenge_db(id)
     if not exist(id):
         return make_response(jsonify({"challenge":"There is no challenge for this id"}), 404) 
     files_keys = ("source_code_file", "test_suite_file")
@@ -130,7 +130,8 @@ def post_csharp_challenges():
         elif validate_response == 1 :
             remove_path([new_code_exe_path, new_test_dll_path])
             new_data_id = save_challenge(new_challenge, new_source_code_path, new_test_suite_path)
-            return make_response(jsonify({'challenge': get_challenge(new_data_id, show_files_content = True)}))
+            content = get_challenge_db(new_data_id,show_files_content=True)
+            return make_response(jsonify({'challenge': content}))
 
         elif validate_response == 2 :
             shutil.rmtree(CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'])
@@ -151,7 +152,7 @@ def post_csharp_challenges():
 def repair_Candidate(id):
     # verify challenge's existence 
     if exist(id):
-        challenge = get_challenge(id)
+        challenge = get_challenge_db(id)
         challenge_name = os.path.basename(challenge['code'])
         file = request.files['source_code_file']
         repair_path = 'public/challenges/' + challenge_name
@@ -180,7 +181,7 @@ def repair_Candidate(id):
 @cSharp.route('/c-sharp-challenges/<int:id>', methods = ['GET'])
 def get_challenge(id):
     if exist(id):
-        return jsonify({ 'Challenge': get_challenge(id, show_files_content = True) })       
+        return jsonify({ 'Challenge': get_challenge_db(id, show_files_content=True) })       
     else:
         return make_response(jsonify({'Challenge': 'Not found'}), 404)       
 
