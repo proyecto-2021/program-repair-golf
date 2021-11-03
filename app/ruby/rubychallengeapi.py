@@ -35,6 +35,7 @@ class RubyChallengeAPI(MethodView):
 
             if not compiles(file_name):
                 remove([file_name])
+                os.rmdir(gettempdir() + '/repair-zone')
                 return make_response(jsonify({'challenge': {'repair_code': 'is erroneous'}}),400)
 
             test_file_name = gettempdir() + '/repair-zone' + '/tmp_test_file.rb'
@@ -42,6 +43,7 @@ class RubyChallengeAPI(MethodView):
 
             if tests_fail(test_file_name):
                 remove([file_name, test_file_name])
+                os.rmdir(gettempdir() + '/repair-zone')
                 return make_response(jsonify({'challenge': {'tests_code': 'fails'}}),200)
 
             with open(challenge['code']) as f1, open(file_name) as f2:
