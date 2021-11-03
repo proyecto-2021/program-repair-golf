@@ -20,7 +20,6 @@ def repair_challengue_go(id):
     code_solution_file = request.files['source_code_file']
     subprocess.run(["mkdir","solution"],cwd="public/challenges",stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
     code_solution_path = 'public/challenges/solution/code_solution.go'
-    #Save the candidate solution for later delete this
     code_solution_file.save(code_solution_path)
     
     is_good_code_solution_file = subprocess.run(["go","build",code_solution_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
@@ -35,16 +34,12 @@ def repair_challengue_go(id):
     challengue_to_dict = challengue_original.convert_dict()
     tests_code = challengue_to_dict["tests_code"]
     
-    #Falta eliminar esto
     shutil.copy (tests_code,"public/challenges/solution/code_test.go")
     
-    #Falta probar bien
     the_challenge_is_solved = subprocess.run(["go","test"],cwd="public/challenges/solution",stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
-    #1 cuando fallan los test
     if the_challenge_is_solved.returncode == 1:
         return make_response((jsonify({"the challengue":"not solved"}),409))  
     
-    #Esto va debajo del if
     challengue_original_code = challengue_to_dict["code"]
     
     f = open (challengue_original_code,'r')
