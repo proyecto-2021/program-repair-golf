@@ -41,4 +41,4 @@ class RubyChallengeDAO(object):
 		return result > 0
 
 	def exists(self, id):
-		return get_challenge(id) is not None
+		return self.get_challenge(id) is not None
