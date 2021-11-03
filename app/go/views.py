@@ -38,12 +38,12 @@ def return_single_challenge(id):
 def update_a_go_challenge(id):
     challenge = GoChallenge.query.filter_by(id = id).first()
     if challenge is None:
-        return jsonify('Challenge not found', 404) 
+        return make_response(jsonify({'Challenge' : 'not found'}), 404)
     
     try:
         request_data = json.loads(request.form.get('challenge'))['challenge']
     except:
-        return jsonify({'status bad request': 400})
+        return make_response(jsonify({'error' : 'bad request'}), 400)
 
     changes = 0
     if request.files:
@@ -52,9 +52,10 @@ def update_a_go_challenge(id):
                 return make_response(jsonify({'source_code_file_name' : 'doesnt provide it'}), 400)
 
             new_code_name = request_data['source_code_file_name']
-            code_path = f'example-challenges/go-challenges/{new_code_name}.go'
+            code_path = f'example-challenges/go-challenges/{new_code_name}'
                
-            if not (os.path.isfile(code_path) and code_path != challenge['code']):
+            #if not (os.path.isfile(code_path) and code_path != challenge['code']):
+            if not (os.path.isfile(code_path)):
                 return make_response(jsonify({'source_code_file' : 'not valid'}), 400)
 
             code_compile = subprocess.run(["go", "build" ,code_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
@@ -69,28 +70,29 @@ def update_a_go_challenge(id):
                 return make_response(jsonify({'test_suite_file_name' : 'doesnt provide it'}), 400)
                 
             new_test_name = request_data['test_suite_file_name']
-            test_path = f'example-challenges/go-challenges/{new_test_name}.go'
+            test_path = f'example-challenges/go-challenges/{new_test_name}'
 
-            if not (os.path.isfile(test_path) and test_path != challenge['tests_code']):
+            #if not (os.path.isfile(test_path) and test_path != challenge['tests_code']):
+            if not (os.path.isfile(test_path)):
                 return make_response(jsonify({'test_suite_file' : 'not valid'}), 400)
                     
             test_compile = subprocess.run(["go", "test", "-c"],cwd='example-challenges/go-challenges')
                     
-            if test_compile.returncode == 2:
+            if test_compile.returncode == 1:
                 return make_response(jsonify({"test_code_file":"test with sintax errors"}),409)
-                    
-            pass_test_suite = subprocess.run(['go', 'test', '-v'], cwd=test_path.replace(new_test_name+'.go',''))
+
+            pass_test_suite = subprocess.run(['go', 'test'], cwd=test_path.replace(new_test_name,''))
                 
             if pass_test_suite.returncode == 0:
-                return make_response(jsonify({'test_code_file':'test must fails'}, 412))
+                return make_response(jsonify({'test_code_file':'test must fails'}), 412)
               
             challenge.tests_code = test_path      
             changes += 1
 
-    if 'repair_objective' in request_data and request_data['repair_objective'] != challenge['repair_objective']:
+    if 'repair_objective' in request_data and request_data['repair_objective'] != challenge.repair_objective:
         challenge.repair_objetive = request_data['repair_objective']
 
-    if 'complexity' in request_data and request_data['complexity'] != challenge['complexity']:
+    if 'complexity' in request_data and request_data['complexity'] != challenge.complexity:
         challenge.complexity = request_data['complexity']
     
     if changes > 0: 
