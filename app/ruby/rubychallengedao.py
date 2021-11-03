@@ -41,5 +41,5 @@ class RubyChallengeDAO(object):
 		db.session.commit()
 		return result
 
-	def exists(self, id):
-		return get_challenge(id) is not None
+	def exists(id):
+		return db.session.query(RubyChallenge).filter_by(id=id).first() is not None
