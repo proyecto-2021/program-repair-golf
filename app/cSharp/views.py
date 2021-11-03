@@ -3,7 +3,7 @@ from . import cSharp
 from json import loads
 from app import db
 from .models import CSharp_Challenge
-from models import *
+from .models import *
 from  flask import jsonify, make_response, json, request
 import subprocess, os
 from subprocess import PIPE
