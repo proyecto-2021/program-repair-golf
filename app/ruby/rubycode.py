@@ -36,7 +36,11 @@ class RubyCode:
 				return False
 		move(self.get_full_name(), dst)
 		return True
-	
+
+	def rename(self, new_name):
+		self.file_name = new_name
+		self.full_name = self.path + new_name + '.rb'
+
 	def remove(self):
 		os.remove(self.get_full_name())
 
