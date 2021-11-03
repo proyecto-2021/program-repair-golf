@@ -22,15 +22,13 @@ def repair_challengue_go(id):
     code_solution_path = 'public/challenges/solution/code_solution.go'
     code_solution_file.save(code_solution_path)
     
-    is_good_code_solution_file = subprocess.run(["go","build",code_solution_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
-    
-    
+    is_good_code_solution_file = subprocess.run(["go","build",code_solution_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)   
     if is_good_code_solution_file.returncode == 2:
         return make_response((jsonify({"code_solution_file":"with errors"}),409))
     
-
-    #Chequear la existencia de este id
     challengue_original = GoChallenge.query.filter_by(id=id).first()
+    if challengue_original is None:
+        return make_response(jsonify({'Challenge' : 'this challenge does not exist'}), 404)
     challengue_to_dict = challengue_original.convert_dict()
     tests_code = challengue_to_dict["tests_code"]
     
@@ -58,7 +56,7 @@ def repair_challengue_go(id):
         db.session.commit()
 
     challengue_original_updated = GoChallenge.query.filter_by(id=id).first()
-    challengue_to_dict_updated = challengue_original.convert_dict()
+    challengue_to_dict_updated = challengue_original_updated.convert_dict()
         
 
     request_return = {
