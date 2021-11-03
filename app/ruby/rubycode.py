@@ -1,4 +1,5 @@
 import os, subprocess
+from shutil import move
 
 class RubyCode:
 	def __init__(self, path=None, file_name=None, file=None, full_name=None):
@@ -28,6 +29,14 @@ class RubyCode:
 		self.file.save(dst=self.get_full_name())
 		return True
 
+	def move(self, path, names_match):
+		dst = path + self.get_file_name() + '.rb'
+		if not names_match:
+			if os.path.isfile(dst):
+				return False
+		move(self.get_full_name(), dst)
+		return True
+	
 	def remove(self):
 		os.remove(self.get_full_name())
 
