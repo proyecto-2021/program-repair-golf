@@ -43,54 +43,8 @@ def UpdateChallenge(id):
 
 @java.route('/java-challenges', methods=['POST'])
 def create_challenge():
-    aux = request.form['challenge']
-    to_dict = json.loads(aux)
-    dict_final = to_dict['challenge']
+   return controller.add_challenge_java()
 
-    if dict_final is not None:
-        code_file_name = dict_final['source_code_file_name']
-        test_suite_file_name = dict_final['test_suite_file_name']
-        objective = dict_final['repair_objective']
-        complex = dict_final['complexity']
-        challenge = Challenge_java.query.filter_by(code=code_file_name).first()
-
-        if challenge is None:
-            # check if the post request has the file part
-            file = request.files['source_code_file']
-            test_suite = request.files['test_suite_file']
-            
-            # upload class java and compile
-            upload_file_1(file, UPLOAD_FOLDER)
-            path_file_java = UPLOAD_FOLDER + file.filename
-            if class_java_compile(path_file_java):
-                
-                # upload test suite java and compile
-                upload_file_1(test_suite, UPLOAD_FOLDER)
-                path_test_java = UPLOAD_FOLDER + test_suite.filename
-                #file_compile(path_test_java, path_file_java)
-            
-                # excute test suite java
-                # excute_java_test return true if pass all test
-                if file_compile(path_test_java, path_file_java):
-                    if execute_test(test_suite_file_name, code_file_name):
-                        return make_response(jsonify("La test suite debe fallar en almenos un caso de test para poder subirlo"))
-                    else:
-                        #upload_file(file, test_suite)
-                        new_chan = Challenge_java(code=code_file_name, tests_code=test_suite_file_name, repair_objective=objective, complexity=complex, score=0)
-                        db.session.add(new_chan)
-                        db.session.commit()
-                    
-                        # show_codes return a dict with code class java and code test
-                        output = show_codes(code_file_name)
-                        return make_response(jsonify({"challenge": output}))
-                else:
-                    return make_response(jsonify("Test suite not compile"))
-            else:
-                return make_response(jsonify("Class java not compile"))
-        else:
-            return make_response(jsonify("Nombre de archivo existente, cargue nuevamente"), 404)
-    else:
-        return make_response(jsonify("No ingreso los datos de los archivos java"))
 
 
 @java.route('/java-challenges/<int:id>/repair', methods=['POST'])
