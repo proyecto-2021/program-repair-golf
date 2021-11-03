@@ -287,3 +287,12 @@ def test_post_no_tests_fail(client):
 
     assert r.status_code == 400
     assert response == 'test_suite does not fail'
+
+def test_post_repair_invalid_challenge(client):
+    url = '/ruby/challenge/1000/repair' #its probably that we dont post 1000 challenges for test
+    data = { 'source_code_file': open('tests/ruby/tests-data/example_fixed9.rb','rb') }
+    r = client.post(url, data=data)
+    response = r.json['challenge']
+
+    assert r.status_code == 404
+    assert response == 'NOT FOUND'
