@@ -60,4 +60,4 @@ def update_challenge(id, changes):
     return result
 
 def exists(id):
-    return get_challenge(id) is not None
+    return db.session.query(RubyChallenge).filter_by(id=id).first() is not None
