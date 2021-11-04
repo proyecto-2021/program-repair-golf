@@ -1,5 +1,5 @@
 import os, subprocess
-from shutil import move
+from shutil import move, copy
 
 class RubyCode:
 	def __init__(self, path=None, file_name=None, file=None, full_name=None):
@@ -37,6 +37,10 @@ class RubyCode:
 		self.full_name = move(self.get_full_name(), dst)
 		self.path = path
 		return True
+
+	def copy(self, path):
+		dst = path + self.get_file_name() + '.rb'
+		copy(self.get_full_name(), dst)
 
 	def rename(self, new_name):
 		os.rename(self.get_full_name(), self.path + new_name + '.rb')
