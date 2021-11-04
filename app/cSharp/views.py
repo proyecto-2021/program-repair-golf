@@ -241,18 +241,6 @@ def save_best_score(score, previous_best_score, challenge_id):
     else: 
         return 1
 
-def save_challenge(challenge_data, source_code_path, test_path):
-    new_challenge = CSharp_Challenge(code = source_code_path, tests_code = test_path, repair_objetive = challenge_data['repair_objective'], complexity = int(challenge_data['complexity']), best_score = 0)
-    db.session.add(new_challenge)
-    db.session.commit()
-    return new_challenge.id
-
-def get_challenge_data(id):
-    challenge = db.session.query(CSharp_Challenge).get(id).__repr__()
-    challenge['code'] = open(challenge['code'], "r").read()
-    challenge['tests_code'] = open(challenge['tests_code'], "r").read()
-    return challenge
-
 def save_challenge_files(source_code, source_code_path, test_suite, test_suite_path):
     source_code.save(source_code_path)
     test_suite.save(test_suite_path)
