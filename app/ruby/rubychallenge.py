@@ -42,6 +42,12 @@ class RubyChallenge:
 
 	def rename_tests_code(self, new_name):
 		return self.tests_code.rename(new_name)
+
+	def copy_code(self, path):
+		return self.code.copy(path)
+
+	def copy_tests_code(self, path):
+		return self.tests_code.copy(path)
 		
 	def codes_compile(self):
 		return self.code.compiles() and self.tests_code.compiles()
