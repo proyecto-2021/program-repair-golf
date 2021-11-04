@@ -130,6 +130,11 @@ def post_csharp_challenges():
 
         elif validate_response == 1 :
             remove_path([new_code_exe_path, new_test_dll_path])
+            complexity = int(new_challenge['complexity'])
+            if complexity < 1 or complexity > 5 :
+                shutil.rmtree(challenge_dir)
+                return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
+            new_challenge['complexity'] = complexity
             new_data_id = save_challenge(new_challenge, new_source_code_path, new_test_suite_path)
             content = get_challenge_db(new_data_id,show_files_content=True)
             return make_response(jsonify({'challenge': content}))
@@ -141,10 +146,6 @@ def post_csharp_challenges():
         else:
             shutil.rmtree(challenge_dir)
             return make_response(jsonify({'Challenge': 'Sintax errors'}), 409)
-        complexity = int(new_challenge['complexity'])
-        if complexity < 1 or complexity > 5 :
-            shutil.rmtree(challenge_dir)
-            return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
 
     else:
         return make_response(jsonify({'challenge': 'Data not found'}), 404)
