@@ -112,8 +112,8 @@ def post_csharp_challenges():
 
     #Validate challenge data
     required_keys = ('source_code_file_name', 'test_suite_file_name', 'source_code_file', 'test_suite_file', 'repair_objective', 'complexity')
+    challenge_dir = CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name']
     if all (key in new_challenge for key in required_keys):
-        challenge_dir = CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name']
         try:
             os.mkdir(challenge_dir)
         except FileExistsError:
