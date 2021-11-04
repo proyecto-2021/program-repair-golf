@@ -40,58 +40,59 @@ def update_a_go_challenge(id):
     if challenge is None:
         return make_response(jsonify({'Challenge' : 'not found'}), 404)
     
-    try:
+    if 'challenge' in request.files:
         request_data = json.loads(request.form.get('challenge'))['challenge']
-    except:
-        return make_response(jsonify({'error' : 'bad request'}), 400)
-
-    if request.files:
-        if 'source_code_file' in request.files:
-            # Y si no nos pasan un nombre pero si los tests ?
-            #if not ('source_code_file_name' in request_data):
-            #    return make_response(jsonify({'source_code_file_name' : 'doesnt provide it'}), 400)
-
+    
+        # Controles sobre los nombres
+        if 'source_code_file_name' in request_data:
             new_code_name = request_data['source_code_file_name']
             new_code_path = f'example-challenges/go-challenges/{new_code_name}'
-
             # Controlo que el nombre del nuevo archivo sea valido
             if (os.path.isfile(new_code_path) and new_code_path != challenge.code):
-                return make_response(jsonify({'challenge' : 'existing code file name'}), 409)
+                return make_response(jsonify({'challenge' : 'existing code file name'}), 409) 
 
-            code_compile = subprocess.run(["go", "build" ,new_code_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
-            if code_compile.returncode == 2:
-                return make_response(jsonify({"code_file":"code with sintax errors"}),409)
-                    
             challenge.code = new_code_path
-        
-        if 'test_suite_file' in request.files:
-            # Y si no nos pasan los tests pero si un nombre ?
-            #if not ('test_suite_file_name' in request_data):
-            #    return make_response(jsonify({'test_suite_file_name' : 'doesnt provide it'}), 400)
-                
+
+        if 'test_suite_file_name' in request_data:
             new_test_name = request_data['test_suite_file_name']
             new_test_path = f'example-challenges/go-challenges/{new_test_name}'
-
             # Controlo que el nombre del nuevo archivo sea valido
             if (os.path.isfile(new_test_path) and new_test_path != challenge.tests_code):
                 return make_response(jsonify({'challenge' : 'existing test suite file name'}), 409)
-                    
-            test_compile = subprocess.run(["go", "test", "-c"],cwd='example-challenges/go-challenges')        
-            if test_compile.returncode == 1:
-                return make_response(jsonify({"test_code_file":"test with sintax errors"}),409)
 
-            pass_test_suite = subprocess.run(['go', 'test'], cwd='example-challenges/go-challenges')
-            if pass_test_suite.returncode == 0:
-                return make_response(jsonify({'test_code_file':'test must fails'}), 412)
-              
             challenge.tests_code = new_test_path 
 
-    if 'repair_objective' in request_data and request_data['repair_objective'] != challenge.repair_objective:
-        challenge.repair_objetive = request_data['repair_objective']
+        if 'repair_objective' in request_data and request_data['repair_objective'] != challenge.repair_objective:
+            challenge.repair_objetive = request_data['repair_objective']
 
-    if 'complexity' in request_data and request_data['complexity'] != challenge.complexity:
-        challenge.complexity = request_data['complexity']
+        if 'complexity' in request_data and request_data['complexity'] != challenge.complexity:
+            challenge.complexity = request_data['complexity']
 
+    code_path = f'challenge.code'
+
+    change = False
+    # Controles sobre el contenido 
+    if 'source_code_file' in request.files: #CONTENIDO
+        # Verifico que el codigo compile
+        code_compile = subprocess.run(["go", "build" ,code_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
+        if code_compile.returncode == 2:
+            return make_response(jsonify({"code_file":"code with sintax errors"}),409)
+
+        change = True
+        
+    if 'test_suite_file' in request.files: #CONTENIDO
+                    
+        test_compile = subprocess.run(["go", "test", "-c"],cwd='example-challenges/go-challenges')        
+        if test_compile.returncode == 1:
+            return make_response(jsonify({"test_code_file":"test with sintax errors"}),409)
+
+        change = True
+
+    if change == True:
+        pass_test_suite = subprocess.run(['go', 'test'], cwd='example-challenges/go-challenges')
+        if pass_test_suite.returncode == 0:
+            return make_response(jsonify({'test_code_file':'test must fails'}), 412)
+        
     db.session.commit()
     
     challenge_dict = challenge.convert_dict()
@@ -113,3 +114,7 @@ def compiles(commands, path):
 
 def compiles(command):
     return (subprocess.call(command, shell=True, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL) == 0)
+
+def content(path):
+    f = open(path, 'r')
+    return f.read()
