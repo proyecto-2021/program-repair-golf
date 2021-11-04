@@ -22,8 +22,13 @@ def login():
     return { 'result': 'Ok' }
 
 @cSharp.route('/c-sharp-challenges/<int:id>', methods=['PUT'])
-def put_csharp_challenges():
-    update_request = request.files
+def put_csharp_challenges(id):
+    update_request = {}
+    update_request['source_code_file'] = request.files.get('source_code_file')
+    update_request['test_suite_file'] = request.files.get('test_suite_file')
+    update_request['repair_objective'] = request.form.get('repair_objective')
+    update_request['complexity'] = request.form.get('complexity')
+
     challenge = get_challenge_db(id)
     if not exist(id):
         return make_response(jsonify({"challenge":"There is no challenge for this id"}), 404) 
@@ -37,68 +42,53 @@ def put_csharp_challenges():
     new_challenge_exe_path = CHALLENGE_VALIDATION_PATH + challenge_name.replace('.cs','.exe')
     new_test_dll_path = CHALLENGE_VALIDATION_PATH + test_name.replace('.cs','.dll')
 
-    if all(key in update_request for key in files_keys):
+    if update_request['source_code_file'] is not None and update_request['test_suite_file'] is not None:
         new_challenge = update_request['source_code_file'] 
         new_test = update_request['test_suite_file'] 
 
         new_challenge.save(new_challenge_path)
         new_test.save(new_test_path)
-
         validation_result = validate_code(new_challenge_path, new_test_path)
+        handle_put_files(validation_result, new_challenge_path, new_test_path, old_challenge_path, old_test_path)
         if validation_result == -1:
-            remove_path([new_challenge_path, new_test_path])
             return make_response(jsonify({'Source code': 'Sintax errors'}), 409)
         elif validation_result == 0:
-            remove_path([new_challenge_path, new_test_path, new_challenge_exe_path, new_test_dll_path])
             return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
         elif validation_result == 2:
-            remove_path([new_challenge_path, new_test_path, new_challenge_exe_path])
             return make_response(jsonify({'Test': 'Sintax errors'}), 409)
-        else:
-            remove_path([new_challenge_exe_path, new_test_dll_path, old_challenge_path, old_test_path])
-            shutil.move(new_challenge_path, old_challenge_path)
-            shutil.move(new_test_path, old_test_path)
-
-    elif 'source_code_file' in update_request:
+    elif update_request['source_code_file'] is not None:
         new_challenge = update_request['source_code_file']
         new_challenge.save(new_challenge_path)
         validation_result = validate_code(new_challenge_path, old_test_path)
+        handle_put_files(validation_result, new_challenge_path, old_challenge_path=old_challenge_path, old_test_path=old_test_path)
         if validation_result == -1:
-            remove_path([new_challenge_path])
             return make_response(jsonify({'Source code': 'Sintax errors'}), 409)
         elif validation_result == 0:
-            remove_path([new_challenge_path, new_challenge_exe_path, old_test_path.replace('.cs', '.dll')])
-            return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
-        else:
-            remove_path([new_challenge_exe_path, old_test_path.replace('.cs', '.dll'), old_challenge_path])
-            shutil.move(new_challenge_path, old_challenge_path)
-
-    elif 'test_suite_file' in update_request:
-        new_test = update_request['test_suite_file'] 
-
-        new_test.save(new_test_path)
-
-        validation_result = validate_code(old_challenge_path, new_test_path)
-        if validation_result == 0:
-            remove_path([new_test_path, old_challenge_path.replace('.cs', '.exe'), new_test_dll_path])
             return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
         elif validation_result == 2:
-            remove_path([new_test_path, old_challenge_path.replace('.cs', '.exe')])
             return make_response(jsonify({'Test': 'Sintax errors'}), 409)
-        else:
-            remove_path([new_test_dll_path, old_challenge_path.replace('.cs', '.exe'), old_test_path])
-            shutil.move(new_test_path, old_test_path)
-    
-    if 'repair_objective' in update_request:
+    elif update_request['test_suite_file'] is not None:
+        new_test = update_request['test_suite_file'] 
+        new_test.save(new_test_path)
+        validation_result = validate_code(old_challenge_path, new_test_path)
+        handle_put_files(validation_result, validated_test_path=new_test_path, old_challenge_path=old_challenge_path, old_test_path=old_test_path)
+        if validation_result == -1:
+            return make_response(jsonify({'Source code': 'Sintax errors'}), 409)
+        elif validation_result == 0:
+            return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
+        elif validation_result == 2:
+            return make_response(jsonify({'Test': 'Sintax errors'}), 409)
+
+    if update_request['repair_objective'] is not None:
         update_challenge_data(id,{'repair_objetive':update_request['repair_objective']})
 
-    if 'complexity' in update_request:
+    if update_request['complexity'] is not None:
         complexity = int(update_request['complexity'])
         if complexity < 1 or complexity > 5 :
             return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
         else:
             update_challenge_data(id,{'complexity': complexity})
-
+    return make_response(jsonify({'challenge': get_challenge_db(id, show_files_content=True)}), 200)
     
 @cSharp.route('/c-sharp-challenges', methods=['POST'])
 def post_csharp_challenges():
@@ -244,4 +234,36 @@ def save_best_score(score, previous_best_score, challenge_id):
 def save_challenge_files(source_code, source_code_path, test_suite, test_suite_path):
     source_code.save(source_code_path)
     test_suite.save(test_suite_path)
-    
+
+def handle_put_files(result, validated_code_path=None, validated_test_path=None, old_challenge_path=None, old_test_path=None):
+    if result == -1:
+        if validated_test_path is not None:
+            remove_path([validated_code_path, validated_test_path])
+        else:
+            remove_path([validated_code_path])
+
+    elif result == 0:
+        if validated_test_path is not None and validated_code_path is not None:
+            remove_path([validated_code_path, validated_test_path, validated_code_path.replace('.cs', '.exe'), validated_test_path.replace('.cs', '.dll')])
+        elif validated_code_path is not None:
+            remove_path([validated_code_path, validated_code_path.replace('.cs', '.exe'), old_test_path.replace('.cs', '.dll')])
+        else:
+            remove_path([validated_test_path, old_challenge_path.replace('.cs', '.exe'), validated_test_path.replace('.cs', '.dll')])
+        
+    elif result == 2:
+        if validated_code_path is not None:
+            remove_path([validated_code_path, validated_test_path, validated_code_path.replace('.cs', '.exe')])
+        else:
+            remove_path([validated_test_path, old_challenge_path.replace('.cs', '.exe')])
+        
+    elif result == 1:
+        if validated_test_path is not None and validated_code_path is not None:
+            remove_path([validated_code_path.replace('.cs', '.exe'), validated_test_path.replace('.cs', '.dll'), old_challenge_path, old_test_path])
+            shutil.move(validated_code_path, old_challenge_path)
+            shutil.move(validated_test_path, old_test_path)
+        elif validated_code_path is not None:
+            remove_path([validated_code_path.replace('.cs', '.exe'), old_test_path.replace('.cs', '.dll'), old_challenge_path])
+            shutil.move(validated_code_path, old_challenge_path)
+        else:
+            remove_path([validated_test_path.replace('.cs', '.dll'), old_challenge_path.replace('.cs', '.exe'), old_test_path])
+            shutil.move(validated_test_path, old_test_path)
