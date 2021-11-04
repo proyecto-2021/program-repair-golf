@@ -60,23 +60,25 @@ class Controller:
         new_challenge = RubyChallenge(data['repair_objective'], data['complexity'])
         ruby_tmp = gettempdir() + '/ruby-tmp/'
         mkdir(ruby_tmp)
-
+        nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.code.get_file_name()
+        nc_test_name = data['test_suite_file_name'] if 'test_suite_file_name' in data else old_challenge.tests_code.get_file_name()
+        
         if code_file:
-            new_challenge.set_code(ruby_tmp, data['source_code_file_name'], code_file)
+            new_challenge.set_code(ruby_tmp, nc_code_name, code_file)
             if not new_challenge.save_code():
                 return make_response(jsonify({'code': 'couldnt save code'}), 400)
         else:
-            new_challenge.set_code(self.files_path, data['source_code_file_name'], None)
-            old_challenge.rename_code(data['source_code_file_name'])
+            new_challenge.set_code(self.files_path, nc_code_name, None)
+            old_challenge.rename_code(nc_code_name)
         
         if tests_code_file:
-            new_challenge.set_tests_code(ruby_tmp, data['test_suite_file_name'], tests_code_file)
+            new_challenge.set_tests_code(ruby_tmp, nc_test_name, tests_code_file)
             if not new_challenge.save_tests_code():
                 new_challenge.remove_code()
                 return make_response(jsonify({'test': 'couldnt save tests'}), 400)
         else:
-            new_challenge.set_tests_code(self.files_path, data['test_suite_file_name'], None)
-            old_challenge.rename_tests_code(data['test_suite_file_name'])
+            new_challenge.set_tests_code(self.files_path, nc_test_name, None)
+            old_challenge.rename_tests_code(nc_test_name)
         
         if not new_challenge.codes_compile():
             new_challenge.remove_code()
