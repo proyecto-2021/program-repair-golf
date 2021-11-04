@@ -7,7 +7,7 @@ from app.go.models_go import GoChallenge
 
 def test_getId_for_id_correct(client):
     # arrange
-    challengue = GoChallenge(code="code_path", tests_code="test_path", repair_objective="repair", complexity="1",
+    challengue = GoChallenge(code="./files-for-tests/median.go", tests_code="./files-for-tests/median_test.go", repair_objective="repair", complexity="1",
                              best_score=100)
 
     #act
