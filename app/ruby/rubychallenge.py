@@ -46,6 +46,12 @@ class RubyChallenge:
 	def codes_compile(self):
 		return self.code.compiles() and self.tests_code.compiles()
 
+	def code_compile(self):
+		return self.code.compiles()
+	
+	def tests_compile(self):
+		return self.tests_code.compiles()
+
 	def dependencies_ok(self):
 		command = 'grep "require_relative" ' + self.tests_code.get_full_name()
 		p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
