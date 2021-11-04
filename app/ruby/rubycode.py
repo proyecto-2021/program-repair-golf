@@ -7,9 +7,9 @@ class RubyCode:
 			self.path = path
 			self.file_name = file_name
 			self.file = file
-			self.full_name = path + '/' + file_name + '.rb'
+			self.full_name = path + file_name + '.rb'
 		else:
-			self.path = os.path.dirname(full_name)
+			self.path = os.path.dirname(full_name) + '/'
 			self.file_name = os.path.basename(full_name).split('.')[0]
 			self.file = None
 			self.full_name = full_name
@@ -39,6 +39,7 @@ class RubyCode:
 		return True
 
 	def rename(self, new_name):
+		os.rename(self.get_full_name(), self.path + new_name + '.rb')
 		self.file_name = new_name
 		self.full_name = self.path + new_name + '.rb'
 
