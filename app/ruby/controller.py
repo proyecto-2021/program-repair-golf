@@ -1,8 +1,9 @@
 from .rubychallenge import RubyChallenge
 from .rubychallengedao import RubyChallengeDAO
 from flask import jsonify, make_response
-from os import mkdir, path, rmdir
+from os import mkdir
 from tempfile import gettempdir
+from shutil import rmtree
 
 class Controller:
     def __init__(self, files_path):
@@ -63,41 +64,44 @@ class Controller:
         nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.code.get_file_name()
         nc_test_name = data['test_suite_file_name'] if 'test_suite_file_name' in data else old_challenge.tests_code.get_file_name()
         
-        if code_file:
+        if code_file is not None:
             new_challenge.set_code(ruby_tmp, nc_code_name, code_file)
             if not new_challenge.save_code():
+                rmtree(ruby_tmp)
                 return make_response(jsonify({'code': 'couldnt save code'}), 400)
+            if not new_challenge.code_compile():
+                rmtree(ruby_tmp)
+                return make_response(jsonify({'code': 'code doesnt compile'}), 400)
         else:
-            new_challenge.set_code(self.files_path, nc_code_name, None)
-            old_challenge.rename_code(nc_code_name)
+            new_challenge.code = old_challenge.code
+            new_challenge.copy_code(ruby_tmp)
+            new_challenge.rename_code(nc_code_name)
         
-        if tests_code_file:
+        if tests_code_file is not None:
             new_challenge.set_tests_code(ruby_tmp, nc_test_name, tests_code_file)
             if not new_challenge.save_tests_code():
-                new_challenge.remove_code()
+                rmtree(ruby_tmp)
                 return make_response(jsonify({'test': 'couldnt save tests'}), 400)
+            if not new_challenge.tests_compile():
+                rmtree(ruby_tmp)
+                return make_response(jsonify({'tests': 'tests doesnt compile'}), 400)
         else:
-            new_challenge.set_tests_code(self.files_path, nc_test_name, None)
-            old_challenge.rename_tests_code(nc_test_name)
-        
-        if not new_challenge.codes_compile():
-            new_challenge.remove_code()
-            new_challenge.remove_tests_code()
-            rmdir(ruby_tmp)
-            return make_response(jsonify({'challenge': 'source_code and/or test_suite not compile'}), 400)
+            new_challenge.tests_code = old_challenge.tests_code
+            new_challenge.copy_tests_code(ruby_tmp)
+            new_challenge.rename_tests_code(nc_test_name)
 
         if not new_challenge.dependencies_ok():
-            new_challenge.remove_code()
-            new_challenge.remove_tests_code()
-            rmdir(ruby_tmp)
+            rmtree(ruby_tmp)
             return make_response(jsonify({'challenge': 'test_suite dependencies are wrong'}), 400)
 
+        old_challenge.rename_tests_code(nc_test_name)
+        old_challenge.rename_code(nc_code_name)
+
         if not new_challenge.tests_fail():
-            new_challenge.remove_code()
-            new_challenge.remove_tests_code()
-            rmdir(ruby_tmp)
+            rmtree(ruby_tmp)
             return make_response(jsonify({'challenge': 'test_suite does not fail'}),400)
         
+
         # Files are ok, copy it to respective directory
         if old_challenge.code.get_file_name() != new_challenge.code.get_file_name():
             if not new_challenge.move_code(self.files_path, names_match=False):
@@ -113,7 +117,7 @@ class Controller:
         else:
             new_challenge.move_tests_code(self.files_path)
         
-        rmdir(ruby_tmp)
+        rmtree(ruby_tmp)
 
         self.dao.update_challenge(id, {key: value for (key, value) in new_challenge.get_content_for_db().items() if value is not None})
         response = self.dao.get_challenge(id)
