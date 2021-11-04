@@ -7,10 +7,11 @@ class CSharpSrc:
 	NUNIT_LIB = "./app/cSharp/lib/NUnit.3.13.2/lib/net35/nunit.framework.dll"
 	NUNIT_CONSOLE_RUNNER="./app/cSharp/lib/NUnit.ConsoleRunner.3.12.0/tools/nunit3-console.exe"
 
-	def __init__(self, code_file, path, file_name):
+	def __init__(self, code_file, file_name, path=None):
 		self.code_file = code_file
-		self.path = path
 		self.file_name = file_name
+		if path is not None:
+			self.path = path
 
 	def compiles(self):
 		compile_code_cmd = 'mcs ' + self.path
@@ -32,4 +33,3 @@ class CSharpSrc:
 		cmd_execute = 'mono ' + self.NUNIT_CONSOLE_RUNNER + ' ' + test_dll + ' -noresult'
 		final_cmd = cmd_export + ' && ' + cmd_execute 
 		return subprocess.call(final_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0
-
