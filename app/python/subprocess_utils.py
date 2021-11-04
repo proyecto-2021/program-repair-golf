@@ -21,11 +21,8 @@ def no_syntax_errors(code_path):
         return False
 
 def tests_fail(test_path):
-    try:
-        p = subprocess.call("python -m pytest " + test_path ,stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        return p != 0 #0 means all tests passed, other value means some test/s failed
-    except CalledProcessError as err:
-        return True
+    result = subprocess.run("python -m pytest " + test_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    return result.returncode != 0 #0 means all tests passed, other value means some test/s failed
 
 def delete_file(path):
   subprocess.call("rm " + path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
