@@ -3,6 +3,7 @@ from app.java.DAO_java_challenge import DAO_java_challenge
 from app.java.models_java import Challenge_java
 from app.java.file_management import FileManagement
 from app.java.challenge import Challenge
+from app.java.challenge_candidate import UPLOAD_TMP, ChallengeCandidate
 from . import java
 from app import db
 import os
@@ -11,6 +12,8 @@ from json import loads
 import subprocess
 import os.path
 from subprocess import STDOUT, PIPE
+import pathlib
+import nltk
 
 UPLOAD_FOLDER = './public/challenges/'
 PATHLIBRERIA = 'app/java/lib/junit-4.13.2.jar:public/challenges'
@@ -126,3 +129,25 @@ class controller():
                 return make_response(jsonify("Nombre de archivo existente, cargue nuevamente"), 404)
         else:
             return make_response(jsonify("No ingreso los datos de los archivos java"))
+
+    def repair_file(id):
+        file_repair = request.files['source_code_file']
+        challenge = DAO_java_challenge.challenges_id_java(id)
+        if challenge is not None:
+            curr = Challenge_java.__repr__(challenge)
+            if ChallengeCandidate.isValid(file_repair, curr):
+                code_class = FileManagement.get_code_file_by_id(id)
+                ruta_file_tmp = UPLOAD_TMP + file_repair.filename
+                code_repair = FileManagement.get_code_file_by_path(ruta_file_tmp)
+                value_dist = nltk.edit_distance(code_class, code_repair)
+                #value_dist = nltk.edit_distance('hola', 'bola')
+                print(value_dist)
+                if value_dist < curr['best_score']:
+                    challenge.score = value_dist
+                    db.session.add(challenge)
+                    db.session.commit()
+                return make_response(jsonify({"repair": {"challenge": ChallengeCandidate.create_desafio(challenge)}, "attempts": 1, "score": value_dist}))
+            else:
+                return make_response(jsonify("ERROR"))
+        else:
+            return make_response(jsonify({"ERROR": "no existe id"}))        

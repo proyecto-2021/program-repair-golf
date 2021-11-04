@@ -5,6 +5,8 @@ from . import java
 from app import db
 from flask import Flask, request, jsonify, json
 from json import loads
+import nltk
+from app.java.challenge_candidate import ChallengeCandidate
 
 UPLOAD_FOLDER = './public/challenges/'
 PATHLIBRERIA = 'app/java/lib/junit-4.13.2.jar:public/challenges'
@@ -34,19 +36,5 @@ def create_challenge():
 
 @java.route('/java-challenges/<int:id>/repair', methods=['POST'])
 def repair_challenge(id):
-    file = request.files['source_code_file']
-    challenge = Challenge_java.query.filter_by(id = id).first()
-   # if challenge is not None:
-        #si file es sintacticamente correcta, entonces compara file con los test suite
-        #es decir file con challenge['tests_code']
-        #si pasa todos los test
-        #calcula puntuacion
-        #score_curr = calculo_score()
-        #if score_curr < challenge.score:
-         #   challenge.score = score_curr
-    #        db.session.add(challenge)
-     #       db.session.commit()
-    #else:
-     #   return make_response(jsonify("Error al seleccionar archivo"))
-
+    return controller.repair_file(id)
 

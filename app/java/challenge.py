@@ -9,7 +9,9 @@ from flask import Flask, request, jsonify, json
 UPLOAD_FOLDER = './public/challenges/'
 PATHLIBRERIA = 'app/java/lib/junit-4.13.2.jar:public/challenges'
 PATHEXECUTE = 'org.junit.runner.JUnitCore'
-EJECUTARFILE= 'app/java/lib/hamcrest-all-1.3.jar:app/java/lib/junit-4.13.2.jar:public/challenges/'
+EJECUTARFILE = 'app/java/lib/hamcrest-all-1.3.jar:app/java/lib/junit-4.13.2.jar:public/challenges/'
+REPAIRTEST = 'app/java/lib/hamcrest-all-1.3.jar:app/java/lib/junit-4.13.2.jar:/tmp/'
+RUTALIBREPAIR = 'app/java/lib/junit-4.13.2.jar:/tmp/'
 
 class Challenge():
 
@@ -57,6 +59,7 @@ class Challenge():
             return False
         return True
 
+
     # if pass all test not save file and remove all files in public/challenges
     def execute_test(name, code_file_name):
         rm_java = UPLOAD_FOLDER + name + '.java'
@@ -100,3 +103,4 @@ class Challenge():
         else:
             return False
         
+############################

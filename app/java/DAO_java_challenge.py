@@ -18,7 +18,7 @@ class DAO_java_challenge():
             tests_code = dict['test_suite_file_name'],
             repair_objective = dict['repair_objective'],
             complexity = dict['complexity'],
-            score = 0)
+            score = 500)
         db.session.add(new_chan)
         db.session.commit()
     

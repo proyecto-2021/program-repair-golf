@@ -1,4 +1,5 @@
 from flask.helpers import make_response
+from app.java.DAO_java_challenge import DAO_java_challenge
 from app.java.models_java import Challenge_java
 from . import java
 from app import db
@@ -16,7 +17,8 @@ class FileManagement():
 
     # given an id it gets the code of the file
     def get_code_file_by_id(id):
-        challenge_id = Challenge_java.query.filter_by(id = id).first()
+        challenge_id= DAO_java_challenge.challenges_id_java(id)
+        #challenge_id = Challenge_java.query.filter_by(id = id).first()
         if challenge_id is not None:
             new_id = Challenge_java.__repr__(challenge_id)
             path = 'public/challenges/' + new_id['code'] + '.java'
