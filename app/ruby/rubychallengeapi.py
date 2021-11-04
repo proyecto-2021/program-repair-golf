@@ -76,8 +76,12 @@ class RubyChallengeAPI(MethodView):
     def put(self, id):
         if not exists(id):
             return make_response(jsonify({'challenge': 'NOT FOUND'}), 404)
-        code = request.files['source_code_file']
-        tests_code = request.files['test_suite_file']
+        code = None
+        tests_code = None
+        if 'source_code_file' in request.files:
+            code = request.files['source_code_file']
+        if 'test_suite_file' in request.files:
+            tests_code = request.files['test_suite_file']
         json = loads(request.form.get('challenge'))
         return self.controller.modify_challenge(id, code, tests_code, json)
        
