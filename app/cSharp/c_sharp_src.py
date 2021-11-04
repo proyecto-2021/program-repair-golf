@@ -33,3 +33,8 @@ class CSharpSrc:
 		cmd_execute = 'mono ' + self.NUNIT_CONSOLE_RUNNER + ' ' + test_dll + ' -noresult'
 		final_cmd = cmd_export + ' && ' + cmd_execute 
 		return subprocess.call(final_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0
+
+	def save_on(self, path):
+		new_path = path + self.file_name + '.cs'
+		self.code_file.save(new_path)
+		self.path = new_path
