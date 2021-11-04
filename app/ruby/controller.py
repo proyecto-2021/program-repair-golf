@@ -53,27 +53,30 @@ class Controller:
 
     def modify_challenge(self, id, code_file, tests_code_file, json):
         data = json['challenge']
-        old_challenge = RubyChallenge(**self.dao.get_challenge(id))
+        challenge = self.dao.get_challenge(id)
+        del challenge['best_score']
+        old_challenge = RubyChallenge(**challenge)
         new_challenge = RubyChallenge(data['repair_objective'], data['complexity'])
         ruby_tmp = gettempdir() + '/ruby-tmp'
         mkdir(ruby_tmp)
-        new_challenge.set_code(ruby_tmp, data['source_code_name'], code_file)
-        new_challenge.set_tests_code(ruby_tmp, data['test_suite_file_name'], tests_code_file)
 
         if code_file:
+            new_challenge.set_code(ruby_tmp, data['source_code_file_name'], code_file)
             if not new_challenge.save_code():
+
                 return make_response(jsonify({'code': 'couldnt save code'}), 400)
         else:
-            new_challenge.rename_code(json['source_code_file_name'])
+            new_challenge.set_code(self.files_path, data['source_code_file_name'], None)
         
         if tests_code_file:
+            new_challenge.set_tests_code(ruby_tmp, data['test_suite_file_name'], tests_code_file)
             if not new_challenge.save_tests_code():
                 new_challenge.remove_code()
                 return make_response(jsonify({'test': 'couldnt save tests'}), 400)
         else:
-            new_challenge.rename_tests_code(json['test_suite_file_name'])
+            new_challenge.set_tests_code(self.files_path, data['test_suite_file_name'], None)
 
-        if not new_challenge.codes_compiles():
+        if not new_challenge.codes_compile():
             new_challenge.remove_code()
             new_challenge.remove_tests_code()
             return make_response(jsonify({'challenge': 'source_code and/or test_suite not compile'}), 400)
@@ -99,10 +102,10 @@ class Controller:
         if old_challenge.tests_code.get_file_name() != new_challenge.tests_code.get_file_name():
             if not new_challenge.move_tests_code(self.files_path, names_match=False):
                 return make_response(jsonify({'tests': 'tests file name already exists'}))
-            old_challenge.remove_code()
+            old_challenge.remove_tests_code()
         else:
             new_challenge.move_code(self.files_path)
-        
+
         self.dao.update_challenge(id, new_challenge.get_content_for_db())
         response = self.dao.get_challenge(id)
         return jsonify({'challenge': response})
