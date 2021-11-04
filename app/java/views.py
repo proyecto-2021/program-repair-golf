@@ -1,53 +1,52 @@
+from flask.helpers import make_response
+from app.java import *
+from app.java.controller import *
 from . import java
-from .. import db
-from flask import request, make_response, jsonify
-from .models_java import Challenge_java
+from app import db
+from flask import Flask, request, jsonify, json
 from json import loads
-import os
+
+UPLOAD_FOLDER = './public/challenges/'
+PATHLIBRERIA = 'app/java/lib/junit-4.13.2.jar:public/challenges'
+PATHEXECUTE = 'org.junit.runner.JUnitCore'
+ALLOWED_EXTENSIONS = {'java'}
+EJECUTARFILE= 'app/java/lib/hamcrest-all-1.3.jar:app/java/lib/junit-4.13.2.jar:public/challenges/'
 
 @java.route('/prueba')
 def login():
     return { 'result': 'funciona' }
 
-# GET 'http://localhost:4000/api/v1/java-challenges'
 @java.route('/java-challenges',methods=['GET'])
 def ViewAllChallenges():
-    challenge = {"challenges":[]}
-    challenge ['challenges'] = Challenge_java.query.all()
-    all_challenges=[]
-    for i in challenge['challenges']:
-        aux_challenge = Challenge_java.__repr__(i)
-        #aux_challenge.pop('tests_code',None)
-        all_challenges.append(aux_challenge)
-    return make_response(jsonify({"challenges":all_challenges}))
-
+    return controller.list_challenges_java()
+    
+@java.route('/java-challenges/<int:id>',methods=['GET'])
+def View_Challenges(id):
+    return controller.challenges_id_java(id)
+    
 @java.route('/java-challenges/<int:id>', methods=['PUT'])
 def UpdateChallenge(id):
-    challenge= Challenge_java.query.filter_by(id=id).first()
-    if challenge is None:
-        return make_response(jsonify({"challenge":"Not Found!"}),404)
-    else:
-        #Recupero los datos para actualizar
-        source_code_file_upd=request.form.get('source_code_file')
-        test_suite_file_upd=request.form.get('test_suite_file')
+    return controller.challenge_upd_java(id)
 
-        challenge_json = loads(request.form.get('challenge'))
-        challenge_upd= challenge_json['challenge']
-        repair_objetive_upd=challenge_upd['repair_objective']
-        complexity_upd=challenge_upd['complexity']
+@java.route('/java-challenges', methods=['POST'])
+def create_challenge():
+   return controller.add_challenge_java()
 
-        #Controlo si se obtuvieron datos para actualizar
-        if source_code_file_upd is not None:
-            challenge.code=os.path.basename(source_code_file_upd)
-            #HACER UPLOAD ARCHIVO
-        if test_suite_file_upd is not None: 
-            challenge.tests_code=os.path.basename(test_suite_file_upd)
-            #HACER UPLOAD ARCHIVO
-        if repair_objetive_upd is not None:
-            challenge.repair_objetive=repair_objetive_upd
-        if complexity_upd is not None:
-            challenge.complexity=complexity_upd
-        db.session.commit()
-        return jsonify({"challenge":Challenge_java.__repr__(challenge)})
+@java.route('/java-challenges/<int:id>/repair', methods=['POST'])
+def repair_challenge(id):
+    file = request.files['source_code_file']
+    challenge = Challenge_java.query.filter_by(id = id).first()
+   # if challenge is not None:
+        #si file es sintacticamente correcta, entonces compara file con los test suite
+        #es decir file con challenge['tests_code']
+        #si pasa todos los test
+        #calcula puntuacion
+        #score_curr = calculo_score()
+        #if score_curr < challenge.score:
+         #   challenge.score = score_curr
+    #        db.session.add(challenge)
+     #       db.session.commit()
+    #else:
+     #   return make_response(jsonify("Error al seleccionar archivo"))
 
-        
+
