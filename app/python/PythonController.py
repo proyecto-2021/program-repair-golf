@@ -19,8 +19,36 @@ class PythonController:
   def get_single_challenge(id):
     raw_challenge = PythonChallengeDAO.get_challenge(id)
     if raw_challenge is None:
-      return make_response(jsonify({"Challenge": "Not found"}), 404)
+      return {"Error": "Challenge not found"}
 
     response = PythonChallenge(challenge_data=raw_challenge).to_json()
     return response
 
+  def post_challenge(challenge_data, src_code, test_src_code):
+    save_to = "public/challenges/"  #general path were code will be saved
+
+    challenge = PythonChallenge(challenge_data=challenge_data, code=src_code, test=test_src_code)
+    validation_result = PythonController.perform_validation(challenge)
+    if 'Error' in validation_result:
+      return validation_result
+    #save in public as official challenge
+    challenge.save_at(save_to)
+    challenge_id = PythonChallengeDAO.create_challenge(challenge) #save in db
+
+    #create response
+    response = challenge.to_json()
+    response['id'] = challenge_id
+    return {"Challenge" : response}
+
+  #takes the challenge to a temp location and checks if it's valid
+  @staticmethod
+  def perform_validation(challenge):
+    temp_path = "public/temp/"      #path to temp directory
+    challenge.save_at(temp_path)
+
+    validation_result = challenge.is_valid()
+
+    delete_file(challenge.code_path())
+    delete_file(challenge.test_path())
+
+    return validation_result
