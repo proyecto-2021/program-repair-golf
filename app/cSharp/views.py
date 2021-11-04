@@ -102,7 +102,7 @@ def put_csharp_challenges():
     
 @cSharp.route('/c-sharp-challenges', methods=['POST'])
 def post_csharp_challenges():
-       #Get new challenge data
+    #Get new challenge data
     try:
         new_challenge = loads(request.form.get('challenge'))['challenge']
         new_challenge['source_code_file'] = request.files['source_code_file']
@@ -112,8 +112,8 @@ def post_csharp_challenges():
 
     #Validate challenge data
     required_keys = ('source_code_file_name', 'test_suite_file_name', 'source_code_file', 'test_suite_file', 'repair_objective', 'complexity')
-    challenge_dir = CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name']
     if all (key in new_challenge for key in required_keys):
+        challenge_dir = CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name']
         try:
             os.mkdir(challenge_dir)
         except FileExistsError:
@@ -141,10 +141,10 @@ def post_csharp_challenges():
         else:
             shutil.rmtree(challenge_dir)
             return make_response(jsonify({'Challenge': 'Sintax errors'}), 409)
-    complexity = int(new_challenge['complexity'])
-    if complexity < 1 or complexity > 5 :
-        shutil.rmtree(challenge_dir)
-        return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
+        complexity = int(new_challenge['complexity'])
+        if complexity < 1 or complexity > 5 :
+            shutil.rmtree(challenge_dir)
+            return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
 
     else:
         return make_response(jsonify({'challenge': 'Data not found'}), 404)
