@@ -113,18 +113,19 @@ def post_csharp_challenges():
     #Validate challenge data
     required_keys = ('source_code_file_name', 'test_suite_file_name', 'source_code_file', 'test_suite_file', 'repair_objective', 'complexity')
     if all (key in new_challenge for key in required_keys):
+        challenge_dir = CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name']
         try:
-            os.mkdir(CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'])
+            os.mkdir(challenge_dir)
         except FileExistsError:
             return make_response(jsonify({'Challenge': 'Already exists'}), 409)
-        new_source_code_path = CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'] + "/" + new_challenge['source_code_file_name'] + ".cs"
-        new_test_suite_path = CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'] + "/" + new_challenge['test_suite_file_name'] + ".cs"
+        new_source_code_path = challenge_dir + "/" + new_challenge['source_code_file_name'] + ".cs"
+        new_test_suite_path = challenge_dir + "/" + new_challenge['test_suite_file_name'] + ".cs"
         save_challenge_files(new_challenge['source_code_file'], new_source_code_path, new_challenge['test_suite_file'], new_test_suite_path)
         validate_response = validate_code(new_source_code_path, new_test_suite_path)
         new_code_exe_path = new_source_code_path.replace('.cs', '.exe')
         new_test_dll_path = new_test_suite_path.replace('.cs', '.dll')
         if validate_response == 0 :
-            shutil.rmtree(CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'])
+            shutil.rmtree(challenge_dir)
             return make_response(jsonify({'Test': 'At least one has to fail'}), 409)
 
         elif validate_response == 1 :
@@ -134,15 +135,15 @@ def post_csharp_challenges():
             return make_response(jsonify({'challenge': content}))
 
         elif validate_response == 2 :
-            shutil.rmtree(CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'])
+            shutil.rmtree(challenge_dir)
             return make_response(jsonify({'Test': 'Sintax errors'}), 409)
 
         else:
-            shutil.rmtree(CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'])
+            shutil.rmtree(challenge_dir)
             return make_response(jsonify({'Challenge': 'Sintax errors'}), 409)
-
-    if int(new_challenge['complexity']) < 1 or int(new_challenge['complexity']) > 5 :
-        shutil.rmtree(CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name'])
+    complexity = int(new_challenge['complexity'])
+    if complexity < 1 or complexity > 5 :
+        shutil.rmtree(challenge_dir)
         return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
 
     else:
