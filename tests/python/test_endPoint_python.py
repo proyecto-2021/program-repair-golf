@@ -14,12 +14,20 @@ def test_post_pythonChallenge(client):
     assert response.status_code == 200
 
 
-
 def test_get_single_pythonChallenge(client):
+    clear_data_base()
+
+    #---- post one challenge to test ---#    
+    repair_objectiveParam = "prueba test"
+
+    dataChallengePost = postFunction(repair_objectiveParam,3) 
+    response = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePost)
+
     result = client.get('http://localhost:5000/python/api/v1/python-challenges/1')
-    
+    #---- end post ---#
+
     #data to be entered in the post test
-    dataEnteredPost = {'Challenge': {'best_score': 0, 'code': '\ndef median(a,b,c):\n    res = 0\n    if ((a>=b and a<=c) or (a>=c and a<=b)):\n        res = a\n    if ((b>=a and b<=c) or (b>=c and b<=a)):\n        res = b\n    else:\n        res = c\n    return res\n\n', 'complexity': 2, 'repair_objective': 'make to pass', 'tests_code': 'from median import median\n\ndef test_one():\n    a = 1\n    b = 2\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_two():\n    a = 2\n    b = 1\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_three():\n    a = 3\n    b = 1\n    c = 2\n    res = median(a, b, c)\n    assert res == 2\n\n'}}
+    dataEnteredPost = {'Challenge': {'best_score': 0, 'code': '\ndef median(a,b,c):\n    res = 0\n    if ((a>=b and a<=c) or (a>=c and a<=b)):\n        res = a\n    if ((b>=a and b<=c) or (b>=c and b<=a)):\n        res = b\n    else:\n        res = c\n    return res\n\n', 'complexity': 3, 'repair_objective': 'prueba test', 'tests_code': 'from median import median\n\ndef test_one():\n    a = 1\n    b = 2\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_two():\n    a = 2\n    b = 1\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_three():\n    a = 3\n    b = 1\n    c = 2\n    res = median(a, b, c)\n    assert res == 2\n\n'}}
 
     #data obtained through the get ready for manipulation
     dataChallenge = parseDataTextAJson(result.json)
@@ -34,7 +42,7 @@ def test_get_single_pythonChallenge(client):
     assert len(repair_objective) > 0
     assert len(code) > 0
     assert result.json == dataEnteredPost 
-    
+    clear_data_base()
 
 
 
@@ -45,6 +53,9 @@ def parseDataTextAJson(result):
     dataResultJson = json.loads(dataResultText)
 
     return dataResultJson
+
+def clear_data_base():
+    db.session.query(PythonChallenge).delete()
 
 def postFunction(repair_objectiveParam,complexityParam):
     
