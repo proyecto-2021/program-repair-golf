@@ -73,8 +73,8 @@ class Controller:
                 rmtree(ruby_tmp)
                 return make_response(jsonify({'code': 'code doesnt compile'}), 400)
         else:
-            new_challenge.code = old_challenge.code
-            new_challenge.copy_code(ruby_tmp)
+            old_challenge.copy_code(ruby_tmp)
+            new_challenge.set_code(ruby_tmp, old_challenge.code.get_file_name(), None)
             new_challenge.rename_code(nc_code_name)
         
         if tests_code_file is not None:
@@ -86,8 +86,8 @@ class Controller:
                 rmtree(ruby_tmp)
                 return make_response(jsonify({'tests': 'tests doesnt compile'}), 400)
         else:
-            new_challenge.tests_code = old_challenge.tests_code
-            new_challenge.copy_tests_code(ruby_tmp)
+            old_challenge.copy_tests_code(ruby_tmp)
+            new_challenge.set_tests_code(ruby_tmp, old_challenge.tests_code.get_file_name(), None)
             new_challenge.rename_tests_code(nc_test_name)
 
         if not new_challenge.dependencies_ok():
