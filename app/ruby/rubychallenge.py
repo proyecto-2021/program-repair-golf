@@ -13,10 +13,10 @@ class RubyChallenge:
 		if tests_code is not None:
 			self.tests_code = RubyCode(full_name=tests_code)
 
-	def set_code(self, files_path, file_name, file):
+	def set_code(self, files_path, file_name, file=None):
 		self.code = RubyCode(files_path, file_name, file)
 
-	def set_tests_code(self, files_path, file_name, file):
+	def set_tests_code(self, files_path, file_name, file=None):
 		self.tests_code = RubyCode(files_path, file_name, file)
 
 	def save_code(self):
