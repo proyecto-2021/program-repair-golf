@@ -70,8 +70,6 @@ class PythonController:
     challenge.save_at(temp_path)
 
     validation_result = challenge.is_valid()
-
-    delete_file(challenge.code_path())
-    delete_file(challenge.test_path())
+    challenge.delete()  #just deletes files in paths
 
     return validation_result
