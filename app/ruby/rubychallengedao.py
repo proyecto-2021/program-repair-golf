@@ -1,4 +1,4 @@
-from .rubychallengemodel import RubyChallenge
+from .rubychallengemodel import RubyChallengeModel
 from app import db
 
 class RubyChallengeDAO(object):
