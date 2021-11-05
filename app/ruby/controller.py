@@ -99,6 +99,10 @@ class Controller:
             rmtree(ruby_tmp)
             return make_response(jsonify({'challenge': 'test_suite does not fail'}),400)
 
+        #If everything works, rename the old_challenge
+        old_challenge.rename_tests_code(nc_test_name)
+        old_challenge.rename_code(nc_code_name)
+
         # Files are ok, copy it to respective directory
         if old_challenge.code.get_file_name() != new_challenge.code.get_file_name():
             if not new_challenge.move_code(self.files_path, names_match=False):
@@ -113,13 +117,9 @@ class Controller:
             old_challenge.remove_tests_code()
         else:
             new_challenge.move_tests_code(self.files_path)
-        
-        #If everything works, rename the old_challenge
-        old_challenge.rename_tests_code(nc_test_name)
-        old_challenge.rename_code(nc_code_name)
 
         rmtree(ruby_tmp)
 
         self.dao.update_challenge(id, {key: value for (key, value) in new_challenge.get_content_for_db().items() if value is not None})
-        response = self.dao.get_challenge(id)
+        response = self.dao.get_challenge_data(id)
         return jsonify({'challenge': response})
