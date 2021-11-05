@@ -6,15 +6,14 @@ class RubyChallengeDAO(object):
 		pass
 
 	def get_challenge(self, id):
-		return db.session.query(RubyChallenge).filter_by(id=id).first().get_dict()
+		challenge = db.session.query(RubyChallenge).filter_by(id=id).first().get_dict()
+		del challenge['id']
+		return challenge
 
 	def get_challenge_data(self, id):
 		challenge = db.session.query(RubyChallenge).filter_by(id=id).first().get_data()
 		del challenge['id']
 		return challenge
-
-	def get_challenges(self):
-		return [challenge.get_dict() for challenge in db.session.query(RubyChallenge).all()]
 
 	def get_challenges_data(self):
 		challenges = [challenge.get_data() for challenge in db.session.query(RubyChallenge).all()]
@@ -36,10 +35,10 @@ class RubyChallengeDAO(object):
 
 	def update_challenge(self, id, changes):
 		if len(changes) == 0:
-			return 1
+			return True
 		result = db.session.query(RubyChallenge).filter_by(id=id).update(changes)
 		db.session.commit()
-		return result
+		return result > 0
 
-	def exists(self, id):
-		return get_challenge(id) is not None
+	def exists(id):
+		return db.session.query(RubyChallenge).filter_by(id=id).first() is not None

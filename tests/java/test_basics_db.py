@@ -8,9 +8,12 @@ from app.java.views import *
 #def test_new_challenge(client):
 
 def test_ViewAllChallenges(client):
+    #elegir entradas para test
     challenge = {"challenges":[]}
+    #ejecutar dichas entrada
     challenge ['challenges'] = ViewAllChallenges()
     resp = len(challenge)
+    #verificar el comportamiento esperado
     if resp >= 1:
         assert resp !=0
     else:
