@@ -13,7 +13,7 @@ def test_post_pythonChallenge(client):
 
     assert response.status_code == 200
 
-
+# testing a single challenge 
 def test_get_single_pythonChallenge(client):
     clear_data_base()
 
@@ -43,6 +43,28 @@ def test_get_single_pythonChallenge(client):
     assert len(code) > 0
     assert result.json == dataEnteredPost 
     clear_data_base()
+
+# testing multiple challenges
+def test_get_total_pythonChallenge(client):
+    clear_data_base()
+
+    #---start post challenges ---#
+    repair_objectiveParamOne = "probando test"
+    repair_objectiveParamTwo = "pruebita test"
+    repair_objectiveParamThree = "pruebas test"
+    
+    dataChallengePostOne = postFunction(repair_objectiveParamOne,1)
+    dataChallengePostTwo = postFunction(repair_objectiveParamTwo,2)
+    dataChallengePostThree = postFunction(repair_objectiveParamThree,3)
+
+    responseOne = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostOne)
+    responseTwo = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostTwo)
+    responseThree = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostThree)
+
+    result = client.get('http://localhost:5000/python/api/v1/python-challenges')
+    print(result.json)
+    assert 1 == 0
+
 
 
 
