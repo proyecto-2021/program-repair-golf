@@ -67,9 +67,7 @@ class Controller:
         
         if code_file is not None:
             new_challenge.set_code(ruby_tmp, nc_code_name, code_file)
-            if not new_challenge.save_code():
-                rmtree(ruby_tmp)
-                return make_response(jsonify({'code': 'couldnt save code'}), 400)
+            new_challenge.save_code()
             if not new_challenge.code_compile():
                 rmtree(ruby_tmp)
                 return make_response(jsonify({'code': 'code doesnt compile'}), 400)
@@ -80,9 +78,7 @@ class Controller:
         
         if tests_code_file is not None:
             new_challenge.set_tests_code(ruby_tmp, nc_test_name, tests_code_file)
-            if not new_challenge.save_tests_code():
-                rmtree(ruby_tmp)
-                return make_response(jsonify({'test': 'couldnt save tests'}), 400)
+            new_challenge.save_tests_code()
             if not new_challenge.tests_compile():
                 rmtree(ruby_tmp)
                 return make_response(jsonify({'tests': 'tests doesnt compile'}), 400)
