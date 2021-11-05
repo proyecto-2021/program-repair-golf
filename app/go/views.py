@@ -59,7 +59,7 @@ def repair_challengue_go(id):
     request_return = {
         "repair":{
             "challenge":{
-                "repair_objetive": challengue_to_dict["repair_objetive"],
+                "repair_objective": challengue_to_dict["repair_objective"],
                 "best_score": challengue_to_dict_updated["best_score"]
             },
             "score": edit_distance
@@ -98,6 +98,50 @@ def return_single_challenge(id):
     from_file_to_str(challenge_to_return, "tests_code")
     del challenge_to_return["id"]
     return jsonify({"challenge":challenge_to_return})
+
+@go.route('/api/v1/go-challenges', methods=['POST'])
+def create_go_challenge():
+    challenge_data = json.loads(request.form.get('challenge'))['challenge']
+
+    code_file = request.files["source_code_file"]
+    code_path = 'public/challenges/' + challenge_data['source_code_file_name']
+    code_file.save(code_path)
+
+    test_suite_file = request.files["test_suite_file"]
+    test_suite_path = 'public/challenges/' + challenge_data['test_suite_file_name']
+    test_suite_file.save(test_suite_path)
+
+    new_challenge = GoChallenge(
+        code=code_path,
+        tests_code=test_suite_path,
+        repair_objective=challenge_data['repair_objective'],
+        complexity=challenge_data['complexity'],
+        best_score=0)
+
+    all_the_challenges = db.session.query(GoChallenge).all()
+    for every_challenge in all_the_challenges:
+        if every_challenge.code == new_challenge.code:
+            return make_response(jsonify({"challenge": "repeated"}), 409)
+
+    test_pass = subprocess.run(["go", "test"], cwd="public/challenges")
+    test_compilation = subprocess.run(["go", "test", "-c"], cwd="public/challenges")
+    code_compilation = subprocess.run(["go", "build", code_path], stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
+
+    if code_compilation.returncode == 2:
+        return make_response(jsonify({"code_file": "The code has syntax errors"}), 412)
+    elif test_compilation.returncode == 1 or test_compilation.returncode == 2:
+        return make_response(jsonify({"test_code_file": "The test code has syntax errors"}), 412)
+    elif test_pass.returncode == 0:
+        return make_response(jsonify({"ERROR: tests": "There must be at least one test that fails"}), 412)
+
+    db.session.add(new_challenge)
+    db.session.commit()
+
+    new_challenge_to_dicc = new_challenge.convert_dict()
+    from_file_to_str(new_challenge_to_dicc, "code")
+    from_file_to_str(new_challenge_to_dicc, "tests_code")
+    return jsonify({"challenge": new_challenge_to_dicc})
+
 
 def from_file_to_str(challenge, attribute):
     file= open(str(os.path.abspath(challenge[attribute])),'r')
