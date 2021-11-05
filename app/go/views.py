@@ -40,17 +40,14 @@ def update_a_go_challenge(id):
     if challenge is None:
         return make_response(jsonify({'Challenge' : 'not found'}), 404)
     
-    try:
-        request_data = json.loads(request.form.get('challenge'))['challenge']
-    except:
-        return make_response(jsonify({'challenge' : 'bad request'}), 400)
+    request_data = json.loads(request.form.get('challenge'))['challenge']
 
     if 'source_code_file_name' in request_data:
         new_code_name = request_data['source_code_file_name']
         new_code_path = f'example-challenges/go-challenges/{new_code_name}'
 
-        if (os.path.isfile(new_code_path) and new_code_path != challenge.code):
-            return make_response(jsonify({'challenge' : 'existing code file name'}), 409) 
+        #if (os.path.isfile(new_code_path) and new_code_path != challenge.code):
+        #    return make_response(jsonify({'challenge' : 'existing code file name'}), 409) 
 
         challenge.code = new_code_path
 
@@ -58,8 +55,8 @@ def update_a_go_challenge(id):
         new_test_name = request_data['test_suite_file_name']
         new_test_path = f'example-challenges/go-challenges/{new_test_name}'
 
-        if (os.path.isfile(new_test_path) and new_test_path != challenge.tests_code):
-            return make_response(jsonify({'challenge' : 'existing test suite file name'}), 409)
+        #if (os.path.isfile(new_test_path) and new_test_path != challenge.tests_code):
+        #    return make_response(jsonify({'challenge' : 'existing test suite file name'}), 409)
 
         challenge.tests_code = new_test_path
 
