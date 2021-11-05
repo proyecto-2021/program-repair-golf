@@ -43,8 +43,6 @@ def update_a_go_challenge(id):
     old_code_path = challenge.code
     old_test_path = challenge.tests_code
     request_data = json.loads(request.form.get('challenge'))['challenge']
-
-    change = False
     
     new_code = 'source_code_file' in request.files 
     if new_code:
@@ -59,9 +57,9 @@ def update_a_go_challenge(id):
 
         code_compile = subprocess.run(["go", "build", new_code_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
         if code_compile.returncode == 2:
+            os.remove(new_code_path)
             return make_response(jsonify({"code_file":"code with sintax errors"}),409)           
 
-        change = True
         
     new_test = 'test_suite_file' in request.files
     if new_test: 
@@ -76,37 +74,48 @@ def update_a_go_challenge(id):
 
         test_compile = subprocess.run(["go", "test", "-c"],cwd='example-challenges/go-challenges/tmp/')        
         if test_compile.returncode == 1:
+            os.remove(new_test_path)
             return make_response(jsonify({"test_code_file":"test with sintax errors"}),409)
 
-        change = True
-
-    if change:
+    if new_code and new_test:
         pass_test_suite = subprocess.run(['go', 'test'], cwd='example-challenges/go-challenges/tmp/')
         if pass_test_suite.returncode == 0:
             os.remove(new_code_path)
             os.remove(new_test_path)
-            return make_response(jsonify({'test_code_file':'test must fails'}), 412)
+            return make_response(jsonify({'error' : 'test must fails'}), 412)    
+    elif new_code and not new_test:
+        
+        path_to_temp_test_file = 'example-challenges/go-challenges/tmp/' + 'temp_test.go'
+        rewrite_file(old_test_path, path_to_temp_test_file)
+        pass_test_suite = subprocess.run(['go', 'test'], cwd='example-challenges/go-challenges/tmp/')
+        
+        if pass_test_suite.returncode == 0:
+            delete_files('example-challenges/go-challenges/tmp/')
+            return make_response(jsonify({'error' : 'test must fails'}), 412)
+
+    elif not new_code and new_test:
+
+        path_to_temp_code_file = 'example-challenges/go-challenges/tmp/' + 'temp.go'
+        rewrite_file(old_code_path, path_to_temp_code_file)
+        pass_test_suite = subprocess.run(['go', 'test'], cwd='example-challenges/go-challenges/tmp/')
+        
+        if pass_test_suite.returncode == 0:
+            delete_files('example-challenges/go-challenges/tmp/')
+            return make_response(jsonify({'error' : 'test must fails'}), 412)
 
     if new_code:
-        with open(new_code_path) as source_code_file:
-            with open(old_code_path, 'w') as updateable_file:
-                for line in source_code_file:
-                    updateable_file.write(line)
-                
+        rewrite_file(new_code_path, old_code_path)  
         os.remove(new_code_path)
 
     if new_test:
-        with open(new_test_path) as test_suite_file:
-            with open(old_test_path, 'w') as updateable_file:
-                for line in test_suite_file:
-                    updateable_file.write(line)
-        
+        rewrite_file(new_test_path, old_test_path)
         os.remove(new_test_path)
-    
+   
+
     #delete all files 
     #no es eficiente si la carpeta tmp tiene subdirectorios, pero ese caso no creo que ocurra
-    for file in os.listdir('example-challenges/go-challenges/tmp/'):
-        os.remove(os.path.join('example-challenges/go-challenges/tmp/', file))
+    #for file in os.listdir('example-challenges/go-challenges/tmp/'):
+    #   os.remove(os.path.join('example-challenges/go-challenges/tmp/', file))
 
     #ver que tenemos guardado en la carpeta temporal:
     # si solo esta source_code_file, agregar la test_suite vieja
@@ -146,3 +155,13 @@ def compiles(command):
 def content(path):
     f = open(path, 'r')
     return f.read()
+
+def rewrite_file(path_to_file_used_to_update, path_to_file_to_update):
+    with open(path_to_file_used_to_update) as file_used_to_update:
+            with open(path_to_file_to_update, 'w') as file_to_update:
+                for line in file_used_to_update:
+                    file_to_update.write(line)
+
+def delete_files(path):
+    for file in os.listdir(path):
+      os.remove(os.path.join(path, file))
