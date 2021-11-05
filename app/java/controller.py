@@ -31,9 +31,7 @@ class controller():
             aux_challenge = Challenge_java.__repr__(i)
             nombre_code = aux_challenge['code']
             path='public/challenges/' + nombre_code + '.java'
-            file = open (path,mode='r',encoding='utf-8')
-            filemostrar=file.read()
-            file.close()
+            filemostrar=FileManagement.get_code_file_by_path(path)
             aux_challenge['code']=filemostrar
             aux_challenge.pop('tests_code',None)
             all_challenges.append(aux_challenge)
