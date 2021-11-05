@@ -19,6 +19,21 @@ class RubyChallenge(db.Model):
             "best_score":self.best_score
         }
 
+    def get_data(self):
+        with open(self.code) as f1:
+            code_content = f1.read()
+        with open(self.tests_code) as f2:
+            tests_code_content = f2.read()
+
+        return {
+            "id":self.id,
+            "code":code_content,
+            "tests_code":tests_code_content,
+            "repair_objective":self.repair_objective,
+            "complexity":self.complexity,
+            "best_score":self.best_score
+        }
+
 def get_challenge(id):
     return db.session.query(RubyChallenge).filter_by(id=id).first().get_dict()
 
@@ -45,4 +60,4 @@ def update_challenge(id, changes):
     return result
 
 def exists(id):
-    return get_challenge(id) is not None
+    return db.session.query(RubyChallenge).filter_by(id=id).first() is not None
