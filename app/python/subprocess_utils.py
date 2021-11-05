@@ -8,7 +8,7 @@ def valid_python_challenge(code_path, test_path, test_pass = False):
     elif not no_syntax_errors(test_path):
         return {"Error": "Syntax error at " + test_path}
     #checks if at least one test don't pass
-    test_failed = tests_fail(test_path, test_pass)
+    test_failed = tests_fail(test_path)
     if test_failed and test_pass:
         return {"Error": "Some test failed"}
     elif not test_failed and not test_pass:
