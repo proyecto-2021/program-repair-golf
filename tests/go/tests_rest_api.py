@@ -64,7 +64,7 @@ def test_repair_for_incorrect_file(client):
 
     assert ret_repair.status_code == 409
 
-def test_repair_for_check_calculate_edit_distance(client):
+def test_repair_for_not_compile_file(client):
     # arrange
     challenge = {
         'source_code_file': open('tests/go/files-for-tests/median.go', 'rb'),
@@ -73,6 +73,37 @@ def test_repair_for_check_calculate_edit_distance(client):
                     "challenge": { \
                         "source_code_file_name" : "code3", \
                         "test_suite_file_name" : "code3_test", \
+                        "repair_objective" : "repair", \
+                        "complexity" : "100", \
+                        "best_score" : 100 \
+                    } \
+                }'
+    }
+
+    challenge_repair = {
+        'source_code_file': open('tests/go/files-for-tests/median_not_compile.go', 'rb'),
+    }
+
+    # Act
+    ret_post = client.post("go/api/v1/go-challenges", data=challenge)
+    ret_post_json = ret_post.json["challenge"]
+
+    ret_repair = client.post(f"go/api/v1/go-challenges/{ret_post_json['id']}/repair", data=challenge_repair)
+
+    # Assert
+
+    assert ret_repair.status_code == 409
+
+
+def test_repair_for_check_calculate_edit_distance(client):
+    # arrange
+    challenge = {
+        'source_code_file': open('tests/go/files-for-tests/median.go', 'rb'),
+        'test_suite_file': open('tests/go/files-for-tests/median_test.go', 'rb'),
+        'challenge': '{ \
+                    "challenge": { \
+                        "source_code_file_name" : "code4", \
+                        "test_suite_file_name" : "code4_test", \
                         "repair_objective" : "repair", \
                         "complexity" : "100", \
                         "best_score" : 100 \
@@ -101,8 +132,8 @@ def test_repair_for_check_upgrade_best_score(client):
         'test_suite_file': open('tests/go/files-for-tests/median_test.go', 'rb'),
         'challenge': '{ \
                     "challenge": { \
-                        "source_code_file_name" : "code4", \
-                        "test_suite_file_name" : "code4_test", \
+                        "source_code_file_name" : "code5", \
+                        "test_suite_file_name" : "code5_test", \
                         "repair_objective" : "repair", \
                         "complexity" : "100", \
                         "best_score" : 100 \
