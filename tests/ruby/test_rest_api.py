@@ -109,7 +109,7 @@ def test_post_repair(client):
     r = client.post(url, data=data)
     id = r.json['challenge']['id']
     url2 = f'/ruby/challenge/{id}/repair'
-    data2 = { 'source_code_file': open('tests/ruby/tests-data/example_fixed4.rb', 'rb') }
+    data2 = { 'source_code_file': open('tests/ruby/tests-data/example_fixed.rb', 'rb') }
     r2 = client.post(url2, data=data2)
 
     assert r.status_code == 200
@@ -270,7 +270,7 @@ def test_post_bad_dependencies(client):
 def test_post_no_tests_fail(client):
     url = '/ruby/challenge'
     data = {
-        'source_code_file': open('tests/ruby/tests-data/example_fixed9.rb', 'rb'),
+        'source_code_file': open('tests/ruby/tests-data/example_fixed.rb', 'rb'),
         'test_suite_file': open('tests/ruby/tests-data/example_test9.rb', 'rb'),
         'challenge': '{ \
             "challenge": { \
@@ -287,3 +287,64 @@ def test_post_no_tests_fail(client):
 
     assert r.status_code == 400
     assert response == 'test_suite does not fail'
+
+def test_post_repair_invalid_challenge(client):
+    url = '/ruby/challenge/1000/repair' #its probably that we dont post 1000 challenges for test
+    data = { 'source_code_file': open('tests/ruby/tests-data/example_fixed.rb','rb') }
+    r = client.post(url, data=data)
+    response = r.json['challenge']
+
+    assert r.status_code == 404
+    assert response == 'NOT FOUND'
+
+def test_post_repair_candidate_compiles_error(client):
+    url = '/ruby/challenge'
+    data = {
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb', 'rb'),
+        'test_suite_file': open('tests/ruby/tests-data/example_test10.rb', 'rb'),
+        'challenge': '{ \
+                "challenge": { \
+                    "source_code_file_name" : "example10", \
+                    "test_suite_file_name" : "example_test10", \
+                    "repair_objective" : "Testing repair candidate does not compile", \
+                    "complexity" : "3" \
+                } \
+            }'
+    }
+
+    r = client.post(url, data=data)
+    id = r.json['challenge']['id']
+
+    url2 = f'/ruby/challenge/{id}/repair'
+    data2 = { 'source_code_file': open('tests/ruby/tests-data/example_fixed_syntax_error.rb', 'rb') }
+    r2 = client.post(url2, data=data2)
+
+    assert r.status_code == 200
+    assert r2.status_code == 400
+    assert r2.json['challenge'] == {'repair_code': 'is erroneous'}
+
+def test_post_repair_candidate_tests_fail(client):
+    url = '/ruby/challenge'
+    data = {
+        'source_code_file': open('tests/ruby/tests-data/example_challenge.rb', 'rb'),
+        'test_suite_file': open('tests/ruby/tests-data/example_test11.rb', 'rb'),
+        'challenge': '{ \
+                "challenge": { \
+                    "source_code_file_name" : "example11", \
+                    "test_suite_file_name" : "example_test11", \
+                    "repair_objective" : "Testing repair candidate does not compile", \
+                    "complexity" : "2" \
+                } \
+            }'
+    }
+
+    r = client.post(url, data=data)
+    id = r.json['challenge']['id']
+
+    url2 = f'/ruby/challenge/{id}/repair'
+    data2 = { 'source_code_file': open('tests/ruby/tests-data/example_challenge.rb', 'rb') }
+    r2 = client.post(url2, data=data2)
+
+    assert r.status_code == 200
+    assert r2.status_code == 200
+    assert r2.json['challenge'] == {'tests_code': 'fails'}
