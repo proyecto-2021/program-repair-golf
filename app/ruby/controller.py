@@ -95,10 +95,6 @@ class Controller:
             rmtree(ruby_tmp)
             return make_response(jsonify({'challenge': 'test_suite does not fail'}),400)
 
-        #If everything works, rename the old_challenge
-        old_challenge.rename_tests_code(nc_test_name)
-        old_challenge.rename_code(nc_code_name)
-
         # Files are ok, copy it to respective directory
         if old_challenge.code.get_file_name() != new_challenge.code.get_file_name():
             if not new_challenge.move_code(self.files_path, names_match=False):
