@@ -45,11 +45,10 @@ def update_a_go_challenge(id):
     except:
         return make_response(jsonify({'challenge' : 'bad request'}), 400)
 
-    # Controles sobre los nombres
     if 'source_code_file_name' in request_data:
         new_code_name = request_data['source_code_file_name']
         new_code_path = f'example-challenges/go-challenges/{new_code_name}'
-        # Controlo que el nombre del nuevo archivo sea valido
+
         if (os.path.isfile(new_code_path) and new_code_path != challenge.code):
             return make_response(jsonify({'challenge' : 'existing code file name'}), 409) 
 
@@ -58,7 +57,7 @@ def update_a_go_challenge(id):
     if 'test_suite_file_name' in request_data:
         new_test_name = request_data['test_suite_file_name']
         new_test_path = f'example-challenges/go-challenges/{new_test_name}'
-        # Controlo que el nombre del nuevo archivo sea valido
+
         if (os.path.isfile(new_test_path) and new_test_path != challenge.tests_code):
             return make_response(jsonify({'challenge' : 'existing test suite file name'}), 409)
 
@@ -68,25 +67,22 @@ def update_a_go_challenge(id):
     test_path = str(challenge.tests_code)
 
     change = False
-    # Controles sobre el contenido
+    
     new_code = 'source_code_file' in request.files 
-    if new_code: #CONTENIDO
-        # Verifico que el codigo compile
+    if new_code: 
         code_compile = subprocess.run(["go", "build", code_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
         if code_compile.returncode == 2:
             return make_response(jsonify({"code_file":"code with sintax errors"}),409)
 
-        f = request.files['source_code_file']
         change = True
     
     new_test = 'test_suite_file' in request.files
-    if new_test: #CONTENIDO
+    if new_test: 
                     
         test_compile = subprocess.run(["go", "test", "-c"],cwd='example-challenges/go-challenges')        
         if test_compile.returncode == 1:
             return make_response(jsonify({"test_code_file":"test with sintax errors"}),409)
 
-        g = request.files['test_suite_file']
         change = True
 
     if change == True:
@@ -95,22 +91,20 @@ def update_a_go_challenge(id):
             return make_response(jsonify({'test_code_file':'test must fails'}), 412)
 
         if new_code:
-            f.save(code_path)
+            challenge.code = content(code_path)
         if new_test:
-            g.save(test_path)
+            challenge.tests_code = content(test_path)
 
     if 'repair_objective' in request_data and request_data['repair_objective'] != challenge.repair_objective:
-        challenge.repair_objetive = request_data['repair_objective']
+        challenge.repair_objective = request_data['repair_objective']
 
     if 'complexity' in request_data and request_data['complexity'] != challenge.complexity:
         challenge.complexity = request_data['complexity']
 
     db.session.commit()
-    
     challenge_dict = challenge.convert_dict()
-    #from_file_to_str(challenge_dict, 'code')
-    #from_file_to_str(challenge_dict, 'tests_code')
     del challenge_dict['id']
+
     return jsonify({'challenge': challenge_dict})
     
 
