@@ -14,11 +14,8 @@ def valid_python_challenge(code_path,test_path):
         return { 'Result': 'ok' }
 
 def no_syntax_errors(code_path):
-    try:
-        p = subprocess.call("python -m py_compile " + code_path ,stdout=subprocess.PIPE, shell=True)
-        return p == 0   #0 is no syntax errors, 1 is the opposite
-    except CalledProcessError as err:
-        return False
+    result = subprocess.run("python -m py_compile " + code_path ,stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    return result.returncode == 0   #0 is no syntax errors, 1 is the opposite
 
 def tests_fail(test_path):
     result = subprocess.run("python -m pytest " + test_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
