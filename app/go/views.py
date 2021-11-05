@@ -60,7 +60,6 @@ def update_a_go_challenge(id):
             os.remove(new_code_path)
             return make_response(jsonify({"code_file":"code with sintax errors"}),409)           
 
-        
     new_test = 'test_suite_file' in request.files
     if new_test: 
         if not ('test_suite_file_name' in request_data):
@@ -82,7 +81,8 @@ def update_a_go_challenge(id):
         if pass_test_suite.returncode == 0:
             os.remove(new_code_path)
             os.remove(new_test_path)
-            return make_response(jsonify({'error' : 'test must fails'}), 412)    
+            return make_response(jsonify({'error' : 'test must fails'}), 412)  
+
     elif new_code and not new_test:
         
         path_to_temp_test_file = 'example-challenges/go-challenges/tmp/' + 'temp_test.go'
@@ -111,18 +111,7 @@ def update_a_go_challenge(id):
         rewrite_file(new_test_path, old_test_path)
         os.remove(new_test_path)
    
-
-    #delete all files 
-    #no es eficiente si la carpeta tmp tiene subdirectorios, pero ese caso no creo que ocurra
-    #for file in os.listdir('example-challenges/go-challenges/tmp/'):
-    #   os.remove(os.path.join('example-challenges/go-challenges/tmp/', file))
-
-    #ver que tenemos guardado en la carpeta temporal:
-    # si solo esta source_code_file, agregar la test_suite vieja
-    # si solo esta test_suite_file, agregar source_code file viejo
-    # otro caso, cambio ambos archivos
-    #if change and (new_code and not new_test):
-
+    delete_files('example-challenges/go-challenges/tmp/')
 
     if 'repair_objective' in request_data and request_data['repair_objective'] != challenge.repair_objective:
         challenge.repair_objective = request_data['repair_objective']
@@ -138,7 +127,7 @@ def update_a_go_challenge(id):
 
     return jsonify({'challenge': challenge_dict})
     
-
+    
 def from_file_to_str(challenge, attribute):
     file= open(str(os.path.abspath(challenge[attribute])),'r')
     content=file.readlines()
