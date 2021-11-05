@@ -1,7 +1,7 @@
 from app import db
 
 class RubyChallengeModel(db.Model):
-	__tablename__ = 'RubyChallenge'
+	__tablename__ = 'ruby_challenge'
 	id = db.Column(db.Integer, primary_key=True)
 	code = db.Column(db.String(256))  # Path to source file
 	tests_code = db.Column(db.String(256))  # Path to test suite file
