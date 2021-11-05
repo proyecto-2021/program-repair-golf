@@ -40,7 +40,7 @@ class RubyCode:
 
 	def copy(self, path):
 		dst = path + self.get_file_name() + '.rb'
-		copy(self.get_full_name(), dst)
+		return copy(self.get_full_name(), dst)
 
 	def rename(self, new_name):
 		os.rename(self.get_full_name(), self.path + new_name + '.rb')
@@ -57,3 +57,7 @@ class RubyCode:
 	def compiles(self):
 		command = 'ruby -c ' + self.get_full_name()
 		return subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0
+
+	def run_fail(self):
+		command = 'ruby ' + self.get_full_name()
+		return subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) != 0
