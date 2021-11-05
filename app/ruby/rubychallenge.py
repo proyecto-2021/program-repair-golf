@@ -2,7 +2,7 @@ from .rubycode import RubyCode
 import subprocess, sys
 
 class RubyChallenge:
-	def __init__(self, repair_objective, complexity, code=None, tests_code=None):
+	def __init__(self, repair_objective, complexity, best_score=0, code=None, tests_code=None):
 		self.repair_objective = repair_objective
 		self.complexity = complexity
 		self.best_score = 0
@@ -18,6 +18,9 @@ class RubyChallenge:
 
 	def set_tests_code(self, files_path, file_name, file=None):
 		self.tests_code = RubyCode(files_path, file_name, file)
+
+	def set_best_score(self, new_score):
+		self.best_score = new_score
 
 	def save_code(self):
 		return self.code.save()
@@ -65,8 +68,10 @@ class RubyChallenge:
 		return dependence_name == self.code.get_file_name()
 
 	def tests_fail(self):
-		command = 'ruby ' + self.tests_code.get_full_name()
-		return subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) != 0
+		return self.tests_code.run_fail()
+
+	def get_best_score(self):
+		return self.best_score
 
 	def get_content_for_db(self):
 		return {
@@ -74,6 +79,12 @@ class RubyChallenge:
 			'tests_code': self.tests_code.get_full_name(),
 			'repair_objective': self.repair_objective,
 			'complexity': self.complexity
+		}
+
+	def get_content_for_repair(self):
+		return {
+			'repair_objective': self.repair_objective,
+			'best_score': self.best_score
 		}
 
 	def get_content(self):
