@@ -129,6 +129,18 @@ def test_repair_for_check_upgrade_best_score(client):
     #es la primera vez que reparamos el challengue.
     assert ret_post_json["best_score"] > ret_repair_json["best_score"]
 
+def test_repair_for_check_id_not_associated(client):
+    # arrange
+    challenge_repair = {
+        'source_code_file': open('tests/go/files-for-tests/median_solution_3point.go', 'rb'),
+    }
+
+    # Act
+    ret_repair = client.post("go/api/v1/go-challenges/0/repair", data=challenge_repair)
+
+    # Assert
+    assert ret_repair.status_code == 404
+
 
 
 
