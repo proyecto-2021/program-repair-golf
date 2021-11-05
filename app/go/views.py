@@ -53,14 +53,14 @@ def update_a_go_challenge(id):
             return make_response(jsonify({'file name' : 'conflict'}), 409)
 
         new_code_name = request_data['source_code_file_name']
-        new_code_path = f'example-challenges/go-challenges/{new_code_name}'  
+        new_code_path = f'example-challenges/go-challenges/tmp/{new_code_name}'  
+
+        f = request.files['source_code_file']
+        f.save(new_code_path)
 
         code_compile = subprocess.run(["go", "build", new_code_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
         if code_compile.returncode == 2:
-            return make_response(jsonify({"code_file":"code with sintax errors"}),409)  
-
-        file = request.files['source_code_file']
-        file.save(old_code_path)          
+            return make_response(jsonify({"code_file":"code with sintax errors"}),409)           
 
         change = True
         
@@ -70,25 +70,35 @@ def update_a_go_challenge(id):
             return make_response(jsonify({'file name' : 'conflict'}),409)
         
         new_test_name = request_data['test_suite_file_name']
-        new_test_path = f'example-challenges/go-challenges/{new_test_name}'
+        new_test_path = f'example-challenges/go-challenges/tmp/{new_test_name}'
 
-        test_compile = subprocess.run(["go", "test", "-c"],cwd='example-challenges/go-challenges')        
+        g = request.files['test_suite_file']   
+        g.save(new_test_path)
+
+        test_compile = subprocess.run(["go", "test", "-c"],cwd='example-challenges/go-challenges/tmp')        
         if test_compile.returncode == 1:
             return make_response(jsonify({"test_code_file":"test with sintax errors"}),409)
-
-        file = request.files['test_suite_file']   
-        file.save(old_test_path)
 
         change = True
 
     if change == True:
-        pass_test_suite = subprocess.run(['go', 'test'], cwd='example-challenges/go-challenges')
+        pass_test_suite = subprocess.run(['go', 'test'], cwd='example-challenges/go-challenges/tmp')
         if pass_test_suite.returncode == 0:
-            if new_code: 
-                os.remove(old_code_path)
-            if new_test:
-                os.remove(old_test_path)
+            #if new_code: 
+                #os.remove(new_code_path)
+            #if new_test:
+                #os.remove(new_test_path)
+
             return make_response(jsonify({'test_code_file':'test must fails'}), 412)
+
+        #if new_code_path:
+        h = request.files['source_code_file']
+        h.save(old_code_path)
+            #os.remove(new_code_path)
+        #if new_test_path:
+        i = request.files['test_suite_file'] 
+        i.save(old_test_path)
+            #os.remove(new_test_path)
 
     if 'repair_objective' in request_data and request_data['repair_objective'] != challenge.repair_objective:
         challenge.repair_objective = request_data['repair_objective']
