@@ -3,9 +3,7 @@ from flask import jsonify, request, make_response, json
 from app import db
 from . import go
 from .models_go import GoChallenge
-import shutil
-import nltk
-import os, subprocess
+import os, subprocess, math, nltk, shutil
 
 
 @go.route('api/v1/go-challenges/<int:id>/repair', methods=['POST'])
@@ -208,7 +206,7 @@ def create_go_challenge():
         tests_code=test_suite_path,
         repair_objective=challenge_data['repair_objective'],
         complexity=challenge_data['complexity'],
-        best_score=0)
+        best_score=math.inf)
 
     all_the_challenges = db.session.query(GoChallenge).all()
     for every_challenge in all_the_challenges:
