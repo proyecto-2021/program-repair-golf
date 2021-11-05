@@ -6,7 +6,7 @@ class RubyChallengeModel(db.Model):
 	code = db.Column(db.String(256))  # Path to source file
 	tests_code = db.Column(db.String(256))  # Path to test suite file
 	repair_objective = db.Column(db.String(128))
-	complexity = db.Column(db.String(1))
+	complexity = db.Column(db.String(1, CheckConstraint("complexity IN ('1', '2', '3', '4', '5')")))
 	best_score = db.Column(db.Integer())
 
 	def get_dict(self):
