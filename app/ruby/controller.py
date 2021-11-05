@@ -2,6 +2,7 @@ from .rubychallenge import RubyChallenge
 from .rubychallengedao import RubyChallengeDAO
 from flask import jsonify, make_response
 from os import mkdir
+from os.path import isdir
 from tempfile import gettempdir
 from shutil import rmtree
 
@@ -63,6 +64,8 @@ class Controller:
         old_challenge = RubyChallenge(**challenge)
         new_challenge = RubyChallenge(data['repair_objective'], data['complexity'])
         ruby_tmp = gettempdir() + '/ruby-tmp/'
+        if isdir(ruby_tmp):
+            rmtree(ruby_tmp)
         mkdir(ruby_tmp)
         #If files names are in the request, set new_code names to them. If not, take old_challenge name.
         nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.code.get_file_name()
