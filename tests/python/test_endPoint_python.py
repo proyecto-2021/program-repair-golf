@@ -3,7 +3,7 @@ from . import client
 import json
 
 
-
+# testing of one post challenge
 def test_post_pythonChallenge(client):
     repair_objective = "make to pass"
 
@@ -21,7 +21,7 @@ def test_get_single_pythonChallenge(client):
     repair_objectiveParam = "prueba test"
 
     dataChallengePost = postFunction(repair_objectiveParam,3) 
-    response = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePost)
+    client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePost)
 
     result = client.get('http://localhost:5000/python/api/v1/python-challenges/1')
     #---- end post ---#
@@ -48,7 +48,7 @@ def test_get_single_pythonChallenge(client):
 def test_get_total_pythonChallenge(client):
     clear_data_base()
 
-    #---start post challenges ---#
+    #--- start post challenges ---#
     repair_objectiveParamOne = "probando test"
     repair_objectiveParamTwo = "pruebita test"
     repair_objectiveParamThree = "pruebas test"
@@ -57,14 +57,17 @@ def test_get_total_pythonChallenge(client):
     dataChallengePostTwo = postFunction(repair_objectiveParamTwo,2)
     dataChallengePostThree = postFunction(repair_objectiveParamThree,3)
 
-    responseOne = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostOne)
-    responseTwo = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostTwo)
-    responseThree = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostThree)
+    client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostOne)
+    client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostTwo)
+    client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostThree)
+    #--- end post challenges ---#
 
-    result = client.get('http://localhost:5000/python/api/v1/python-challenges')
-    print(result.json)
-    assert 1 == 0
-
+    responsive = client.get('http://localhost:5000/python/api/v1/python-challenges')
+    
+    data = parseDataTextAJson(responsive.json)
+    
+    assert len(data['challenges']) == 3
+    clear_data_base()
 
 
 
@@ -103,3 +106,4 @@ def postFunction(repair_objectiveParam,complexityParam):
     dataChallenge['challenge'] = replace_text2
 
     return dataChallenge     
+# ------- end Section functions ------- #
