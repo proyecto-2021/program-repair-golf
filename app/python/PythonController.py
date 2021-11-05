@@ -1,6 +1,5 @@
 from .PythonChallengeDAO import PythonChallengeDAO
 from .PythonChallenge import PythonChallenge
-from .subprocess_utils import *
 
 class PythonController:
   
@@ -9,7 +8,7 @@ class PythonController:
     challenge_list = [] 
     for raw_challenge in all_challenges:
       #Get row as json
-      challenge = PythonChallenge(challenge_data=raw_challenge).to_json()
+      challenge = PythonChallenge(challenge_data=raw_challenge).to_json(best_score=True)
       challenge['id'] = raw_challenge.id
       challenge.pop('tests_code', None)
       challenge_list.append(challenge)
@@ -21,7 +20,7 @@ class PythonController:
     if raw_challenge is None:
       return {"Error": "Challenge not found"}
 
-    response = PythonChallenge(challenge_data=raw_challenge).to_json()
+    response = PythonChallenge(challenge_data=raw_challenge).to_json(best_score=True)
     return response
 
   def post_challenge(challenge_data, src_code, test_src_code):
@@ -37,7 +36,7 @@ class PythonController:
 
     #create response
     response = challenge.to_json()
-    response['id'] = challenge_id
+    response['id'], response['best_score'] = challenge_id, 0
     return response
 
   def put_challenge(id, challenge_data, new_code, new_test):
@@ -58,9 +57,9 @@ class PythonController:
     #update files in system
     original_challenge.delete()
     challenge_update.save_at(save_to)
+    PythonChallengeDAO.update_challenge(id, challenge_update.to_json(content=False)) #updating in db
     #prepare response
-    response = challenge_update.to_json()
-    response['best_score'] = req_challenge.best_score
+    response = challenge_update.to_json(best_score=True)
     return response
 
   #takes the challenge to a temp location and checks if it's valid
