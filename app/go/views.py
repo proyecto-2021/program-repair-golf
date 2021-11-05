@@ -72,6 +72,7 @@ def update_a_go_challenge(id):
             return make_response(jsonify({"code_file":"code with sintax errors"}),409)
 
         change = True
+        #challenge.code = content(code_path)
     
     new_test = 'test_suite_file' in request.files
     if new_test: 
@@ -81,16 +82,17 @@ def update_a_go_challenge(id):
             return make_response(jsonify({"test_code_file":"test with sintax errors"}),409)
 
         change = True
+        #challenge.tests_code = content(test_path)
 
     if change == True:
         pass_test_suite = subprocess.run(['go', 'test'], cwd='example-challenges/go-challenges')
         if pass_test_suite.returncode == 0:
             return make_response(jsonify({'test_code_file':'test must fails'}), 412)
 
-        if new_code:
-            challenge.code = content(code_path)
-        if new_test:
-            challenge.tests_code = content(test_path)
+        #if new_code:
+        #    challenge.code = content(code_path)
+        #if new_test:
+        #    challenge.tests_code = content(test_path)
 
     if 'repair_objective' in request_data and request_data['repair_objective'] != challenge.repair_objective:
         challenge.repair_objective = request_data['repair_objective']
@@ -100,6 +102,8 @@ def update_a_go_challenge(id):
 
     db.session.commit()
     challenge_dict = challenge.convert_dict()
+    from_file_to_str(challenge_dict, 'code')
+    from_file_to_str(challenge_dict, 'tests_code')
     del challenge_dict['id']
 
     return jsonify({'challenge': challenge_dict})
