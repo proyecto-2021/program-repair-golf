@@ -53,6 +53,9 @@ class Controller:
         return jsonify({'challenges': challenges})
 
     def modify_challenge(self, id, code_file, tests_code_file, json):
+        if not self.dao.exists(id):
+            return make_response(jsonify({'challenge': 'id doesnt exist'}), 404)
+
         data = {'repair_objective': None, 'complexity': None}
         data.update(json['challenge'])
         challenge = self.dao.get_challenge(id)
