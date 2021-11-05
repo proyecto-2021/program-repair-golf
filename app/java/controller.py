@@ -42,7 +42,8 @@ class controller():
     def challenges_id_java(id):
         challenge=DAO_java_challenge.challenges_id_java(id)
         if challenge is None:
-            return make_response(jsonify({"challenge": "Not exist this id"}))
+            #return make_response(jsonify({"challenge": "Not exist this id"}))
+            raise Exception('ERROR NOT EXIST THIS ID')
         challengeaux=Challenge_java.__repr__(challenge)
         if (challengeaux is None):
             return make_response(jsonify({"challenge":"Not found prueba"}),404)   
@@ -62,7 +63,8 @@ class controller():
             filemostrar=file.read()
             file.close()
             challengeaux['tests_code']=filemostrar
-            return jsonify({"challenge":challengeaux})
+            #return make_response(jsonify({"challenge":challengeaux}))
+            return challengeaux
 
     def challenge_upd_java(id):
         challenge= DAO_java_challenge.challenges_id_java(id)
@@ -114,7 +116,6 @@ class controller():
         dict_final = to_dict['challenge']
         if dict_final is not None:
             code_file_name = dict_final['source_code_file_name']
-            #test_suite_file_name = dict_final['test_suite_file_name']
             challenge = DAO_java_challenge.get_challenge_by_code(code_file_name)
             if challenge is None:
             # check if the post request has the file part
@@ -140,8 +141,6 @@ class controller():
                 ruta_file_tmp = UPLOAD_TMP + file_repair.filename
                 code_repair = FileManagement.get_code_file_by_path(ruta_file_tmp)
                 value_dist = nltk.edit_distance(code_class, code_repair)
-                #value_dist = nltk.edit_distance('hola', 'bola')
-                print(value_dist)
                 if value_dist < curr['best_score']:
                     challenge.score = value_dist
                     db.session.add(challenge)
