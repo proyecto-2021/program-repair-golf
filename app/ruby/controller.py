@@ -61,6 +61,7 @@ class Controller:
         new_challenge = RubyChallenge(data['repair_objective'], data['complexity'])
         ruby_tmp = gettempdir() + '/ruby-tmp/'
         mkdir(ruby_tmp)
+        #If files names are in the request, set new_code names to them. If not, take old_challenge name.
         nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.code.get_file_name()
         nc_test_name = data['test_suite_file_name'] if 'test_suite_file_name' in data else old_challenge.tests_code.get_file_name()
         
@@ -72,7 +73,7 @@ class Controller:
             if not new_challenge.code_compile():
                 rmtree(ruby_tmp)
                 return make_response(jsonify({'code': 'code doesnt compile'}), 400)
-        else:
+        else: #If no file is passed, set the old_challenge code as the new one (Needed to check dependencies)
             old_challenge.copy_code(ruby_tmp)
             new_challenge.set_code(ruby_tmp, old_challenge.code.get_file_name(), None)
             new_challenge.rename_code(nc_code_name)
@@ -94,13 +95,9 @@ class Controller:
             rmtree(ruby_tmp)
             return make_response(jsonify({'challenge': 'test_suite dependencies are wrong'}), 400)
 
-        old_challenge.rename_tests_code(nc_test_name)
-        old_challenge.rename_code(nc_code_name)
-
         if not new_challenge.tests_fail():
             rmtree(ruby_tmp)
             return make_response(jsonify({'challenge': 'test_suite does not fail'}),400)
-        
 
         # Files are ok, copy it to respective directory
         if old_challenge.code.get_file_name() != new_challenge.code.get_file_name():
@@ -117,6 +114,10 @@ class Controller:
         else:
             new_challenge.move_tests_code(self.files_path)
         
+        #If everything works, rename the old_challenge
+        old_challenge.rename_tests_code(nc_test_name)
+        old_challenge.rename_code(nc_code_name)
+
         rmtree(ruby_tmp)
 
         self.dao.update_challenge(id, {key: value for (key, value) in new_challenge.get_content_for_db().items() if value is not None})
