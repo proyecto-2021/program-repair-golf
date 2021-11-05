@@ -12,5 +12,9 @@ class PythonSourceCode:
       self.content = read_file(path, 'rb')
       self.name = get_filename(path)
 
+  def update(self, content, name):
+    if content != None: self.content = content
+    if name != None: self.name = name
+
   def get_content(self):
     return self.content.decode()
