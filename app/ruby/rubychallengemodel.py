@@ -1,4 +1,5 @@
 from app import db
+from sqlalchemy.sql.schema import CheckConstraint
 
 class RubyChallengeModel(db.Model):
 	__tablename__ = 'ruby_challenge'
