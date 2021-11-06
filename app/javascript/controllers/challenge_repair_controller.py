@@ -9,8 +9,8 @@ from ..exceptions.ChallengeRepairException import ChallengeRepairException
 class ChallengeRepairController():
 
     def repair(self,challenge,code_files_new):
-        if not exist_file(challenge):
-            raise ChallengeRepairException('The file does not exists', ChallengeRepairException.HTTP_NOT_FOUND)
+        if not exist_file(challenge.code):
+            raise ChallengeRepairException(f'The file does not exists{challenge.code}', ChallengeRepairException.HTTP_NOT_FOUND)
     
         file_path_new = to_temp_file(challenge.code)  
         upload_file(code_files_new, file_path_new)
