@@ -11,15 +11,19 @@ def get_data(code_name, tests_name, repair_objective, complexity, code=None, tes
     return data
 
 def get_json(code_name, tests_name, repair_objective, complexity):
-    return {'challenge': '{ \
-                "challenge": { \
-                    ' + f'''"source_code_file_name" : "{code_name}" , \
-                    "test_suite_file_name" : "{tests_name}", \
-                    "repair_objective" : "{repair_objective}", \
-                    "complexity" : "{complexity}" \
-                    ''' + ' } \
-                }'
-            }
+    dictionary = { 'source_code_file_name': code_name, 'test_suite_file_name': tests_name, 'repair_objective': repair_objective, 'complexity': complexity }
+    data = '{ "challenge": { '
+    first = True
+    for key in dictionary:
+        if dictionary[key] is not None:
+            if first:
+                data = data + f'"{key}" : "{dictionary[key]}"'
+                first = False
+            else:
+                data = data + f', "{key}" : "{dictionary[key]}"'
+
+    data = data + ' } }'
+    return {'challenge': data}
 
 def test_post_challenge(client):
     url = '/ruby/challenge'
