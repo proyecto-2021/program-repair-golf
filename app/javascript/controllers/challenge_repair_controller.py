@@ -3,11 +3,15 @@ from flask import make_response,jsonify,request
 from controllers.files_controller import open_file, exist_file, to_temp_file, replace_file,upload_file
 from .. import db
 from ..modules.source_code_module import compile_js, test_run
-from ..exceptions import ChallengeRepairException
+from ..exceptions.ChallengeRepairException import ChallengeRepairException
+
 
 class ChallengeRepairController():
 
     def repair(self,challenge,code_files_new):
+        if not exist_file(challenge):
+            raise ChallengeRepairException('The file does not exists', ChallengeRepairException.HTTP_NOT_FOUND)
+    
         file_path_new = to_temp_file(challenge.code)  
         upload_file(code_files_new, file_path_new)
         compile_js(file_path_new)
