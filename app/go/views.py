@@ -1,16 +1,10 @@
 import json
-from flask import Flask,jsonify,request,make_response
+from flask import jsonify, request, make_response, json
 from app import db
 from . import go
 from .models_go import GoChallenge
+import os, subprocess, math, nltk, shutil
 
-import shutil
-import nltk
-import os, subprocess
-
-@go.route('/hello') 
-def hello():
-    return 'Hello World!'
 
 @go.route('api/v1/go-challenges/<int:id>/repair', methods=['POST'])
 def repair_challengue_go(id):
@@ -70,6 +64,7 @@ def repair_challengue_go(id):
     
     return jsonify(request_return)
 
+
 @go.route('/api/v1/go-challenges', methods=['GET'])
 def get_all_challenges():
     challenges = db.session.query(GoChallenge).all()
@@ -99,6 +94,108 @@ def return_single_challenge(id):
     del challenge_to_return["id"]
     return jsonify({"challenge":challenge_to_return})
 
+
+@go.route('/api/v1/go-challenges/<id>', methods=['PUT'])
+def update_a_go_challenge(id):
+    challenge = GoChallenge.query.filter_by(id = id).first()
+    if challenge is None:
+        return make_response(jsonify({'challenge' : 'not found'}), 404)
+    
+    if request.files:
+        directory  = 'tmp'
+        parent_dir = 'example-challenges/go-challenges'
+        path = os.path.join(parent_dir,directory)
+        os.makedirs(path)
+
+    old_code_path = challenge.code
+    old_test_path = challenge.tests_code
+    request_data = json.loads(request.form.get('challenge'))['challenge']
+    
+    new_code = 'source_code_file' in request.files 
+    if new_code:
+        if not ('source_code_file_name' in request_data):
+            return make_response(jsonify({'file name' : 'conflict'}), 409)
+
+        new_code_name = request_data['source_code_file_name']
+        new_code_path = f'example-challenges/go-challenges/tmp/{new_code_name}'  
+
+        f = request.files['source_code_file']
+        f.save(new_code_path)
+
+        code_compile = subprocess.run(["go", "build", new_code_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
+        if code_compile.returncode == 2:
+            os.remove(new_code_path)
+            return make_response(jsonify({"code_file":"code with sintax errors"}),409)           
+
+    new_test = 'test_suite_file' in request.files
+    if new_test: 
+        if not ('test_suite_file_name' in request_data):
+            return make_response(jsonify({'file name' : 'conflict'}),409)
+        
+        new_test_name = request_data['test_suite_file_name']
+        new_test_path = f'example-challenges/go-challenges/tmp/{new_test_name}'
+
+        g = request.files['test_suite_file']   
+        g.save(new_test_path)
+
+        test_compile = subprocess.run(["go", "test", "-c"],cwd='example-challenges/go-challenges/tmp/')        
+        if test_compile.returncode == 1:
+            os.remove(new_test_path)
+            return make_response(jsonify({"test_code_file":"test with sintax errors"}),409)
+
+    if new_code and new_test:
+        pass_test_suite = subprocess.run(['go', 'test'], cwd='example-challenges/go-challenges/tmp/')
+        if pass_test_suite.returncode == 0:
+            os.remove(new_code_path)
+            os.remove(new_test_path)
+            return make_response(jsonify({'error' : 'test must fails'}), 412)  
+
+    elif new_code and not new_test:
+        
+        path_to_temp_test_file = 'example-challenges/go-challenges/tmp/' + 'temp_test.go'
+        rewrite_file(old_test_path, path_to_temp_test_file)
+        pass_test_suite = subprocess.run(['go', 'test'], cwd='example-challenges/go-challenges/tmp/')
+        
+        if pass_test_suite.returncode == 0:
+            delete_files('example-challenges/go-challenges/tmp/')
+            return make_response(jsonify({'error' : 'test must fails'}), 412)
+
+    elif not new_code and new_test:
+
+        path_to_temp_code_file = 'example-challenges/go-challenges/tmp/' + 'temp.go'
+        rewrite_file(old_code_path, path_to_temp_code_file)
+        pass_test_suite = subprocess.run(['go', 'test'], cwd='example-challenges/go-challenges/tmp/')
+        
+        if pass_test_suite.returncode == 0:
+            delete_files('example-challenges/go-challenges/tmp/')
+            return make_response(jsonify({'error' : 'test must fails'}), 412)
+
+    if new_code:
+        rewrite_file(new_code_path, old_code_path)  
+        os.remove(new_code_path)
+
+    if new_test:
+        rewrite_file(new_test_path, old_test_path)
+        os.remove(new_test_path)
+    
+    if request.files:
+        shutil.rmtree('example-challenges/go-challenges/tmp/')
+
+    if 'repair_objective' in request_data and request_data['repair_objective'] != challenge.repair_objective:
+        challenge.repair_objective = request_data['repair_objective']
+
+    if 'complexity' in request_data and request_data['complexity'] != challenge.complexity:
+        challenge.complexity = request_data['complexity']
+
+    db.session.commit()
+    challenge_dict = challenge.convert_dict()
+    from_file_to_str(challenge_dict, 'code')
+    from_file_to_str(challenge_dict, 'tests_code')
+    del challenge_dict['id']
+
+    return jsonify({'challenge': challenge_dict})
+    
+
 @go.route('/api/v1/go-challenges', methods=['POST'])
 def create_go_challenge():
     challenge_data = json.loads(request.form.get('challenge'))['challenge']
@@ -116,7 +213,7 @@ def create_go_challenge():
         tests_code=test_suite_path,
         repair_objective=challenge_data['repair_objective'],
         complexity=challenge_data['complexity'],
-        best_score=0)
+        best_score=math.inf)
 
     all_the_challenges = db.session.query(GoChallenge).all()
     for every_challenge in all_the_challenges:
@@ -155,3 +252,18 @@ def compiles(commands, path):
 
 def compiles(command):
     return (subprocess.call(command, shell=True, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL) == 0)
+
+def content(path):
+    f = open(path, 'r')
+    return f.read()
+
+def rewrite_file(path_to_file_used_to_update, path_to_file_to_update):
+    with open(path_to_file_used_to_update) as file_used_to_update:
+            with open(path_to_file_to_update, 'w') as file_to_update:
+                for line in file_used_to_update:
+                    file_to_update.write(line)
+
+def delete_files(path):
+    for file in os.listdir(path):
+      os.remove(os.path.join(path, file))
+
