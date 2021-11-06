@@ -26,51 +26,15 @@ class RubyChallengeAPI(MethodView):
             if not exists(id):
                 return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
 
-            challenge = get_challenge(id)
-
-            file = request.files['source_code_file']
-            os.mkdir(gettempdir() + '/repair-zone')
-            file_name = gettempdir() + '/repair-zone/' + os.path.basename(challenge['code'])
-            save(file, file_name)
-
-            if not compiles(file_name):
-                remove([file_name])
-                os.rmdir(gettempdir() + '/repair-zone')
-                return make_response(jsonify({'challenge': {'repair_code': 'is erroneous'}}),400)
-
-            test_file_name = gettempdir() + '/repair-zone' + '/tmp_test_file.rb'
-            copy(challenge['tests_code'], test_file_name)
-
-            if tests_fail(test_file_name):
-                remove([file_name, test_file_name])
-                os.rmdir(gettempdir() + '/repair-zone')
-                return make_response(jsonify({'challenge': {'tests_code': 'fails'}}),200)
-
-            with open(challenge['code']) as f1, open(file_name) as f2:
-                score = nltk.edit_distance(f1.read(),f2.read())
-
-            if (score < challenge['best_score']) or (challenge['best_score'] == 0):
-                update_challenge(id, {'best_score': score})
-
-            remove([file_name, test_file_name])
-            os.rmdir(gettempdir() + '/repair-zone')
-
-            challenge = get_challenge(id)
-            delete_keys([challenge], ['id','code','complexity','tests_code'])
-            return jsonify( {'repair' :
-                                {
-                                    'challenge': challenge,
-                                    'player': {'username': 'Agustin'},
-                                    'attemps': '1',
-                                    'score': score
-                                }
-                            }
-                        )
+            repair_candidate = request.files['source_code_file']
+            return self.controller.post_repair(id, repair_candidate)
 
     def get(self, id):
         if id is None:
             return self.controller.get_all_challenges()
         else:
+            if not exists(id):
+                return make_response(jsonify({'challenge': 'NOT FOUND'}), 404)
             return self.controller.get_challenge(id)
 
     def put(self, id):
