@@ -13,10 +13,12 @@ class CSharpSrc:
 		if path is not None:
 			self.path = path
 
+	# pre: <code_file> must be saved in <path>
 	def compiles(self):
 		compile_code_cmd = 'mcs ' + self.path
 		return subprocess.call(compile_code_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0
 
+	# pre: <code_file> must be saved in <path>
 	def test_compiles(self, test):
 		compile_code_cmd = 'mcs ' + self.path
 		test_dll = test.path.replace('.cs', '.dll')
@@ -25,6 +27,7 @@ class CSharpSrc:
 		final_cmd = cmd_export + ' && ' + test_compile_cmd
 		return subprocess.call(final_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0
 
+	# pre: <code_file> must be saved in <path>
 	def tests_pass(self, test):
 		test_dll = test.path.replace('.cs', '.dll')
 		self.compiles()
@@ -34,7 +37,13 @@ class CSharpSrc:
 		final_cmd = cmd_export + ' && ' + cmd_execute 
 		return subprocess.call(final_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0
 
-	def save_on(self, path):
+	def save(self, path):
 		new_path = path + self.file_name + '.cs'
 		self.code_file.save(new_path)
 		self.path = new_path
+
+	def rm(self):
+		if self.path is not None and path.isfile():
+			os.remove(self.path)
+		else:
+			raise ValueError('Path has not been loaded or is not a file path.')
