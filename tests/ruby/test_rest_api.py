@@ -136,7 +136,7 @@ def test_post_existent_challenge(client):
 
 def test_post_code_not_compiles1(client):
     url = '/ruby/challenge'
-    data = get_data('example_not_compile8', 'example_test8', 'example8', 'example_test8', 'Testing compilation error', '4')
+    data = get_data('example_not_compile', 'example_test8', 'example8', 'example_test8', 'Testing compilation error', '4')
 
     r = client.post(url, data=data)
     response = r.json['challenge']
@@ -221,9 +221,26 @@ def test_put_only_change_files_names(client):
     id = r.json['challenge']['id']
 
     url2 = f'/ruby/challenge/{id}'
-    data2 = get_json('example', 'example_test', 'Testing put', '3')
+    data2 = get_json('example', 'example_test12', 'Testing put', '3')
 
     r2 = client.put(url2, data=data2)
 
+    assert r.status_code == 200
     assert r2.status_code == 400
     assert r2.json['challenge'] == 'test_suite dependencies are wrong'
+
+def test_put_code_not_compiles1(client):
+    url = '/ruby/challenge'
+    data = get_data('example_challenge', 'example_test13', 'example13', 'example_test13', 'Testing', '4')
+
+    r = client.post(url, data=data)
+    id = r.json['challenge']['id']
+
+    url2 = f'/ruby/challenge/{id}'
+    data2 = get_data('example_not_compile', 'example_test13', 'example13', 'example_test13', 'Testing put code does not compiles', '3')
+
+    r2 = client.put(url2, data=data2)
+
+    assert r.status_code == 200
+    assert r2.status_code == 400
+    assert r2.json['challenge'] == 'code doesnt compile'
