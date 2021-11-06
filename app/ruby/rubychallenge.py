@@ -5,7 +5,7 @@ class RubyChallenge:
 	def __init__(self, repair_objective, complexity, best_score=0, code=None, tests_code=None):
 		self.repair_objective = repair_objective
 		self.complexity = complexity
-		self.best_score = 0
+		self.best_score = best_score
 		self.code = None
 		self.tests_code = None
 		if code is not None:
