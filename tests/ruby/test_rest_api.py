@@ -191,7 +191,7 @@ def test_post_repair_candidate_compiles_error(client):
     id = r.json['challenge']['id']
 
     url2 = f'/ruby/challenge/{id}/repair'
-    data2 = { 'source_code_file': open('tests/ruby/tests-data/example_fixed_syntax_error.rb', 'rb') }
+    data2 = { 'source_code_file': open('tests/ruby/tests-data/example_fixed_no_compiles.rb', 'rb') }
     r2 = client.post(url2, data=data2)
 
     assert r.status_code == 200
@@ -244,3 +244,19 @@ def test_put_code_not_compiles1(client):
     assert r.status_code == 200
     assert r2.status_code == 400
     assert r2.json['challenge'] == 'code doesnt compile'
+
+def test_put_code_not_compiles2(client):
+    url = '/ruby/challenge'
+    data = get_data('example_challenge', 'example_test14', 'example14', 'example_test14', 'Testing', '5')
+
+    r = client.post(url, data=data)
+    id = r.json['challenge']['id']
+
+    url2 = f'/ruby/challenge/{id}'
+    data2 = get_data('example_challenge', 'example_test_no_compiles14', 'example14', 'example_test14', 'Testing put code does not compiles', '2')
+
+    r2 = client.put(url2, data=data2)
+
+    assert r.status_code == 200
+    assert r2.status_code == 400
+    assert r2.json['challenge'] == 'tests doesnt compile'
