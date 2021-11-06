@@ -3,7 +3,7 @@ from ..models_js import JavascriptChallenge, db
 
 def get_challenge(id):
     challenge = JavascriptChallenge.query.filter(id == JavascriptChallenge.id).first()
-    if challenge == None: 
+    if not challenge: 
         raise challenge_dao_exception(f'the id does not exist or is null',challenge_dao_exception.HTTP_NOT_FOUND)  
     return challenge
     
