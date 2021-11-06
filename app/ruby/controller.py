@@ -1,9 +1,10 @@
-from .rubychallenge import RubyChallenge
-from .rubychallengedao import RubyChallengeDAO
 from flask import jsonify, make_response
 from os import mkdir
 from tempfile import gettempdir
 from shutil import rmtree
+from .rubychallenge import RubyChallenge
+from .rubychallengedao import RubyChallengeDAO
+from .repaircandidate import RepairCandidate
 
 class Controller:
     def __init__(self, files_path):
@@ -52,11 +53,34 @@ class Controller:
         challenges = self.dao.get_challenges_data()
         return jsonify({'challenges': challenges})
 
+    def post_repair(self, id, repair_code):
+        challenge = RubyChallenge(**self.dao.get_challenge(id))
+        ruby_tmp = gettempdir() + '/ruby-tmp/'
+        mkdir(ruby_tmp)
+        rep_candidate = RepairCandidate(challenge, repair_code, ruby_tmp)
+        rep_candidate.save_candidate()
+
+        if not rep_candidate.compiles():
+            rmtree(ruby_tmp)
+            return make_response(jsonify({'challenge': {'repair_code': 'is erroneous'}}),400)
+
+        if not rep_candidate.test_ok():
+            rmtree(ruby_tmp)
+            return make_response(jsonify({'challenge': {'tests_code': 'fails'}}),200)
+
+        score = rep_candidate.compute_score()
+
+        if score < challenge.get_best_score() or challenge.get_best_score() == 0:
+            challenge.set_best_score(score)
+            self.dao.update_challenge(id,{'best_score':score})
+        
+        rmtree(ruby_tmp)
+        return jsonify(rep_candidate.get_content(score))
+
     def modify_challenge(self, id, code_file, tests_code_file, json):
         data = {'repair_objective': None, 'complexity': None}
         data.update(json['challenge'])
         challenge = self.dao.get_challenge(id)
-        del challenge['best_score']
         old_challenge = RubyChallenge(**challenge)
         new_challenge = RubyChallenge(data['repair_objective'], data['complexity'])
         ruby_tmp = gettempdir() + '/ruby-tmp/'
