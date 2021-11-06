@@ -314,3 +314,29 @@ def test_put_new_tests_and_rename_code(client):
                                         "complexity": "4",
                                         "best_score": 0
                                     }
+
+def test_put_only_new_data(client):
+    url = '/ruby/challenge'
+    data = get_data('example19', 'example_test19', 'Testing', '4', 'example_challenge', 'example_test19')
+    r1 = client.post(url, data=data)
+    id = r1.json['challenge']['id']
+
+    url2 = f'/ruby/challenge/{id}'
+    data2 = get_data(None, None, 'Testing put only new data', '2')
+
+    r2 = client.put(url2, data=data2)
+
+    with open('tests/ruby/tests-data/example_challenge.rb') as f:
+        content_code = f.read()
+    with open('tests/ruby/tests-data/example_test19.rb') as f:
+        content_tests_code = f.read()
+
+    assert r1.status_code == 200
+    assert r2.status_code == 200
+    assert r2.json['challenge'] ==  {
+                                        "code": content_code,
+                                        "tests_code": content_tests_code,
+                                        "repair_objective": "Testing put only new data",
+                                        "complexity": "2",
+                                        "best_score": 0
+                                    }
