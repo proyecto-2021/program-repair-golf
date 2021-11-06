@@ -1,9 +1,14 @@
 from . import client
 
 def get_data(code, tests_code, code_name, tests_name, repair_objective, complexity):
-    return {'source_code_file': open(f'tests/ruby/tests-data/{code}.rb', 'rb'),
-            'test_suite_file': open(f'tests/ruby/tests-data/{tests_code}.rb', 'rb'),
-            'challenge': '{ \
+    data = {'source_code_file': open(f'tests/ruby/tests-data/{code}.rb', 'rb'),
+            'test_suite_file': open(f'tests/ruby/tests-data/{tests_code}.rb', 'rb')
+            }
+    data.update(get_json(code_name, tests_name, repair_objective, complexity))
+    return data
+
+def get_json(code_name, tests_name, repair_objective, complexity):
+    return {'challenge': '{ \
                 "challenge": { \
                     ' + f'''"source_code_file_name" : "{code_name}" , \
                     "test_suite_file_name" : "{tests_name}", \
@@ -12,7 +17,6 @@ def get_data(code, tests_code, code_name, tests_name, repair_objective, complexi
                     ''' + ' } \
                 }'
             }
-
 
 def test_post_challenge(client):
     url = '/ruby/challenge'
@@ -97,13 +101,13 @@ def test_put_after_post(client):
     url2 = f'/ruby/challenge/{id}'
     data2 = get_data('example_put5', 'example_test_put5', 'example_put5', 'example_test_put5', 'Testing post-PUT', '3')
 
+    r2 = client.put(url2, data=data2)
+    dict2 = r2.json['challenge']
+
     with open('tests/ruby/tests-data/example_put5.rb') as f:
         content_code = f.read()
     with open('tests/ruby/tests-data/example_test_put5.rb') as f:
         content_tests_code = f.read()
-
-    r2 = client.put(url2, data=data2)
-    dict2 = r2.json['challenge']
 
     assert r.status_code == 200
     assert r2.status_code == 200
@@ -208,3 +212,18 @@ def test_post_repair_candidate_tests_fail(client):
     assert r.status_code == 200
     assert r2.status_code == 200
     assert r2.json['challenge'] == {'tests_code': 'fails'}
+
+def test_put_only_change_files_names(client):
+    url = '/ruby/challenge'
+    data = get_data('example_challenge', 'example_test12', 'example12', 'example_test12', 'Testing put change files names', '1')
+
+    r = client.post(url, data=data)
+    id = r.json['challenge']['id']
+
+    url2 = f'/ruby/challenge/{id}'
+    data2 = get_json('example', 'example_test', 'Testing put', '3')
+
+    r2 = client.put(url2, data=data2)
+
+    assert r2.status_code == 400
+    assert r2.json['challenge'] == 'test_suite dependencies are wrong'
