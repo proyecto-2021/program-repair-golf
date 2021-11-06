@@ -4,7 +4,7 @@ from controllers.files_controller import open_file, exist_file, to_temp_file, re
 from .. import db
 from ..modules.source_code_module import compile_js, test_run
 from ..exceptions.ChallengeRepairException import ChallengeRepairException
-
+from ..dao.challenge_dao import update_challenge
 
 class ChallengeRepairController():
 
@@ -22,7 +22,7 @@ class ChallengeRepairController():
             raise ChallengeRepairException(f'The proposed score{score} is not less than the current score{challenge.best_score}', ChallengeRepairException.HTTP_NOT_FOUND)
 
         replace_file(file_path_new, challenge.code)
-        self.update_score(challenge,score)
+        update_challenge(challenge.id,None,None,None,None,score)
 
         challenge_dict = challenge.to_dict()
 
@@ -37,12 +37,7 @@ class ChallengeRepairController():
                                 }}, 200))
 
     def score_ok(score,best_score):
-        return score < best_score or best_score == 0
-
-    def update_score(challenge,score):
-        challenge.best_score = score
-        db.session.commit()
-        return challenge
+        return score < best_score or best_score == 0    
 
     def calculate_score(challenge):
         file_path_new = to_temp_file(challenge.code) 
