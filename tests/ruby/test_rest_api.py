@@ -1,9 +1,12 @@
 from . import client
 
 def get_data(code, tests_code, code_name, tests_name, repair_objective, complexity):
-    data = {'source_code_file': open(f'tests/ruby/tests-data/{code}.rb', 'rb'),
-            'test_suite_file': open(f'tests/ruby/tests-data/{tests_code}.rb', 'rb')
-            }
+    data = dict()
+    if code is not None:
+        data.update({'source_code_file': open(f'tests/ruby/tests-data/{code}.rb', 'rb')})
+    if tests_code is not None:
+        data.update({'test_suite_file': open(f'tests/ruby/tests-data/{tests_code}.rb', 'rb')})
+
     data.update(get_json(code_name, tests_name, repair_objective, complexity))
     return data
 
@@ -260,3 +263,50 @@ def test_put_code_not_compiles2(client):
     assert r.status_code == 200
     assert r2.status_code == 400
     assert r2.json['challenge'] == 'tests doesnt compile'
+
+def test_put_with_update_info_existent(client):
+    url = '/ruby/challenge'
+    data = get_data('example_challenge', 'example_test15', 'example15', 'example_test15', 'Testing', '3')
+    r1 = client.post(url, data=data)
+
+    url = '/ruby/challenge'
+    data = get_data('example_challenge', 'example_test16', 'example16', 'example_test16', 'Testing', '1')
+
+    r2 = client.post(url, data=data)
+    id = r2.json['challenge']['id']
+
+    url2 = f'/ruby/challenge/{id}'
+    data2 = get_data('example_challenge', 'example_test15', 'example15', 'example_test15', 'Testing put ', '2')
+
+    r3 = client.put(url2, data=data2)
+
+    assert r1.status_code == 200
+    assert r2.status_code == 200
+    assert r3.status_code == 409
+    assert r3.json['challenge'] == 'code file name already exists'
+
+def test_put_new_tests_and_rename_code(client):
+    url = '/ruby/challenge'
+    data = get_data('example_challenge', 'example_test17', 'example17', 'example_test17', 'Testing', '4')
+    r1 = client.post(url, data=data)
+    id = r1.json['challenge']['id']
+
+    url2 = f'/ruby/challenge/{id}'
+    data2 = get_data(None, 'example_test18', 'example18', 'example_test18', 'Testing put new tests and rename code', '4')
+
+    r2 = client.put(url2, data=data2)
+
+    with open('tests/ruby/tests-data/example_challenge.rb') as f:
+        content_code = f.read()
+    with open('tests/ruby/tests-data/example_test18.rb') as f:
+        content_tests_code = f.read()
+
+    assert r1.status_code == 200
+    assert r2.status_code == 200
+    assert r2.json['challenge'] ==  {
+                                        "code": content_code,
+                                        "tests_code": content_tests_code,
+                                        "repair_objective": "Testing put new tests and rename code",
+                                        "complexity": "4",
+                                        "best_score": 0
+                                    }
