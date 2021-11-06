@@ -1,6 +1,6 @@
 from . import client
 
-def get_data(code, tests_code, code_name, tests_name, repair_objective, complexity):
+def get_data(code_name, tests_name, repair_objective, complexity, code=None, tests_code=None):
     data = dict()
     if code is not None:
         data.update({'source_code_file': open(f'tests/ruby/tests-data/{code}.rb', 'rb')})
@@ -23,7 +23,7 @@ def get_json(code_name, tests_name, repair_objective, complexity):
 
 def test_post_challenge(client):
     url = '/ruby/challenge'
-    data = get_data('example_challenge', 'example_test1', 'example1', 'example_test1', 'Testing', '2')
+    data = get_data('example1', 'example_test1', 'Testing', '2', 'example_challenge', 'example_test1')
 
     with open('tests/ruby/tests-data/example_challenge.rb') as f:
         content_code = f.read()
@@ -45,7 +45,7 @@ def test_post_challenge(client):
 
 def test_get_one_after_post(client):
     url = '/ruby/challenge'
-    data = get_data('example_challenge', 'example_test2', 'example2', 'example_test2', 'Testing', '5')
+    data = get_data('example2', 'example_test2', 'Testing', '5', 'example_challenge', 'example_test2')
 
     r = client.post(url, data=data)
     json = r.json['challenge']
@@ -66,7 +66,7 @@ def test_get_all_after_post(client):
     json = r.json['challenges']
 
     url = '/ruby/challenge'
-    data = get_data('example_challenge', 'example_test3', 'example3', 'example_test3', 'Testing', '4')
+    data = get_data('example3', 'example_test3', 'Testing', '4', 'example_challenge', 'example_test3')
 
     r2 = client.post(url, data=data)
 
@@ -81,7 +81,7 @@ def test_get_all_after_post(client):
 
 def test_post_repair(client):
     url = '/ruby/challenge'
-    data = get_data('example_challenge', 'example_test4', 'example4', 'example_test4', 'Testing repair', '3')
+    data = get_data('example4', 'example_test4', 'Testing repair', '3', 'example_challenge', 'example_test4')
 
     r = client.post(url, data=data)
     id = r.json['challenge']['id']
@@ -95,14 +95,14 @@ def test_post_repair(client):
 
 def test_put_after_post(client):
     url = '/ruby/challenge'
-    data = get_data('example_challenge', 'example_test5', 'example5', 'example_test5', 'Testing pre-PUT', '2')
+    data = get_data('example5', 'example_test5', 'Testing pre-PUT', '2', 'example_challenge', 'example_test5')
 
     r = client.post(url, data=data)
     json = r.json['challenge']
     id = json['id']
 
     url2 = f'/ruby/challenge/{id}'
-    data2 = get_data('example_put5', 'example_test_put5', 'example_put5', 'example_test_put5', 'Testing post-PUT', '3')
+    data2 = get_data('example_put5', 'example_test_put5', 'Testing post-PUT', '3', 'example_put5', 'example_test_put5')
 
     r2 = client.put(url2, data=data2)
     dict2 = r2.json['challenge']
@@ -123,12 +123,12 @@ def test_put_after_post(client):
 
 def test_post_existent_challenge(client):
     url = '/ruby/challenge'
-    data = get_data('example_challenge', 'example_test7', 'example7', 'example_test7', 'Testing repeated post', '4')
+    data = get_data('example7', 'example_test7', 'Testing repeated post', '4', 'example_challenge', 'example_test7')
 
     r = client.post(url, data=data)
 
     url = '/ruby/challenge'
-    data = get_data('example_challenge', 'example_test7', 'example7', 'example_test7', 'Testing repeated post', '4')
+    data = get_data('example7', 'example_test7', 'Testing repeated post', '4', 'example_challenge', 'example_test7')
 
     r2 = client.post(url, data=data)
     response = r2.json['challenge']
@@ -139,7 +139,7 @@ def test_post_existent_challenge(client):
 
 def test_post_code_not_compiles1(client):
     url = '/ruby/challenge'
-    data = get_data('example_not_compile', 'example_test8', 'example8', 'example_test8', 'Testing compilation error', '4')
+    data = get_data('example8', 'example_test8', 'Testing compilation error', '4', 'example_not_compile', 'example_test8')
 
     r = client.post(url, data=data)
     response = r.json['challenge']
@@ -149,7 +149,7 @@ def test_post_code_not_compiles1(client):
 
 def test_post_code_not_compiles2(client):
     url = '/ruby/challenge'
-    data = get_data('example_challenge', 'example_not_compile_test8', 'example8', 'example_test8', 'Testing compilation error', '4')
+    data = get_data('example8', 'example_test8', 'Testing compilation error', '4', 'example_challenge', 'example_not_compile_test8')
 
     r = client.post(url, data=data)
     response = r.json['challenge']
@@ -159,7 +159,7 @@ def test_post_code_not_compiles2(client):
 
 def test_post_bad_dependencies(client):
     url = '/ruby/challenge'
-    data = get_data('example_challenge', 'example_dependencies_not_okay_test8', 'example8', 'example_test8', 'Testing dependencies error', '4')
+    data = get_data('example8', 'example_test8', 'Testing dependencies error', '4', 'example_challenge', 'example_dependencies_not_okay_test8')
 
     r = client.post(url, data=data)
     response = r.json['challenge']
@@ -169,7 +169,7 @@ def test_post_bad_dependencies(client):
 
 def test_post_no_tests_fail(client):
     url = '/ruby/challenge'
-    data = get_data('example_fixed', 'example_test9', 'example9', 'example_test9', 'Testing not errors to repair', '2')
+    data = get_data('example9', 'example_test9', 'Testing not errors to repair', '2', 'example_fixed', 'example_test9')
 
     r = client.post(url, data=data)
     response = r.json['challenge']
@@ -188,7 +188,7 @@ def test_post_repair_invalid_challenge(client):
 
 def test_post_repair_candidate_compiles_error(client):
     url = '/ruby/challenge'
-    data = get_data('example_challenge', 'example_test10', 'example10', 'example_test10', 'Testing repair candidate does not compile', '3')
+    data = get_data('example10', 'example_test10', 'Testing repair candidate does not compile', '3', 'example_challenge', 'example_test10')
 
     r = client.post(url, data=data)
     id = r.json['challenge']['id']
@@ -203,7 +203,7 @@ def test_post_repair_candidate_compiles_error(client):
 
 def test_post_repair_candidate_tests_fail(client):
     url = '/ruby/challenge'
-    data = get_data('example_challenge', 'example_test11', 'example11', 'example_test11', 'Testing repair candidate fail tests', '2')
+    data = get_data('example11', 'example_test11', 'Testing repair candidate fail tests', '2', 'example_challenge', 'example_test11')
 
     r = client.post(url, data=data)
     id = r.json['challenge']['id']
@@ -218,7 +218,7 @@ def test_post_repair_candidate_tests_fail(client):
 
 def test_put_only_change_files_names(client):
     url = '/ruby/challenge'
-    data = get_data('example_challenge', 'example_test12', 'example12', 'example_test12', 'Testing put change files names', '1')
+    data = get_data('example12', 'example_test12', 'Testing put change files names', '1', 'example_challenge', 'example_test12')
 
     r = client.post(url, data=data)
     id = r.json['challenge']['id']
@@ -234,13 +234,13 @@ def test_put_only_change_files_names(client):
 
 def test_put_code_not_compiles1(client):
     url = '/ruby/challenge'
-    data = get_data('example_challenge', 'example_test13', 'example13', 'example_test13', 'Testing', '4')
+    data = get_data('example13', 'example_test13', 'Testing', '4','example_challenge', 'example_test13')
 
     r = client.post(url, data=data)
     id = r.json['challenge']['id']
 
     url2 = f'/ruby/challenge/{id}'
-    data2 = get_data('example_not_compile', 'example_test13', 'example13', 'example_test13', 'Testing put code does not compiles', '3')
+    data2 = get_data('example13', 'example_test13', 'Testing put code does not compiles', '3', 'example_not_compile', 'example_test13')
 
     r2 = client.put(url2, data=data2)
 
@@ -250,13 +250,13 @@ def test_put_code_not_compiles1(client):
 
 def test_put_code_not_compiles2(client):
     url = '/ruby/challenge'
-    data = get_data('example_challenge', 'example_test14', 'example14', 'example_test14', 'Testing', '5')
+    data = get_data('example14', 'example_test14', 'Testing', '5', 'example_challenge', 'example_test14')
 
     r = client.post(url, data=data)
     id = r.json['challenge']['id']
 
     url2 = f'/ruby/challenge/{id}'
-    data2 = get_data('example_challenge', 'example_test_no_compiles14', 'example14', 'example_test14', 'Testing put code does not compiles', '2')
+    data2 = get_data('example14', 'example_test14', 'Testing put code does not compiles', '2', 'example_challenge', 'example_test_no_compiles14')
 
     r2 = client.put(url2, data=data2)
 
@@ -266,17 +266,17 @@ def test_put_code_not_compiles2(client):
 
 def test_put_with_update_info_existent(client):
     url = '/ruby/challenge'
-    data = get_data('example_challenge', 'example_test15', 'example15', 'example_test15', 'Testing', '3')
+    data = get_data('example15', 'example_test15', 'Testing', '3', 'example_challenge', 'example_test15')
     r1 = client.post(url, data=data)
 
     url = '/ruby/challenge'
-    data = get_data('example_challenge', 'example_test16', 'example16', 'example_test16', 'Testing', '1')
+    data = get_data('example16', 'example_test16', 'Testing', '1','example_challenge', 'example_test16')
 
     r2 = client.post(url, data=data)
     id = r2.json['challenge']['id']
 
     url2 = f'/ruby/challenge/{id}'
-    data2 = get_data('example_challenge', 'example_test15', 'example15', 'example_test15', 'Testing put ', '2')
+    data2 = get_data('example15', 'example_test15', 'Testing put ', '2', 'example_challenge', 'example_test15')
 
     r3 = client.put(url2, data=data2)
 
@@ -287,12 +287,12 @@ def test_put_with_update_info_existent(client):
 
 def test_put_new_tests_and_rename_code(client):
     url = '/ruby/challenge'
-    data = get_data('example_challenge', 'example_test17', 'example17', 'example_test17', 'Testing', '4')
+    data = get_data('example17', 'example_test17', 'Testing', '4', 'example_challenge', 'example_test17')
     r1 = client.post(url, data=data)
     id = r1.json['challenge']['id']
 
     url2 = f'/ruby/challenge/{id}'
-    data2 = get_data(None, 'example_test18', 'example18', 'example_test18', 'Testing put new tests and rename code', '4')
+    data2 = get_data('example18', 'example_test18', 'Testing put new tests and rename code', '4', tests_code='example_test18')
 
     r2 = client.put(url2, data=data2)
 
