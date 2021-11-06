@@ -4,6 +4,17 @@ from app import create_app, db
 from . import client
 from app.go.models_go import GoChallenge
 
+def test_get_all_empty(client):
+    # arrange
+
+    # act
+    ret_get = client.get("/go/api/v1/go-challenges")
+    ret_get_json=ret_get.json["challenges"]
+    # assert
+    assert (ret_get_json=="not found")
+    assert ret_get.status_code == 404
+
+
 def test_getId_for_id_correct(client):
     # arrange
     challenge = {
