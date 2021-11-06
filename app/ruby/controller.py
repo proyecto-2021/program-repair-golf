@@ -1,9 +1,9 @@
-from .rubychallenge import RubyChallenge
-from .rubychallengedao import RubyChallengeDAO
 from flask import jsonify, make_response
 from os import mkdir
 from tempfile import gettempdir
 from shutil import rmtree
+from .rubychallenge import RubyChallenge
+from .rubychallengedao import RubyChallengeDAO
 from .repaircandidate import RepairCandidate
 
 class Controller:
