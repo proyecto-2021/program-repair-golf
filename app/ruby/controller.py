@@ -123,7 +123,7 @@ class Controller:
         if old_challenge.code.get_file_name() != new_challenge.code.get_file_name():
             if not new_challenge.move_code(self.files_path, names_match=False):
                 rmtree(ruby_tmp)
-                return make_response(jsonify({'challenge': 'code file name already exists'}))
+                return make_response(jsonify({'challenge': 'code file name already exists'}), 409)
             old_challenge.remove_code()
         else:
             new_challenge.move_code(self.files_path)
@@ -131,7 +131,7 @@ class Controller:
         if old_challenge.tests_code.get_file_name() != new_challenge.tests_code.get_file_name():
             if not new_challenge.move_tests_code(self.files_path, names_match=False):
                 rmtree(ruby_tmp)
-                return make_response(jsonify({'challenge': 'tests file name already exists'}))
+                return make_response(jsonify({'challenge': 'tests file name already exists'}), 409)
             old_challenge.remove_tests_code()
         else:
             new_challenge.move_tests_code(self.files_path)
