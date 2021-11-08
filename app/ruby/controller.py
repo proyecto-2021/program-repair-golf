@@ -61,6 +61,8 @@ class Controller:
         if not self.dao.exists(id):
                 return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
         challenge = RubyChallenge(**self.dao.get_challenge(id))
+        if isdir(self.ruby_tmp):
+            rmtree(self.ruby_tmp)
         mkdir(self.ruby_tmp)
         rep_candidate = RepairCandidate(challenge, repair_code, self.ruby_tmp)
         rep_candidate.save_candidate()
