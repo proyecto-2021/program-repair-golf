@@ -1,16 +1,3 @@
-
-def temporary_save(new_names, code_file, tests_file, old_code_path, old_test_path):
-	temp_path = "public/temp/"      #path to temp directory
-	
-	code_path = determine_path(new_names.get('source_code_file_name'), temp_path, old_code_path)
-	test_path = determine_path(new_names.get('test_suite_file_name'), temp_path, old_test_path)
-
-	#gets new or old content
-	source_code = determine_content(code_file, old_code_path)
-	save_file(code_path, "wb", source_code)
-	#gets new or old content
-	source_code_tests = determine_content(tests_file, old_test_path)
-	save_file(test_path, "wb", source_code_tests)
 		
 def read_file(path, mode):
 	file = open(path, mode)
@@ -23,10 +10,14 @@ def save_file(path, mode, content):
 	file.write(content)
 	file.close()
 
+#gets the filename from a path containing it
+def get_filename(path):
+	return path.split('/')[-1]
+
 #returns a new path, if no filename, takes the original name from a path
 def determine_path(filename, base_path, old_path):
 	if filename is None:
-		return base_path + (lambda x: x.split('/')[-1]) (old_path)
+		return base_path + get_filename(old_path)
 	else:
 		return base_path + filename
 
@@ -37,3 +28,11 @@ def determine_content(file_content, path_to_old_content):
 	else:
 		return read_file(path_to_old_content, "rb")
 	
+#saves a file with new name and new content
+#if not a new name it uses the old one, same for content
+def save_changes(new_name, file_content, old_file_path, base_path):
+	new_path = determine_path(new_name, base_path, old_file_path)
+	#gets new or old content
+	source_code = determine_content(file_content, old_file_path)
+	save_file(new_path, "wb", source_code)
+	return new_path
