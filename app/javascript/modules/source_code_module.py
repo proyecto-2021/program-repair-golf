@@ -22,7 +22,7 @@ def test_run(path_file):
     test_run = run_command(command_test)
 
     if not run_command_ok(test_run) and not test_run_ok(command_output(test_run)): 
-        install()
+        install_dependece()
         test_run = run_command(command_test)
   
     if not run_command_ok(test_run) or not test_is_from_to_code(path_file):
