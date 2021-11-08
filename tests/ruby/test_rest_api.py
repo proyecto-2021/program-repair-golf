@@ -1,6 +1,6 @@
 from . import client
 
-def get_data(code_name, tests_name, repair_objective, complexity, code=None, tests_code=None):
+def get_data(code_name=None, tests_name=None, repair_objective=None, complexity=None, code=None, tests_code=None):
     data = dict()
     if code is not None:
         data.update({'source_code_file': open(f'tests/ruby/tests-data/{code}.rb', 'rb')})
@@ -10,7 +10,7 @@ def get_data(code_name, tests_name, repair_objective, complexity, code=None, tes
     data.update(get_json(code_name, tests_name, repair_objective, complexity))
     return data
 
-def get_json(code_name, tests_name, repair_objective, complexity):
+def get_json(code_name=None, tests_name=None, repair_objective=None, complexity=None):
     dictionary = { 'source_code_file_name': code_name, 'test_suite_file_name': tests_name, 'repair_objective': repair_objective, 'complexity': complexity }
     data = '{ "challenge": { '
     first = True
@@ -308,12 +308,12 @@ def test_put_new_tests_and_rename_code(client):
     assert r1.status_code == 200
     assert r2.status_code == 200
     assert r2.json['challenge'] ==  {
-                                        "code": content_code,
-                                        "tests_code": content_tests_code,
-                                        "repair_objective": "Testing put new tests and rename code",
-                                        "complexity": "4",
-                                        "best_score": 0
-                                    }
+        "code": content_code,
+        "tests_code": content_tests_code,
+        "repair_objective": "Testing put new tests and rename code",
+        "complexity": "4",
+        "best_score": 0
+    }
 
 def test_put_only_new_data(client):
     url = '/ruby/challenge'
@@ -334,9 +334,35 @@ def test_put_only_new_data(client):
     assert r1.status_code == 200
     assert r2.status_code == 200
     assert r2.json['challenge'] ==  {
-                                        "code": content_code,
-                                        "tests_code": content_tests_code,
-                                        "repair_objective": "Testing put only new data",
-                                        "complexity": "2",
-                                        "best_score": 0
-                                    }
+        "code": content_code,
+        "tests_code": content_tests_code,
+        "repair_objective": "Testing put only new data",
+        "complexity": "2",
+        "best_score": 0
+    }
+
+def test_put_only_codes(client):
+    url = '/ruby/challenge'
+    data = get_data('example20', 'example_test20', 'Testing put only new codes', '4', 'example_challenge', 'example_test20')
+    r1 = client.post(url, data=data)
+    id = r1.json['challenge']['id']
+
+    url2 = f'/ruby/challenge/{id}'
+    data2 = get_data(code='example_challenge_new', tests_code='example_test20new')
+
+    r2 = client.put(url2, data=data2)
+
+    with open('tests/ruby/tests-data/example_challenge_new.rb') as f:
+        content_code = f.read()
+    with open('tests/ruby/tests-data/example_test20new.rb') as f:
+        content_tests_code = f.read()
+
+    assert r1.status_code == 200
+    assert r2.status_code == 200
+    assert r2.json['challenge'] ==  {
+        "code": content_code,
+        "tests_code": content_tests_code,
+        "repair_objective": "Testing put only new codes",
+        "complexity": "4",
+        "best_score": 0
+    }
