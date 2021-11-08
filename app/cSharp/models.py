@@ -13,7 +13,7 @@ class CSharp_Challenge(db.Model):
             "id": self.id,
             "code": self.code,
             "tests_code": self.tests_code,
-            "repair_objetive": self.repair_objetive,
+            "repair_objective": self.repair_objective,
             "complexity": self.complexity,
             "best_score": self.best_score
         }

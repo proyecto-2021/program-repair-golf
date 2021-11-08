@@ -90,7 +90,7 @@ def put_csharp_challenges():
             shutil.move(new_test_path, old_test_path)
     
     if 'repair_objective' in update_request:
-        db.session.query(CSharp_Challenge).filter_by(id=id).update(dict(repair_objetive=update_request['repair_objective']))
+        db.session.query(CSharp_Challenge).filter_by(id=id).update(dict(repair_objective=update_request['repair_objective']))
         db.session.commit()
 
     if 'complexity' in update_request:
@@ -174,7 +174,7 @@ def repair_Candidate(id):
                 challenge['best_score'] = score
 
             challenge_data = {
-                "repair_objective": challenge['repair_objetive'],
+                "repair_objective": challenge['repair_objective'],
                 "best_score": challenge['best_score']
             }
             remove_path([repair_path, repair_path.replace('.cs','.exe'),challenge['tests_code'].replace(".cs",".dll")])
@@ -243,7 +243,7 @@ def save_best_score(score, previous_best_score, challenge_id):
         return 1
 
 def save_challenge(challenge_data, source_code_path, test_path):
-    new_challenge = CSharp_Challenge(code = source_code_path, tests_code = test_path, repair_objetive = challenge_data['repair_objective'], complexity = int(challenge_data['complexity']), best_score = 0)
+    new_challenge = CSharp_Challenge(code = source_code_path, tests_code = test_path, repair_objective = challenge_data['repair_objective'], complexity = int(challenge_data['complexity']), best_score = 0)
     db.session.add(new_challenge)
     db.session.commit()
     return new_challenge.id
