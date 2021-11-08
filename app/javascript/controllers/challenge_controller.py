@@ -21,7 +21,10 @@ class ChallengeController():
         challenge_all = []
         
         for x in challenges['challenge']:
-            challenge_all.append(x.to_dict())
+            x.code = open_file(x.code)
+            challenge_dict = x.to_dict()
+            del challenge_dict['tests_code']
+            challenge_all.append(challenge_dict)
         return challenge_all
         
     def update_challenge(id, source_code_file_upd, test_suite_file_upd, repair_objective, complexity, best_score):

@@ -2,14 +2,14 @@
 from .. import folders_and_files
 from ..exceptions.CommandRunException import CommandRunException
 import subprocess
-from .dependences_module import dependences_ok, extract_dependences, install_dependece 
+from .dependences_module import dependences_ok, extract_dependences, install_dependece, error_extract 
 from .command_module import run_command, command_output, run_command_ok
 from ..controllers.files_controller import get_name_file   
 
 def compile_js(path_file):
     command = 'node '+path_file
     run_compile = run_command(command)
-    if run_command_ok(run_compile):
+    if not run_command_ok(run_compile):
         raise CommandRunException(f'Compile not found {command}', CommandRunException.HTTP_NOT_FOUND)
     return command_output(run_compile) 
 
@@ -17,7 +17,6 @@ def test_run(path_file):
     #si no existen las dependecias las copia
     if not dependences_ok(folders_and_files.CHALLENGES_PATH):
         extract_dependences()
-    
     command_test = f'cd {folders_and_files.CHALLENGES_PATH}; npm test {path_file}' 
     test_run = run_command(command_test)
 

@@ -8,7 +8,7 @@ def command_output(pro):
     return str(pro.stdout)
 
 def run_command_ok(proc):
-    return proc.returncode != 0
+    return proc.returncode == 0
     
 
 
