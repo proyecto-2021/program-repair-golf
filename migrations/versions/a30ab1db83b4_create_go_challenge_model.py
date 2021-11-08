@@ -22,7 +22,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('code', sa.String(length=256), nullable=True),
     sa.Column('tests_code', sa.String(length=256), nullable=True),
-    sa.Column('repair_objetive', sa.String(length=128), nullable=True),
+    sa.Column('repair_objective', sa.String(length=128), nullable=True),
     sa.Column('complexity', sa.String(length=3), nullable=True),
     sa.Column('best_score', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id')
