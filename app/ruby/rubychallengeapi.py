@@ -23,8 +23,6 @@ class RubyChallengeAPI(MethodView):
             json = loads(request.form.get('challenge'))
             return self.controller.post_challenge(code, tests_code, json)
         else:
-            if not exists(id):
-                return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
 
             repair_candidate = request.files['source_code_file']
             return self.controller.post_repair(id, repair_candidate)
@@ -33,8 +31,6 @@ class RubyChallengeAPI(MethodView):
         if id is None:
             return self.controller.get_all_challenges()
         else:
-            if not exists(id):
-                return make_response(jsonify({'challenge': 'NOT FOUND'}), 404)
             return self.controller.get_challenge(id)
 
     def put(self, id):
