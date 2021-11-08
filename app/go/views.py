@@ -101,6 +101,12 @@ def update_a_go_challenge(id):
     if challenge is None:
         return make_response(jsonify({'challenge' : 'not found'}), 404)
     
+    if request.files:
+        directory  = 'tmp'
+        parent_dir = 'example-challenges/go-challenges'
+        path = os.path.join(parent_dir,directory)
+        os.makedirs(path)
+
     old_code_path = challenge.code
     old_test_path = challenge.tests_code
     request_data = json.loads(request.form.get('challenge'))['challenge']
@@ -171,8 +177,9 @@ def update_a_go_challenge(id):
     if new_test:
         rewrite_file(new_test_path, old_test_path)
         os.remove(new_test_path)
-   
-    delete_files('example-challenges/go-challenges/tmp/')
+    
+    if request.files:
+        shutil.rmtree('example-challenges/go-challenges/tmp/')
 
     if 'repair_objective' in request_data and request_data['repair_objective'] != challenge.repair_objective:
         challenge.repair_objective = request_data['repair_objective']
