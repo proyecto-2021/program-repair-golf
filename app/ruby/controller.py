@@ -148,6 +148,8 @@ class Controller:
 
         rmtree(self.ruby_tmp)
 
-        self.dao.update_challenge(id, {key: value for (key, value) in new_challenge.get_content_for_db().items() if value is not None})
+        #From new_challenge, take only values that must be updated.
+        update_data = {key: value for (key, value) in new_challenge.get_content_for_db().items() if value is not None}
+        self.dao.update_challenge(id, update_data)
         response = self.dao.get_challenge_data(id)
         return jsonify({'challenge': response})
