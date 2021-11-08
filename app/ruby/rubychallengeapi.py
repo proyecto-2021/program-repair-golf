@@ -1,13 +1,7 @@
 from flask.views import MethodView
 from . import ruby
-from .rubychallengemodel import RubyChallengeModel
-from flask import jsonify, request, make_response, current_app
-from shutil import copy
-import os
+from flask import request, current_app
 from json import loads
-import nltk
-from .filemanagement import *
-from tempfile import gettempdir
 from .controller import Controller
 
 class RubyChallengeAPI(MethodView):
