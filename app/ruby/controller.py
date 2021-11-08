@@ -1,5 +1,6 @@
 from flask import jsonify, make_response
 from os import mkdir
+from os.path import isdir
 from tempfile import gettempdir
 from shutil import rmtree
 from .rubychallenge import RubyChallenge
@@ -46,6 +47,8 @@ class Controller:
         return jsonify({'challenge': response})
 
     def get_challenge(self, id):
+        if not self.dao.exists(id):
+                return make_response(jsonify({'challenge': 'NOT FOUND'}), 404)
         challenge = self.dao.get_challenge_data(id)
         return jsonify({'challenge': challenge})
 
@@ -54,6 +57,8 @@ class Controller:
         return jsonify({'challenges': challenges})
 
     def post_repair(self, id, repair_code):
+        if not self.dao.exists(id):
+                return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
         challenge = RubyChallenge(**self.dao.get_challenge(id))
         ruby_tmp = gettempdir() + '/ruby-tmp/'
         mkdir(ruby_tmp)
@@ -78,12 +83,17 @@ class Controller:
         return jsonify(rep_candidate.get_content(score))
 
     def modify_challenge(self, id, code_file, tests_code_file, json):
+        if not self.dao.exists(id):
+            return make_response(jsonify({'challenge': 'id doesnt exist'}), 404)
+
         data = {'repair_objective': None, 'complexity': None}
         data.update(json['challenge'])
         challenge = self.dao.get_challenge(id)
         old_challenge = RubyChallenge(**challenge)
         new_challenge = RubyChallenge(data['repair_objective'], data['complexity'])
         ruby_tmp = gettempdir() + '/ruby-tmp/'
+        if isdir(ruby_tmp):
+            rmtree(ruby_tmp)
         mkdir(ruby_tmp)
         #If files names are in the request, set new_code names to them. If not, take old_challenge name.
         nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.code.get_file_name()
