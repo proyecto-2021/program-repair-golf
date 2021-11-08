@@ -90,8 +90,7 @@ class Controller:
 
         data = {'repair_objective': None, 'complexity': None}
         data.update(json['challenge'])
-        challenge = self.dao.get_challenge(id)
-        old_challenge = RubyChallenge(**challenge)
+        old_challenge = RubyChallenge(**self.dao.get_challenge(id))
         new_challenge = RubyChallenge(data['repair_objective'], data['complexity'])
         if isdir(self.ruby_tmp):
             rmtree(self.ruby_tmp)
