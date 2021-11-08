@@ -58,7 +58,7 @@ class Controller:
 
     def post_repair(self, id, repair_code):
         if not self.dao.exists(id):
-                return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
+            return make_response(jsonify({'challenge': 'NOT FOUND'}),404)
         challenge = RubyChallenge(**self.dao.get_challenge(id))
         ruby_tmp = gettempdir() + '/ruby-tmp/'
         mkdir(ruby_tmp)
