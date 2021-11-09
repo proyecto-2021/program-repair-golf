@@ -2,7 +2,7 @@ from posixpath import basename
 from . import cSharp
 from json import loads
 from app import db
-from .models import CSharp_Challenge
+from .models import CSharpChallengeModel
 from  flask import jsonify, make_response, json, request
 import subprocess, os
 from subprocess import PIPE
@@ -23,7 +23,7 @@ def login():
 @cSharp.route('/c-sharp-challenges/<int:id>', methods=['PUT'])
 def put_csharp_challenges():
     update_request = request.files
-    challenge = db.session.query(CSharp_Challenge).filter_by(id=id).first()
+    challenge = db.session.query(CSharpChallengeModel).filter_by(id=id).first()
     if challenge is None:
         return make_response(jsonify({"challenge":"There is no challenge for this id"}), 404) 
     challenge_dict = challenge._repr_()
@@ -90,14 +90,14 @@ def put_csharp_challenges():
             shutil.move(new_test_path, old_test_path)
     
     if 'repair_objective' in update_request:
-        db.session.query(CSharp_Challenge).filter_by(id=id).update(dict(repair_objetive=update_request['repair_objective']))
+        db.session.query(CSharpChallengeModel).filter_by(id=id).update(dict(repair_objective=update_request['repair_objective']))
         db.session.commit()
 
     if 'complexity' in update_request:
         if int(update_request['complexity']) < 1 or int(update_request['complexity']) > 5 :
             return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
         else:
-            db.session.query(CSharp_Challenge).filter_by(id=id).update(dict(complexity=int(update_request['complexity'])))
+            db.session.query(CSharpChallengeModel).filter_by(id=id).update(dict(complexity=int(update_request['complexity'])))
             db.session.commit()
 
     
@@ -153,8 +153,8 @@ def post_csharp_challenges():
 @cSharp.route('c-sharp-challenges/<int:id>/repair', methods=['POST'])
 def repair_Candidate(id):
     # verify challenge's existence 
-    if db.session.query(CSharp_Challenge).get(id) is not None:
-        challenge = db.session.query(CSharp_Challenge).get(id).__repr__()
+    if db.session.query(CSharpChallengeModel).get(id) is not None:
+        challenge = db.session.query(CSharpChallengeModel).get(id).__repr__()
         challenge_name = os.path.basename(challenge['code'])
         file = request.files['source_code_file']
         repair_path = 'public/challenges/' + challenge_name
@@ -174,7 +174,7 @@ def repair_Candidate(id):
                 challenge['best_score'] = score
 
             challenge_data = {
-                "repair_objective": challenge['repair_objetive'],
+                "repair_objective": challenge['repair_objective'],
                 "best_score": challenge['best_score']
             }
             remove_path([repair_path, repair_path.replace('.cs','.exe'),challenge['tests_code'].replace(".cs",".dll")])
@@ -182,7 +182,7 @@ def repair_Candidate(id):
 
 @cSharp.route('/c-sharp-challenges/<int:id>', methods = ['GET'])
 def get_challenge(id):
-    if db.session.query(CSharp_Challenge).get(id) is None:
+    if db.session.query(CSharpChallengeModel).get(id) is None:
         return make_response(jsonify({'Challenge': 'Not found'}), 404)
     else:
         challenge = get_challenge_data(id)
@@ -192,10 +192,10 @@ def get_challenge(id):
 def get_csharp_challenges():
     challenge = {'challenges': []}
     show = []
-    challenge['challenges'] = db.session.query(CSharp_Challenge).all()
+    challenge['challenges'] = db.session.query(CSharpChallengeModel).all()
     for i in challenge['challenges']:
-        show.append(CSharp_Challenge.__repr__(i))
-        j = show.index(CSharp_Challenge.__repr__(i))
+        show.append(CSharpChallengeModel.__repr__(i))
+        j = show.index(CSharpChallengeModel.__repr__(i))
         show[j]['code'] = open(show[j]['code'], "r").read()
         show[j]['tests_code'] = open(show[j]['tests_code'], "r").read()
     if show != []:
@@ -236,20 +236,20 @@ def calculate_score(challenge_path, repair_candidate_path):
 
 def save_best_score(score, previous_best_score, challenge_id):
     if previous_best_score == 0 or previous_best_score > score:
-        db.session.query(CSharp_Challenge).filter_by(id=challenge_id).update(dict(best_score=score))
+        db.session.query(CSharpChallengeModel).filter_by(id=challenge_id).update(dict(best_score=score))
         db.session.commit()
         return 0
     else: 
         return 1
 
 def save_challenge(challenge_data, source_code_path, test_path):
-    new_challenge = CSharp_Challenge(code = source_code_path, tests_code = test_path, repair_objetive = challenge_data['repair_objective'], complexity = int(challenge_data['complexity']), best_score = 0)
+    new_challenge = CSharpChallengeModel(code = source_code_path, tests_code = test_path, repair_objective = challenge_data['repair_objective'], complexity = int(challenge_data['complexity']), best_score = 0)
     db.session.add(new_challenge)
     db.session.commit()
     return new_challenge.id
 
 def get_challenge_data(id):
-    challenge = db.session.query(CSharp_Challenge).get(id).__repr__()
+    challenge = db.session.query(CSharpChallengeModel).get(id).__repr__()
     challenge['code'] = open(challenge['code'], "r").read()
     challenge['tests_code'] = open(challenge['tests_code'], "r").read()
     return challenge

@@ -1,4 +1,4 @@
-from .models import RubyChallenge
+from .rubychallengemodel import RubyChallengeModel
 from app import db
 
 class RubyChallengeDAO(object):
@@ -6,23 +6,23 @@ class RubyChallengeDAO(object):
 		pass
 
 	def get_challenge(self, id):
-		challenge = db.session.query(RubyChallenge).filter_by(id=id).first().get_dict()
+		challenge = db.session.query(RubyChallengeModel).filter_by(id=id).first().get_dict()
 		del challenge['id']
 		return challenge
 
 	def get_challenge_data(self, id):
-		challenge = db.session.query(RubyChallenge).filter_by(id=id).first().get_data()
+		challenge = db.session.query(RubyChallengeModel).filter_by(id=id).first().get_data()
 		del challenge['id']
 		return challenge
 
 	def get_challenges_data(self):
-		challenges = [challenge.get_data() for challenge in db.session.query(RubyChallenge).all()]
+		challenges = [challenge.get_data() for challenge in db.session.query(RubyChallengeModel).all()]
 		for c in challenges:
 			del c['tests_code']
 		return challenges
 
 	def create_challenge(self, code, tests_code, repair_objective, complexity):
-		challenge = RubyChallenge(
+		challenge = RubyChallengeModel(
     	    code = code,
     	    tests_code = tests_code,
     	    repair_objective = repair_objective,
@@ -36,9 +36,9 @@ class RubyChallengeDAO(object):
 	def update_challenge(self, id, changes):
 		if len(changes) == 0:
 			return True
-		result = db.session.query(RubyChallenge).filter_by(id=id).update(changes)
+		result = db.session.query(RubyChallengeModel).filter_by(id=id).update(changes)
 		db.session.commit()
 		return result > 0
 
-	def exists(id):
-		return db.session.query(RubyChallenge).filter_by(id=id).first() is not None
+	def exists(self, id):
+		return db.session.query(RubyChallengeModel).filter_by(id=id).first() is not None

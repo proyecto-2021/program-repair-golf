@@ -6,22 +6,24 @@ from app.java.views import *
 
 #Create Challenge
 #def test_new_challenge(client):
-
 def test_ViewAllChallenges(client):
-    #elegir entradas para test
     challenge = {"challenges":[]}
-    #ejecutar dichas entrada
-    challenge ['challenges'] = ViewAllChallenges()
+    challenge ['challenges'] = DAO_java_challenge.all_challenges_java()
     resp = len(challenge)
-    #verificar el comportamiento esperado
-    if resp >= 1:
-        assert resp !=0
-    else:
-        assert resp == 0
-   
+    assert resp == 1
+
+    #verrrrrrrrrrrrrrrrrrrrrrrrrrrr 
+    '''
+    challenge = Challenge_java(code='source_code_file_name', tests_code='test_suite_file_name', repair_objective='repair_objective', complexity='complexity', score=500)
+    for j in range (5):  
+        DAO_java_challenge.create_challenge(challenge)
+    challenge ['challenges'] = DAO_java_challenge.all_challenges_java()
+    assert resp == 6
+    '''
+
 def test_ViewChallenges(client):
     challenge = {"challenges":[]}
     id=1
-    challenge ['challenges'] = View_Challenges(id)
+    challenge ['challenges'] = DAO_java_challenge.challenges_id_java(id)
     resp = len(challenge)
     assert resp == 1 
