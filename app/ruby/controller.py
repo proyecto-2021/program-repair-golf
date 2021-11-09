@@ -154,12 +154,12 @@ class Controller:
         response = self.dao.get_challenge_data(id)
         return jsonify({'challenge': response})
 
-    def copy_files(self, oc, nc):
+    def copy_files(self, oc, nc, is_test=False):
         if oc.code.get_file_name() != nc.code.get_file_name():
-            if not nc.move_code(self.files_path, names_match=False):
+            if not nc.move_code(self.files_path, names_match=False, is_test=is_test):
                 rmtree(self.ruby_tmp)
                 return False
-            oc.remove_code()
+            oc.remove_code(is_test=is_test)
         else:
-            nc.move_code(self.files_path)
+            nc.move_code(self.files_path, is_test=is_test)
         return True
