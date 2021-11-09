@@ -2,12 +2,13 @@ from .rubycode import RubyCode
 import subprocess, sys
 
 class RubyChallenge:
-	def __init__(self, repair_objective, complexity, best_score=0, code=None, tests_code=None):
+	def __init__(self, repair_objective, complexity, best_score=0, code=None, tests_code=None, id=None):
 		self.repair_objective = repair_objective
 		self.complexity = complexity
 		self.best_score = best_score
 		self.code = None
 		self.tests_code = None
+		self.id = id
 		if code is not None:
 			self.code = RubyCode(full_name=code)
 		if tests_code is not None:
@@ -32,6 +33,7 @@ class RubyChallenge:
 
 	def get_content(self):
 		return {
+			'id': self.id,
 			'code': self.code.get_content(),
 			'tests_code': self.tests_code.get_content(),
 			'repair_objective': self.repair_objective,
