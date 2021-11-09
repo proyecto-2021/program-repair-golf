@@ -1,5 +1,6 @@
 from .PythonChallengeDAO import PythonChallengeDAO
 from .PythonChallenge import PythonChallenge
+from .PythonChallengeRepair import PythonChallengeRepair
 
 class PythonController:
   
@@ -61,6 +62,25 @@ class PythonController:
     #prepare response
     response = challenge_update.to_json(best_score=True)
     return response
+
+  def repair_challenge(id, code_repair)
+    
+    if code_repair is None:
+      return make_response(jsonify({"Code repair": "Is empty"}), 404)
+    
+    challenge = PythonChallengeDAO.get_challenge(id)
+
+    if challenge is None:
+      return make_response(jsonify({"Challenge": "Not found"}), 404)
+
+    temp_code_path = PythonChallengeRepair.path_temporary(code_path(challenge))
+    PythonChallengeRepair.temporary_save(temp_code_path, code_repair)
+    #save_file(temp_code_path, 'wb', code_repair)
+
+    temp_test_code_path = "public/temp/test-code.py"
+    PythonChallengeRepair.save_in(challenge, temp_test_code_path)
+    PythonChallengeRepair.valid_repair(temp_code_path, temp_test_code_path)
+    
 
   #takes the challenge to a temp location and checks if it's valid
   @staticmethod
