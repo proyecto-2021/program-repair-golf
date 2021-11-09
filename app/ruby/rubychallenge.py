@@ -31,8 +31,8 @@ class RubyChallenge:
 			'best_score': self.best_score
 		}
 
-	def get_content(self):
-		return {
+	def get_content(self, exclude=[]):
+		dict = {
 			'id': self.id,
 			'code': self.code.get_content(),
 			'tests_code': self.tests_code.get_content(),
@@ -40,6 +40,9 @@ class RubyChallenge:
 			'complexity': self.complexity,
 			'best_score': self.best_score
 		}
+		for key in exclude:
+			del dict[key]
+		return dict
 
 	def get_file_name(self, is_test=False):
 		if is_test:
