@@ -130,13 +130,15 @@ class Controller:
             return make_response(jsonify({'challenge': 'test_suite does not fail'}),400)
 
         # Files are ok, copy it to respective directory
-        if old_challenge.code.get_file_name() != new_challenge.code.get_file_name():
-            if not new_challenge.move_code(self.files_path, names_match=False):
-                rmtree(self.ruby_tmp)
-                return make_response(jsonify({'challenge': 'code file name already exists'}), 409)
-            old_challenge.remove_code()
-        else:
-            new_challenge.move_code(self.files_path)
+        if not self.copy_files(old_challenge, new_challenge):
+            return make_response(jsonify({'challenge': 'code file name already exists'}), 409)
+        # if old_challenge.code.get_file_name() != new_challenge.code.get_file_name():
+        #     if not new_challenge.move_code(self.files_path, names_match=False):
+        #         rmtree(self.ruby_tmp)
+        #         return make_response(jsonify({'challenge': 'code file name already exists'}), 409)
+        #     old_challenge.remove_code()
+        # else:
+        #     new_challenge.move_code(self.files_path)
 
         if old_challenge.tests_code.get_file_name() != new_challenge.tests_code.get_file_name():
             if not new_challenge.move_tests_code(self.files_path, names_match=False):
@@ -153,3 +155,13 @@ class Controller:
         self.dao.update_challenge(id, update_data)
         response = self.dao.get_challenge_data(id)
         return jsonify({'challenge': response})
+
+    def copy_files(self, oc, nc):
+        if oc.code.get_file_name() != nc.code.get_file_name():
+            if not nc.move_code(self.files_path, names_match=False):
+                rmtree(self.ruby_tmp)
+                return False
+            oc.remove_code()
+        else:
+            nc.move_code(self.files_path)
+        return True
