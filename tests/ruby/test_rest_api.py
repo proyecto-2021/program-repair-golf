@@ -149,7 +149,7 @@ def test_post_code_not_compiles1(client):
     response = r.json['challenge']
 
     assert r.status_code == 400
-    assert response == 'source_code and/or test_suite not compile'
+    assert response == 'source_code and/or test_suite doesnt compile'
 
 def test_post_code_not_compiles2(client):
     url = '/ruby/challenge'
@@ -159,7 +159,7 @@ def test_post_code_not_compiles2(client):
     response = r.json['challenge']
 
     assert r.status_code == 400
-    assert response == 'source_code and/or test_suite not compile'
+    assert response == 'source_code and/or test_suite doesnt compile'
 
 def test_post_bad_dependencies(client):
     url = '/ruby/challenge'
@@ -179,7 +179,7 @@ def test_post_no_tests_fail(client):
     response = r.json['challenge']
 
     assert r.status_code == 400
-    assert response == 'test_suite does not fail'
+    assert response == 'test_suite doesnt fail'
 
 def test_post_repair_invalid_challenge(client):
     url = '/ruby/challenge/1000/repair' #its probably that we dont post 1000 challenges for test
@@ -188,7 +188,7 @@ def test_post_repair_invalid_challenge(client):
     response = r.json['challenge']
 
     assert r.status_code == 404
-    assert response == 'NOT FOUND'
+    assert response == 'id doesnt exist'
 
 def test_post_repair_candidate_compiles_error(client):
     url = '/ruby/challenge'
@@ -266,7 +266,7 @@ def test_put_code_not_compiles2(client):
 
     assert r.status_code == 200
     assert r2.status_code == 400
-    assert r2.json['challenge'] == 'tests doesnt compile'
+    assert r2.json['challenge'] == 'test_suite doesnt compile'
 
 def test_put_with_update_info_existent(client):
     url = '/ruby/challenge'
@@ -287,7 +287,7 @@ def test_put_with_update_info_existent(client):
     assert r1.status_code == 200
     assert r2.status_code == 200
     assert r3.status_code == 409
-    assert r3.json['challenge'] == 'code file name already exists'
+    assert r3.json['challenge'] == 'code_file_name already exists'
 
 def test_put_new_tests_and_rename_code(client):
     url = '/ruby/challenge'
