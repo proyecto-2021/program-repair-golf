@@ -1,5 +1,7 @@
 from app import create_app, db
 import pytest
+import shutil, glob
+
 
 @pytest.fixture(scope='module')
 def client():
@@ -12,4 +14,3 @@ def client():
             db.create_all()
             # Tests will be executed on the test_client object
             yield test_client
- 
