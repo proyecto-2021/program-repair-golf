@@ -68,19 +68,30 @@ class PythonController:
     if code_repair is None:
       return make_response(jsonify({"Code repair": "Is empty"}), 404)
     
-    challenge = PythonChallengeDAO.get_challenge(id)
+    req_challenge = PythonChallengeDAO.get_challenge(id)
 
-    if challenge is None:
+    if req_challenge is None:
       return make_response(jsonify({"Challenge": "Not found"}), 404)
 
-    temp_code_path = PythonChallengeRepair.path_temporary(code_path(challenge))
-    PythonChallengeRepair.temporary_save(temp_code_path, code_repair)
-    #save_file(temp_code_path, 'wb', code_repair)
+    challenge = PythonChallenge(challenge_data= req_challenge)
+    rapair_challenge = PythonChallengeRepair(challenge, code_repair)
 
+    repair_challenge.temporary_save(repair_challenge.path_temporary(challenge.code_path()), code_repair)
     temp_test_code_path = "public/temp/test-code.py"
-    PythonChallengeRepair.save_in(challenge, temp_test_code_path)
-    PythonChallengeRepair.valid_repair(temp_code_path, temp_test_code_path)
+    #Ver como definir save in para guardar el test en temp
+    repair_challenge.save_in()
+    result = repair_challenge.is_valid_repair(repair_challenge.path_temporary(challenge.code_path()), temp_test_code_path)
     
+    if 'Error' in result:
+      return result
+
+    score = repair_challenge.compute_repair_score(challenge, code_repair)
+    
+    if challenge.get_best_score() == 0 or score < challenge.get_best_score():
+      challenge.set_best_score(score)
+      PythonChallengeDAO.update_challenge(id, challenge.to_json())
+
+    return repair_challenge.return_content(score)
 
   #takes the challenge to a temp location and checks if it's valid
   @staticmethod
