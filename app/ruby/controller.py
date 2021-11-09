@@ -99,6 +99,9 @@ class Controller:
         nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.code.get_file_name()
         nc_test_name = data['test_suite_file_name'] if 'test_suite_file_name' in data else old_challenge.tests_code.get_file_name()
         
+        # if not self.set_new_challenge(nc_code_name, code_file, old_challenge, new_challenge):
+        #     return make_response(jsonify({'challenge': 'code doesnt compile'}), 400)
+        
         if code_file is not None:
             new_challenge.set_code(self.ruby_tmp, nc_code_name, code_file)
             new_challenge.save_code()
@@ -110,6 +113,9 @@ class Controller:
             new_challenge.set_code(self.ruby_tmp, old_challenge.code.get_file_name())
             new_challenge.rename_code(nc_code_name)
         
+        # if not self.set_new_challenge(nc_test_name, tests_code_file, old_challenge, new_challenge, is_test=True):
+        #     return make_response(jsonify({'challenge': 'test_suite doesnt compile'}), 400)
+
         if tests_code_file is not None:
             new_challenge.set_code(self.ruby_tmp, nc_test_name, tests_code_file, is_test=True)
             new_challenge.save_code(is_test=True)
@@ -144,12 +150,28 @@ class Controller:
         response = self.dao.get_challenge_data(id)
         return jsonify({'challenge': response})
 
-    def copy_files(self, oc, nc, is_test=False):
-        if oc.code.get_file_name() != nc.code.get_file_name():
-            if not nc.move_code(self.files_path, names_match=False, is_test=is_test):
+    def copy_files(self, old_challenge, new_challenge, is_test=False):
+        if old_challenge.code.get_file_name() != new_challenge.code.get_file_name():
+            if not new_challenge.move_code(self.files_path, names_match=False, is_test=is_test):
                 rmtree(self.ruby_tmp)
                 return False
-            oc.remove_code(is_test=is_test)
+            old_challenge.remove_code(is_test=is_test)
         else:
-            nc.move_code(self.files_path, is_test=is_test)
+            new_challenge.move_code(self.files_path, is_test=is_test)
         return True
+
+    # def set_new_challenge(self, name, filee, old_challenge, new_challenge, is_test=False):
+    #     if filee is not None:
+    #         new_challenge.set_code(self.ruby_tmp, name, filee, is_test=is_test)
+    #         new_challenge.save_code(is_test=is_test)
+    #         if not new_challenge.code_compile(is_test=is_test):
+    #             rmtree(self.ruby_tmp)
+    #             return False
+    #     else:
+    #         old_challenge.copy_code(self.ruby_tmp, is_test=is_test)
+    #         if is_test:
+    #             new_challenge.set_code(self.ruby_tmp, old_challenge.tests_code.get_file_name(), is_test=True)
+    #         else:
+    #             new_challenge.set_code(self.ruby_tmp, old_challenge.code.get_file_name())
+    #         new_challenge.rename_code(name, is_test=is_test)
+    #         return True
