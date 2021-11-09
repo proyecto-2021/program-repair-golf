@@ -27,16 +27,16 @@ def test_get_single_pythonChallenge(client):
     #---- end post ---#
 
     #data to be entered in the post test
-    dataEnteredPost = {'Challenge': {'best_score': 0, 'code': '\ndef median(a,b,c):\n    res = 0\n    if ((a>=b and a<=c) or (a>=c and a<=b)):\n        res = a\n    if ((b>=a and b<=c) or (b>=c and b<=a)):\n        res = b\n    else:\n        res = c\n    return res\n\n', 'complexity': 3, 'repair_objective': 'prueba test', 'tests_code': 'from median import median\n\ndef test_one():\n    a = 1\n    b = 2\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_two():\n    a = 2\n    b = 1\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_three():\n    a = 3\n    b = 1\n    c = 2\n    res = median(a, b, c)\n    assert res == 2\n\n'}}
+    dataEnteredPost = {'challenge': {'best_score': 0, 'code': '\ndef median(a,b,c):\n    res = 0\n    if ((a>=b and a<=c) or (a>=c and a<=b)):\n        res = a\n    if ((b>=a and b<=c) or (b>=c and b<=a)):\n        res = b\n    else:\n        res = c\n    return res\n\n', 'complexity': 3, 'repair_objective': 'prueba test', 'tests_code': 'from median import median\n\ndef test_one():\n    a = 1\n    b = 2\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_two():\n    a = 2\n    b = 1\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_three():\n    a = 3\n    b = 1\n    c = 2\n    res = median(a, b, c)\n    assert res == 2\n\n'}}
 
     #data obtained through the get ready for manipulation
     dataChallenge = parseDataTextAJson(result.json)
 
     #I get each value within the dictionary
-    repair_objective = dataChallenge['Challenge']['repair_objective']
-    best_score       = dataChallenge['Challenge']['best_score']
-    complexity       = dataChallenge['Challenge']['complexity']
-    code             = dataChallenge['Challenge']['code']
+    repair_objective = dataChallenge['challenge']['repair_objective']
+    best_score       = dataChallenge['challenge']['best_score']
+    complexity       = dataChallenge['challenge']['complexity']
+    code             = dataChallenge['challenge']['code']
 
     assert isinstance(complexity,int) == True
     assert len(repair_objective) > 0
@@ -80,7 +80,7 @@ def parseDataTextAJson(result):
     return dataResultJson
 
 def clear_data_base():
-    db.session.query(PythonChallenge).delete()
+    db.session.query(PythonChallengeModel).delete()
 
 def postFunction(repair_objectiveParam,complexityParam):
     
