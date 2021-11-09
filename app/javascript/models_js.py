@@ -16,6 +16,3 @@ class JavascriptChallenge(db.Model):
             "complexity": self.complexity,
             "best_score": self.best_score
         }
-
-    def find_challenge(id_challenge):
-        return JavascriptChallenge.query.filter_by(id=id_challenge).first()
