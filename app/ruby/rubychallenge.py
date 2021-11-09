@@ -39,6 +39,16 @@ class RubyChallenge:
 			'best_score': self.best_score
 		}
 
+	def get_file_name(self, is_test=False):
+		if is_test:
+			return self.tests_code.get_file_name()
+		return self.code.get_file_name()
+
+	def get_full_name(self, is_test=False):
+		if is_test:
+			return self.tests_code.get_full_name()
+		return self.code.get_full_name()
+
 	def set_code(self, files_path, file_name, file=None, is_test=False):
 		if is_test:
 			self.tests_code = RubyCode(files_path, file_name, file)
@@ -64,15 +74,15 @@ class RubyChallenge:
 			return self.tests_code.move(path, names_match)
 		return self.code.move(path, names_match)
 
-	def rename_code(self, new_name, is_test=False):
-		if is_test:
-			return self.tests_code.rename(new_name)
-		return self.code.rename(new_name)
-
 	def copy_code(self, path, is_test=False):
 		if is_test:
 			return self.tests_code.copy(path)
 		return self.code.copy(path)
+
+	def rename_code(self, new_name, is_test=False):
+		if is_test:
+			return self.tests_code.rename(new_name)
+		return self.code.rename(new_name)
 
 	def codes_compile(self):
 		return self.code.compiles() and self.tests_code.compiles()
@@ -84,16 +94,6 @@ class RubyChallenge:
 
 	def tests_fail(self):
 		return self.tests_code.run_fail()
-
-	def get_file_name(self, is_test=False):
-		if is_test:
-			return self.tests_code.get_file_name()
-		return self.code.get_file_name()
-
-	def get_full_name(self, is_test=False):
-		if is_test:
-			return self.tests_code.get_full_name()
-		return self.code.get_full_name()
 
 	def dependencies_ok(self):
 		command = 'grep "require_relative" ' + self.tests_code.get_full_name()
