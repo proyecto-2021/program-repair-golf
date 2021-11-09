@@ -19,7 +19,7 @@ class CSharpChallengeModel(db.Model):
         }
     
 def get_challenge_db(id, show_files_content=False):
-    challenge = db.session.query(CSharp_Challenge).filter_by(id=id).first().__repr__()
+    challenge = db.session.query(CSharpChallengeModel).filter_by(id=id).first().__repr__()
     if show_files_content:
         challenge['code'] = open(challenge['code'], "r").read()
         challenge['tests_code'] = open(challenge['tests_code'], "r").read() 
@@ -29,11 +29,11 @@ def exist(id):
     return get_challenge_db(id) is not None
 
 def save_challenge(challenge_data, source_code_path, test_path):
-    new_challenge = CSharp_Challenge(code = source_code_path, tests_code = test_path, repair_objetive = challenge_data['repair_objective'], complexity = int(challenge_data['complexity']), best_score = 0)
+    new_challenge = CSharpChallengeModel(code = source_code_path, tests_code = test_path, repair_objective = challenge_data['repair_objective'], complexity = int(challenge_data['complexity']), best_score = 0)
     db.session.add(new_challenge)
     db.session.commit()
     return new_challenge.id
 
 def update_challenge_data(id, data):
-    db.session.query(CSharp_Challenge).filter_by(id=id).update(data)
+    db.session.query(CSharpChallengeModel).filter_by(id=id).update(data)
     db.session.commit()
