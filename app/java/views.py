@@ -1,5 +1,5 @@
+from os import makedev
 from flask.helpers import make_response
-#from app.java import *
 from app.java.controller import *
 from . import java
 from app import db
@@ -12,7 +12,11 @@ def login():
 
 @java.route('/java-challenges',methods=['GET'])
 def ViewAllChallenges():
-    return controller.list_challenges_java()
+    try:
+        output = controller.list_challenges_java()
+    except Exception as e:
+        return make_response(jsonify(str(e)))
+    return make_response(jsonify({"challenges": output}))
     
 @java.route('/java-challenges/<int:id>',methods=['GET'])
 def View_Challenges(id):
@@ -28,9 +32,17 @@ def UpdateChallenge(id):
 
 @java.route('/java-challenges', methods=['POST'])
 def create_challenge():
-   return controller.add_challenge_java()
+    try:
+        output = controller.add_challenge_java()
+    except Exception as e:
+        return make_response(jsonify(str(e)))
+    return make_response(jsonify({"challenge": output}))
 
 @java.route('/java-challenges/<int:id>/repair', methods=['POST'])
 def repair_challenge(id):
-    return controller.repair_file(id)
+    try:
+        output = controller.repair_file(id)
+    except Exception as e:
+        return make_response(jsonify(str(e)))
+    return make_response(jsonify(output))
 
