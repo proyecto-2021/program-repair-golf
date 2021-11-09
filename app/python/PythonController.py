@@ -66,30 +66,34 @@ class PythonController:
   def repair_challenge(id, code_repair)
     
     if code_repair is None:
-      return make_response(jsonify({"Code repair": "Is empty"}), 404)
+      return {"Error": "No repair provided"}
     
     req_challenge = PythonChallengeDAO.get_challenge(id)
 
     if req_challenge is None:
-      return make_response(jsonify({"Challenge": "Not found"}), 404)
-
+      return {"Error": "Challenge not found"}
+      
     challenge = PythonChallenge(challenge_data= req_challenge)
-    rapair_challenge = PythonChallengeRepair(challenge, code_repair)
+    repair_challenge = PythonChallengeRepair(challenge, code_repair)
 
-    repair_challenge.temporary_save(repair_challenge.path_temporary(challenge.code_path()), code_repair)
-    temp_test_code_path = "public/temp/test-code.py"
-    #Ver como definir save in para guardar el test en temp
-    repair_challenge.save_in()
-    result = repair_challenge.is_valid_repair(repair_challenge.path_temporary(challenge.code_path()), temp_test_code_path)
+    path_temporary = "public/temp/"
+    #save temporary codes
+    repair_challenge.temporary_save(path_temporary)
+
+    #validate repair
+    result = repair_challenge.is_valid_repair()
     
     if 'Error' in result:
       return result
 
-    score = repair_challenge.compute_repair_score(challenge, code_repair)
+    #compute score
+    score = repair_challenge.compute_repair_score()
     
-    if challenge.get_best_score() == 0 or score < challenge.get_best_score():
-      challenge.set_best_score(score)
-      PythonChallengeDAO.update_challenge(id, challenge.to_json())
+    #update best score
+    PythonChallengeDAO.update_best_score(id, score)
+
+    #delete files 
+    repair_challenge.delete_temp()
 
     return repair_challenge.return_content(score)
 
