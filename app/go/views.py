@@ -13,7 +13,7 @@ def repair_challenge_go(id):
     code_solution_path = 'public/challenges/solution/code_solution.go'
     code_solution_file.save(code_solution_path)
     
-    is_good_code_solution_file = subprocess.run(["go build",code_solution_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)   
+    is_good_code_solution_file = subprocess.run(["go build",code_solution_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)   
     if is_good_code_solution_file.returncode == 2:
         return make_response((jsonify({"code_solution_file":"with errors"}),409))
     
@@ -25,7 +25,7 @@ def repair_challenge_go(id):
     
     shutil.copy (tests_code,"public/challenges/solution/code_test.go")
     
-    the_challenge_is_solved = subprocess.run(["go test"],cwd="public/challenges/solution",stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
+    the_challenge_is_solved = subprocess.run(["go test"],cwd="public/challenges/solution",stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
     if the_challenge_is_solved.returncode == 1:
         return make_response((jsonify({"the challenge":"not solved"}),409))  
     
