@@ -22,3 +22,18 @@ def test_get_challenge_1(client):
 
     challenge_2 = ChallengeDAO.get_challenge(1)
     assert challenge == challenge_2
+
+def test_delete_challenge(client):
+    challenge = JavascriptChallenge(
+        code = "empty code",
+        tests_code = "empty test",
+        repair_objective = "something",
+        complexity = 0,
+        best_score = 0,
+    )
+    
+    db.session.add(challenge)
+    db.session.commit()
+
+    challenge_delete = ChallengeDAO.delete_challenge(2)
+    assert challenge == challenge_delete
