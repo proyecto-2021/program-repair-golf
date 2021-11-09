@@ -18,28 +18,28 @@ class Controller:
 
         challenge = RubyChallenge(data['repair_objective'], data['complexity'])
         challenge.set_code(self.files_path, data['source_code_file_name'], code_file)
-        challenge.set_tests_code(self.files_path, data['test_suite_file_name'], tests_code_file)
+        challenge.set_code(self.files_path, data['test_suite_file_name'], tests_code_file, is_test=True)
 
         if not challenge.save_code():
             return make_response(jsonify({'challenge': 'source_code already exists'}), 409)
 
-        if not challenge.save_tests_code():
+        if not challenge.save_code(is_test=True):
             challenge.remove_code()
             return make_response(jsonify({'challenge': 'test_suite already exists'}), 409)
 
         if not challenge.codes_compile():
             challenge.remove_code()
-            challenge.remove_tests_code()
+            challenge.remove_code(is_test=True)
             return make_response(jsonify({'challenge': 'source_code and/or test_suite doesnt compile'}), 400)
 
         if not challenge.dependencies_ok():
             challenge.remove_code()
-            challenge.remove_tests_code()
+            challenge.remove_code(is_test=True)
             return make_response(jsonify({'challenge': 'test_suite dependencies are wrong'}), 400)
 
         if not challenge.tests_fail():
             challenge.remove_code()
-            challenge.remove_tests_code()
+            challenge.remove_code(is_test=True)
             return make_response(jsonify({'challenge': 'test_suite doesnt fail'}),400)
 
         response = challenge.get_content()
@@ -111,15 +111,15 @@ class Controller:
             new_challenge.rename_code(nc_code_name)
         
         if tests_code_file is not None:
-            new_challenge.set_tests_code(self.ruby_tmp, nc_test_name, tests_code_file)
-            new_challenge.save_tests_code()
-            if not new_challenge.tests_compile():
+            new_challenge.set_code(self.ruby_tmp, nc_test_name, tests_code_file, is_test=True)
+            new_challenge.save_code(is_test=True)
+            if not new_challenge.code_compile(is_test=True):
                 rmtree(self.ruby_tmp)
                 return make_response(jsonify({'challenge': 'test_suite doesnt compile'}), 400)
         else:
-            old_challenge.copy_tests_code(self.ruby_tmp)
-            new_challenge.set_tests_code(self.ruby_tmp, old_challenge.tests_code.get_file_name())
-            new_challenge.rename_tests_code(nc_test_name)
+            old_challenge.copy_code(self.ruby_tmp, is_test=True)
+            new_challenge.set_code(self.ruby_tmp, old_challenge.tests_code.get_file_name(), is_test=True)
+            new_challenge.rename_code(nc_test_name, is_test=True)
 
         if not new_challenge.dependencies_ok():
             rmtree(self.ruby_tmp)
@@ -139,12 +139,12 @@ class Controller:
             new_challenge.move_code(self.files_path)
 
         if old_challenge.tests_code.get_file_name() != new_challenge.tests_code.get_file_name():
-            if not new_challenge.move_tests_code(self.files_path, names_match=False):
+            if not new_challenge.move_code(self.files_path, names_match=False, is_test=True):
                 rmtree(self.ruby_tmp)
                 return make_response(jsonify({'challenge': 'tests_file name already exists'}), 409)
-            old_challenge.remove_tests_code()
+            old_challenge.remove_code(is_test=True)
         else:
-            new_challenge.move_tests_code(self.files_path)
+            new_challenge.move_code(self.files_path, is_test=True)
 
         rmtree(self.ruby_tmp)
 
