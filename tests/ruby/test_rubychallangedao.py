@@ -31,3 +31,11 @@ def test_get_one_after_create(client, data):
     del challenge['best_score']
 
     assert challenge == data
+
+@pytest.mark.parametrize("data", get_tests_data(5))
+def test_check_existence_after_create(client, data):
+    dao = RubyChallengeDAO()
+
+    id = dao.create_challenge(**data)
+
+    assert dao.exists(id)
