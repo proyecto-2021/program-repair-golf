@@ -10,12 +10,12 @@ class PythonChallengeDAO:
   def get_challenge(id):
     return PythonChallengeModel.query.filter_by(id = id).first()
 
-  def create_challenge(challenge: PythonChallenge):
-    new_challenge = PythonChallengeModel(code=challenge.code_path(),
-        tests_code=challenge.test_path(),
-        repair_objective=challenge.repair_objective,
-        complexity=challenge.complexity,
-        best_score=0)
+  def create_challenge(challenge):
+    new_challenge = PythonChallengeModel(code=challenge['code'],
+      tests_code=challenge['tests_code'],
+      repair_objective=challenge['repair_objective'],
+      complexity=challenge['complexity'],
+      best_score=0)
 
     db.session.add(new_challenge)
     db.session.commit()
