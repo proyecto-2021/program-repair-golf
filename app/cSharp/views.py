@@ -2,7 +2,7 @@ from posixpath import basename
 from . import cSharp
 from json import loads
 from app import db
-from .models import CSharp_Challenge
+from .models import CSharpChallengeModel
 from .models import *
 from flask import jsonify, make_response, json, request
 import subprocess, os
@@ -71,7 +71,7 @@ def put_csharp_challenges(id):
                          prev_src_path=old_challenge_path,
                          prev_test_path=old_test_path)
         code_validation_response(val_status)
-        
+
     if update_request['repair_objective'] is not None:
         update_challenge_data(id, {'repair_objetive': update_request['repair_objective']})
 
@@ -191,10 +191,10 @@ def get_challenge(id):
 def get_csharp_challenges():
     challenge = {'challenges': []}
     show = []
-    challenge['challenges'] = db.session.query(CSharp_Challenge).all()
+    challenge['challenges'] = db.session.query(CSharpChallengeModel).all()
     for i in challenge['challenges']:
-        show.append(CSharp_Challenge.__repr__(i))
-        j = show.index(CSharp_Challenge.__repr__(i))
+        show.append(CSharpChallengeModel.__repr__(i))
+        j = show.index(CSharpChallengeModel.__repr__(i))
         show[j]['code'] = open(show[j]['code'], "r").read()
         show[j]['tests_code'] = open(show[j]['tests_code'], "r").read()
     if show != []:
@@ -243,7 +243,7 @@ def calculate_score(challenge_path, repair_candidate_path):
 
 def save_best_score(score, previous_best_score, chall_id):
     if previous_best_score == 0 or previous_best_score > score:
-        challenge = db.session.query(CSharp_Challenge).filter_by(id=chall_id)
+        challenge = db.session.query(CSharpChallengeModel).filter_by(id=chall_id)
         challenge.update(dict(best_score=score))
         db.session.commit()
         return 0
@@ -298,8 +298,8 @@ def handle_put_files(result, src_path=None, test_path=None, prev_src_path=None, 
 
 def code_validation_response(val_status):
     if val_status == -1:
-            return make_response(jsonify({'Source code': 'Sintax errors'}), 409)
-        elif val_status == 0:
-            return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
-        elif val_status == 2:
-            return make_response(jsonify({'Test': 'Sintax errors'}), 409)
+        return make_response(jsonify({'Source code': 'Sintax errors'}), 409)
+    elif val_status == 0:
+        return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
+    elif val_status == 2:
+        return make_response(jsonify({'Test': 'Sintax errors'}), 409)
