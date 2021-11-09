@@ -13,6 +13,21 @@ class PythonChallengeRepair:
     def compute_repair_score(self):
         return edit_distance(self.challenge.code.content, self.code_repair.code.content)
 
+    def return_content(self, score):
+        challenge_reponse = {
+                            'repair_objective': self.challenge.repair_objective, 
+                            'best_score': self.challenge.best_score
+                            }
+        return {'challenge': challenge_reponse, 
+                'player': {'username': "Elon Musk"}, 
+                'attempts': 1, 
+                'score': score
+                }
+
+    def delete_temp(self):
+        delete_file(self.challenge.test.path)
+        delete_file(self.code_repair.code.path)
+
     #Save temporary code repair and test code
     def temporary_save(self, path):
         #Save code repair
