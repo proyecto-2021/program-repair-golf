@@ -85,6 +85,16 @@ class RubyChallenge:
 	def tests_fail(self):
 		return self.tests_code.run_fail()
 
+	def get_file_name(self, is_test=False):
+		if is_test:
+			return self.tests_code.get_file_name()
+		return self.code.get_file_name()
+
+	def get_full_name(self, is_test=False):
+		if is_test:
+			return self.tests_code.get_full_name()
+		return self.code.get_full_name()
+
 	def dependencies_ok(self):
 		command = 'grep "require_relative" ' + self.tests_code.get_full_name()
 		p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
