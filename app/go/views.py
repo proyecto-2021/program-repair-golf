@@ -4,6 +4,10 @@ from app import db
 from . import go
 from .models_go import GoChallenge
 import os, subprocess, math, nltk, shutil
+from .go_challenge_dao import goChallengeDAO
+
+
+goDAO = goChallengeDAO()
 
 
 @go.route('api/v1/go-challenges/<int:id>/repair', methods=['POST'])
@@ -67,7 +71,8 @@ def repair_challengue_go(id):
 
 @go.route('/api/v1/go-challenges', methods=['GET'])
 def get_all_challenges():
-    challenges = db.session.query(GoChallenge).all()
+    #challenges = db.session.query(GoChallenge).all()
+    challenges = goDAO.get_all_challenges()
     if not challenges:
         return make_response(jsonify({'challenges' : 'not found'}), 404)
     
@@ -86,7 +91,8 @@ def get_all_challenges():
 
 @go.route('/api/v1/go-challenges/<id>', methods=['GET'])
 def return_single_challenge(id):
-    challenge_by_id=GoChallenge.query.filter_by(id=id).first()
+    #challenge_by_id=GoChallenge.query.filter_by(id=id).first()
+    challenge_by_id = goDAO.get_challenge_by_id(id)
     if challenge_by_id is None:
         return "ID Not Found", 404
     challenge_to_return=challenge_by_id.convert_dict()
@@ -98,7 +104,8 @@ def return_single_challenge(id):
 
 @go.route('/api/v1/go-challenges/<id>', methods=['PUT'])
 def update_a_go_challenge(id):
-    challenge = GoChallenge.query.filter_by(id = id).first()
+    #challenge = GoChallenge.query.filter_by(id = id).first()
+    challenge = goDAO.get_challenge_by_id(id)
     if challenge is None:
         return make_response(jsonify({'challenge' : 'not found'}), 404)
     
@@ -215,8 +222,10 @@ def create_go_challenge():
         repair_objective=challenge_data['repair_objective'],
         complexity=challenge_data['complexity'],
         best_score=math.inf)
+    new_challenge = goDAO.create_go_challenge(code_path, test_suite_path, challenge_data['repair_objective'], challenge_data['complexity'], math.inf)
 
-    all_the_challenges = db.session.query(GoChallenge).all()
+    #all_the_challenges = db.session.query(GoChallenge).all()
+    all_the_challenges = goDAO.get_all_challenges()
     for every_challenge in all_the_challenges:
         if every_challenge.code == new_challenge.code:
             return make_response(jsonify({"challenge": "repeated"}), 409)
