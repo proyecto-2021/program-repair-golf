@@ -32,7 +32,7 @@ class PythonController:
       return validation_result
     #save in public as official challenge
     challenge.save_at(save_to)
-    challenge_id = PythonChallengeDAO.create_challenge(challenge.to_json(content=False, best_score=True)) 
+    challenge_id = PythonChallengeDAO.create_challenge(challenge.to_json(content=False)) 
 
     #create response
     response = challenge.to_json()
