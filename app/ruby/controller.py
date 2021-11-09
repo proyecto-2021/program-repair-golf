@@ -96,8 +96,8 @@ class Controller:
             rmtree(self.ruby_tmp)
         mkdir(self.ruby_tmp)
         #If files names are in the request, set new_code names to them. If not, take old_challenge name.
-        nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.code.get_file_name()
-        nc_test_name = data['test_suite_file_name'] if 'test_suite_file_name' in data else old_challenge.tests_code.get_file_name()
+        nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.get_file_name()
+        nc_test_name = data['test_suite_file_name'] if 'test_suite_file_name' in data else old_challenge.get_file_name(is_test=True)
         
         # if not self.set_new_challenge(nc_code_name, code_file, old_challenge, new_challenge):
         #     return make_response(jsonify({'challenge': 'code doesnt compile'}), 400)
@@ -110,7 +110,7 @@ class Controller:
                 return make_response(jsonify({'challenge': 'code doesnt compile'}), 400)
         else: #If no file is passed, set the old_challenge code as the new one (Needed to check dependencies)
             old_challenge.copy_code(self.ruby_tmp)
-            new_challenge.set_code(self.ruby_tmp, old_challenge.code.get_file_name())
+            new_challenge.set_code(self.ruby_tmp, old_challenge.get_file_name())
             new_challenge.rename_code(nc_code_name)
         
         # if not self.set_new_challenge(nc_test_name, tests_code_file, old_challenge, new_challenge, is_test=True):
@@ -124,7 +124,7 @@ class Controller:
                 return make_response(jsonify({'challenge': 'test_suite doesnt compile'}), 400)
         else:
             old_challenge.copy_code(self.ruby_tmp, is_test=True)
-            new_challenge.set_code(self.ruby_tmp, old_challenge.tests_code.get_file_name(), is_test=True)
+            new_challenge.set_code(self.ruby_tmp, old_challenge.get_file_name(is_test=True), is_test=True)
             new_challenge.rename_code(nc_test_name, is_test=True)
 
         if not new_challenge.dependencies_ok():
@@ -151,7 +151,7 @@ class Controller:
         return jsonify({'challenge': response})
 
     def copy_files(self, old_challenge, new_challenge, is_test=False):
-        if old_challenge.code.get_file_name() != new_challenge.code.get_file_name():
+        if old_challenge.get_file_name(is_test=is_test) != new_challenge.get_file_name(is_test=is_test):
             if not new_challenge.move_code(self.files_path, names_match=False, is_test=is_test):
                 rmtree(self.ruby_tmp)
                 return False
