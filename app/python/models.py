@@ -1,6 +1,6 @@
 from .. import db
 
-class PythonChallenge(db.Model):
+class PythonChallengeModel(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   code = db.Column(db.String(256), nullable=False)
   tests_code = db.Column(db.String(256), nullable=False)

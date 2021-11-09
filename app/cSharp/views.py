@@ -56,38 +56,22 @@ def put_csharp_challenges(id):
         val_status = validate_code(new_challenge_path, new_test_path)
         handle_put_files(val_status, new_challenge_path, new_test_path,
                          old_challenge_path, old_test_path)
-        if val_status == -1:
-            return make_response(jsonify({'Source code': 'Sintax errors'}),
-                                 409)
-        elif val_status == 0:
-            return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
-        elif val_status == 2:
-            return make_response(jsonify({'Test': 'Sintax errors'}), 409)
+        code_validation_response(val_status)
     elif update_request['source_code_file'] is not None:
         new_challenge.save(new_challenge_path)
         val_status = validate_code(new_challenge_path, old_test_path)
         handle_put_files(val_status, new_challenge_path,
                          prev_src_path=old_challenge_path,
                          prev_test_path=old_test_path)
-        if val_status == -1:
-            return make_response(jsonify({'Source code': 'Sintax errors'}), 409)
-        elif val_status == 0:
-            return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
-        elif val_status == 2:
-            return make_response(jsonify({'Test': 'Sintax errors'}), 409)
+        code_validation_response(val_status)
     elif update_request['test_suite_file'] is not None:
         new_test.save(new_test_path)
         val_status = validate_code(old_challenge_path, new_test_path)
         handle_put_files(val_status, test_path=new_test_path,
                          prev_src_path=old_challenge_path,
                          prev_test_path=old_test_path)
-        if val_status == -1:
-            return make_response(jsonify({'Source code': 'Sintax errors'}), 409)
-        elif val_status == 0:
-            return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
-        elif val_status == 2:
-            return make_response(jsonify({'Test': 'Sintax errors'}), 409)
-
+        code_validation_response(val_status)
+        
     if update_request['repair_objective'] is not None:
         update_challenge_data(id, {'repair_objetive': update_request['repair_objective']})
 
@@ -310,3 +294,12 @@ def handle_put_files(result, src_path=None, test_path=None, prev_src_path=None, 
         else:
             remove_path([dll_new, exe_prev, prev_test_path])
             shutil.move(test_path, prev_test_path)
+
+
+def code_validation_response(val_status):
+    if val_status == -1:
+            return make_response(jsonify({'Source code': 'Sintax errors'}), 409)
+        elif val_status == 0:
+            return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
+        elif val_status == 2:
+            return make_response(jsonify({'Test': 'Sintax errors'}), 409)
