@@ -3,13 +3,13 @@ from ..models_js import JavascriptChallenge, db
 
 class ChallengeDAO():
     def get_challenge(id):
-        challenge = JavascriptChallenge.query.filter(id == JavascriptChallenge.id).first()
+        challenge = JavascriptChallenge().query.filter(id == JavascriptChallenge().id).first()
         if not challenge: 
             raise challenge_dao_exception(f'the id does not exist or is null',challenge_dao_exception.HTTP_NOT_FOUND)  
         return challenge
         
     def get_all_challenges():
-        challenges = JavascriptChallenge.query.all()
+        challenges = JavascriptChallenge().query.all()
         return challenges
 
     def save_challenge(code, test_code, repair_objective,complexity,best_score):
