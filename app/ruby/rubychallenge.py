@@ -39,53 +39,58 @@ class RubyChallenge:
 			'best_score': self.best_score
 		}
 
-	def set_code(self, files_path, file_name, file=None):
-		self.code = RubyCode(files_path, file_name, file)
+	def get_file_name(self, is_test=False):
+		if is_test:
+			return self.tests_code.get_file_name()
+		return self.code.get_file_name()
 
-	def set_tests_code(self, files_path, file_name, file=None):
-		self.tests_code = RubyCode(files_path, file_name, file)
+	def get_full_name(self, is_test=False):
+		if is_test:
+			return self.tests_code.get_full_name()
+		return self.code.get_full_name()
+
+	def set_code(self, files_path, file_name, file=None, is_test=False):
+		if is_test:
+			self.tests_code = RubyCode(files_path, file_name, file)
+		else:
+			self.code = RubyCode(files_path, file_name, file)
 
 	def set_best_score(self, new_score):
 		self.best_score = new_score
 
-	def save_code(self):
+	def save_code(self, is_test=False):
+		if is_test:
+			return self.tests_code.save()
 		return self.code.save()
 
-	def save_tests_code(self):
-		return self.tests_code.save()
+	def remove_code(self, is_test=False):
+		if is_test:
+			self.tests_code.remove()
+		else:
+			self.code.remove()
 
-	def remove_code(self):
-		self.code.remove()
-
-	def remove_tests_code(self):
-		self.tests_code.remove()
-
-	def move_code(self, path, names_match=True):
+	def move_code(self, path, names_match=True, is_test=False):
+		if is_test:
+			return self.tests_code.move(path, names_match)
 		return self.code.move(path, names_match)
 
-	def move_tests_code(self, path, names_match=True):
-		return self.tests_code.move(path, names_match)
-
-	def rename_code(self, new_name):
-		return self.code.rename(new_name)
-
-	def rename_tests_code(self, new_name):
-		return self.tests_code.rename(new_name)
-
-	def copy_code(self, path):
+	def copy_code(self, path, is_test=False):
+		if is_test:
+			return self.tests_code.copy(path)
 		return self.code.copy(path)
-		
-	def copy_tests_code(self, path):
-		return self.tests_code.copy(path)
+
+	def rename_code(self, new_name, is_test=False):
+		if is_test:
+			return self.tests_code.rename(new_name)
+		return self.code.rename(new_name)
 
 	def codes_compile(self):
 		return self.code.compiles() and self.tests_code.compiles()
 	
-	def code_compile(self):
+	def code_compile(self, is_test=False):
+		if is_test:
+			return self.tests_code.compiles()
 		return self.code.compiles()
-
-	def tests_compile(self):
-		return self.tests_code.compiles()
 
 	def tests_fail(self):
 		return self.tests_code.run_fail()
