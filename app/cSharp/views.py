@@ -56,24 +56,27 @@ def put_csharp_challenges(id):
         val_status = validate_code(new_challenge_path, new_test_path)
         handle_put_files(val_status, new_challenge_path, new_test_path,
                          old_challenge_path, old_test_path)
-        code_validation_response(val_status)
+        if val_status != 1:   
+            return code_validation_response(val_status)
     elif update_request['source_code_file'] is not None:
         new_challenge.save(new_challenge_path)
         val_status = validate_code(new_challenge_path, old_test_path)
         handle_put_files(val_status, new_challenge_path,
                          prev_src_path=old_challenge_path,
                          prev_test_path=old_test_path)
-        code_validation_response(val_status)
+        if val_status != 1:   
+            return code_validation_response(val_status)
     elif update_request['test_suite_file'] is not None:
         new_test.save(new_test_path)
         val_status = validate_code(old_challenge_path, new_test_path)
         handle_put_files(val_status, test_path=new_test_path,
                          prev_src_path=old_challenge_path,
                          prev_test_path=old_test_path)
-        code_validation_response(val_status)
+        if val_status != 1:   
+            return code_validation_response(val_status)
 
     if update_request['repair_objective'] is not None:
-        update_challenge_data(id, {'repair_objetive': update_request['repair_objective']})
+        update_challenge_data(id, {'repair_objective': update_request['repair_objective']})
 
     if update_request['complexity'] is not None:
         complexity = int(update_request['complexity'])
@@ -171,7 +174,7 @@ def repair_Candidate(id):
                 challenge['best_score'] = score
 
             challenge_data = {
-                "repair_objective": challenge['repair_objetive'],
+                "repair_objective": challenge['repair_objective'],
                 "best_score": challenge['best_score']
             }
             remove_path([repair_path, repair_path.replace('.cs', '.exe'),
