@@ -42,7 +42,7 @@ class Controller:
             challenge.remove_code(is_test=True)
             return make_response(jsonify({'challenge': 'test_suite doesnt fail'}),400)
 
-        response = challenge.get_content()
+        response = challenge.get_content(exclude=['id'])
         response['id'] = self.dao.create_challenge(**challenge.get_content_for_db())
 
         return jsonify({'challenge': response})
@@ -55,8 +55,9 @@ class Controller:
 
     def get_all_challenges(self):
         all_challenges = []
-        for challenge in [challenge2.get_dict() for challenge2 in self.dao.get_challenges()]:
-            all_challenges.append(RubyChallenge(**challenge).get_content())
+        for challenge in [challenge.get_dict() for challenge in self.dao.get_challenges()]:
+            challenge_content = RubyChallenge(**challenge).get_content(exclude=['tests_code'])
+            all_challenges.append(challenge_content)
         return jsonify({'challenges': all_challenges})
 
     def post_repair(self, id, repair_code):
