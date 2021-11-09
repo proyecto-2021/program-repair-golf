@@ -54,8 +54,10 @@ class Controller:
         return jsonify({'challenge': challenge})
 
     def get_all_challenges(self):
-        challenges = self.dao.get_challenges_data()
-        return jsonify({'challenges': challenges})
+        all_challenges = []
+        for challenge in [challenge2.get_dict() for challenge2 in self.dao.get_challenges()]:
+            all_challenges.append(RubyChallenge(**challenge).get_content())
+        return jsonify({'challenges': all_challenges})
 
     def post_repair(self, id, repair_code):
         if not self.dao.exists(id):
