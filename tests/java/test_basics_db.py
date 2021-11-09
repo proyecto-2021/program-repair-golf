@@ -14,11 +14,16 @@ def test_ViewAllChallenges(client):
 
     #verrrrrrrrrrrrrrrrrrrrrrrrrrrr 
     '''
-    challenge = Challenge_java(code='source_code_file_name', tests_code='test_suite_file_name', repair_objective='repair_objective', complexity='complexity', score=500)
-    for j in range (5):  
-        DAO_java_challenge.create_challenge(challenge)
+    dict={"dict":[]}
+    dict['source_code_file_name']='source_code_file_name'
+    dict['test_suite_file_name']='test_suite_file_name'
+    dict['repair_objective']='repair_objective'
+    dict['complexity']='complexity'
+    dict['score']=500
+    DAO_java_challenge.create_challenge(dict)
+    resp = len(challenge)
     challenge ['challenges'] = DAO_java_challenge.all_challenges_java()
-    assert resp == 6
+    assert resp == 2
     '''
 
 def test_ViewChallenges(client):
