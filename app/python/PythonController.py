@@ -63,7 +63,7 @@ class PythonController:
     response = challenge_update.to_json(best_score=True)
     return response
 
-  def repair_challenge(id, code_repair)
+  def repair_challenge(id, code_repair):
     
     if code_repair is None:
       return {"Error": "No repair provided"}
@@ -72,7 +72,7 @@ class PythonController:
 
     if req_challenge is None:
       return {"Error": "Challenge not found"}
-      
+
     challenge = PythonChallenge(challenge_data= req_challenge)
     repair_challenge = PythonChallengeRepair(challenge, code_repair)
 

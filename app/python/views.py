@@ -9,7 +9,6 @@ from json import loads
 from os import path
 from .file_utils import *
 from .subprocess_utils import *
-import nltk
 
 class PythonViews(MethodView):
 
@@ -52,7 +51,7 @@ class PythonViews(MethodView):
 
         return jsonify({"challenge" : update_result})
 
-    def repair_challenge(id):
+    def repair_challenge(self, id):
         #Repair candidate 
         code_repair = request.files.get('source_code_file').read()
         #Result of validated rapair candidate
