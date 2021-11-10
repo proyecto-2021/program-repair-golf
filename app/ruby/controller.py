@@ -15,12 +15,13 @@ class Controller:
 
     def post_challenge(self, code_file, tests_code_file, json):
         data = json['challenge']
-        if not (data['repair_objective'] and data['complexity'] and data['source_code_file_name'] and data['test_suite_file_name']):
-            return make_response(jsonify({'challenge': 'the json information is incomplete'}), 400)
 
         challenge = RubyChallenge(data['repair_objective'], data['complexity'])
         challenge.set_code(self.files_path, data['source_code_file_name'], code_file)
         challenge.set_code(self.files_path, data['test_suite_file_name'], tests_code_file, is_test=True)
+
+        if not challenge.data_ok():
+            return make_response(jsonify({'challenge': 'the json information is incomplete/erroneous'}), 400)
 
         if not challenge.save_code():
             return make_response(jsonify({'challenge': 'source_code already exists'}), 409)
