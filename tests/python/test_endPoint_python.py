@@ -76,6 +76,16 @@ def test_get_total_pythonChallenge(client):
     assert len(data['challenges']) == initial_challenge_len + 3
 
 
+def test_post_challenge_invalid_code(client):
+    code_filename = "code_not_compile.py"
+    dataChallenge = post_function(code_filename, "valid_test_imp_valid_code.py", "Make all tests pass.", 2)
+
+    response = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallenge)
+
+    assert response.status_code == 409
+    #get json with the error
+    json_response = parseDataTextAJson(response.json)
+    assert json_response['Error'] == 'Syntax error at ' + code_filename
 
 # -------Section functions ------- #
 def parseDataTextAJson(result):
