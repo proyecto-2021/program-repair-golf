@@ -12,8 +12,16 @@ def test_post_challenge(client):
 
 
 def create_challenge(code_name=None, tests_name=None, repair_objective=None, complexity=None, code=None, tests_code=None):
-    #method to implement
-    pass
+    challenge = {}
+    if code is not None:
+        challenge.update({'source_code_file': open(f'tests/cSharp/test-files/{code}.cs', 'rb')})
+    if tests_code is not None:
+        challenge.update({'test_suite_file': open(f'tests/cSharp/test-files/{tests_code}.cs', 'rb')})
+
+    dict_data = { 'source_code_file_name': code_name, 'test_suite_file_name': tests_name, 'repair_objective': repair_objective, 'complexity': complexity }
+    challenge.update(challenge_json(dict_data))
+    return challenge
+
 
 
 def challenge_json(dic_data):
