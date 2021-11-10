@@ -7,7 +7,7 @@ import json
 def test_post_pythonChallenge(client):
     repair_objective = "make to pass"
 
-    dataChallenge = postFunction(repair_objective, 2)
+    dataChallenge = post_function("valid_code.py", "valid_test_imp_valid_code.py", repair_objective, 2)
 
     response = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallenge)
 
@@ -20,7 +20,7 @@ def test_get_single_pythonChallenge(client):
     #---- post one challenge to test ---#    
     repair_objectiveParam = "prueba test"
 
-    dataChallengePost = postFunction(repair_objectiveParam,3) 
+    dataChallengePost = post_function("valid_code.py", "valid_test_imp_valid_code.py", repair_objectiveParam,3) 
     client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePost)
 
     result = client.get('http://localhost:5000/python/api/v1/python-challenges/1')
@@ -53,9 +53,9 @@ def test_get_total_pythonChallenge(client):
     repair_objectiveParamTwo = "pruebita test"
     repair_objectiveParamThree = "pruebas test"
     
-    dataChallengePostOne = postFunction(repair_objectiveParamOne,1)
-    dataChallengePostTwo = postFunction(repair_objectiveParamTwo,2)
-    dataChallengePostThree = postFunction(repair_objectiveParamThree,3)
+    dataChallengePostOne = post_function("valid_code.py", "valid_test_imp_valid_code.py", repair_objectiveParamOne,1)
+    dataChallengePostTwo = post_function("valid_code.py", "valid_test_imp_valid_code.py", repair_objectiveParamTwo,2)
+    dataChallengePostThree = post_function("valid_code.py", "valid_test_imp_valid_code.py", repair_objectiveParamThree,3)
 
     client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostOne)
     client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostTwo)
@@ -82,28 +82,28 @@ def parseDataTextAJson(result):
 def clear_data_base():
     db.session.query(PythonChallengeModel).delete()
 
-def postFunction(repair_objectiveParam,complexityParam):
+def post_function(code_name, test_name, repair_objective, complexity):
     
-    complexityString = str(complexityParam)
+    complexityString = str(complexity)
 
-    source_code_fileTemp = open('example-challenges/python-challenges/median.py','rb')
-    test_suite_fileTemp = open('example-challenges/python-challenges/test_median.py','rb')
+    source_code_fileTemp = open('tests/python/example_programs_test/' + code_name, 'rb')
+    test_suite_fileTemp = open('tests/python/example_programs_test/' + test_name, 'rb')
     dataChallenge = {
         'source_code_file' : source_code_fileTemp,
         'test_suite_file' : test_suite_fileTemp,
         'challenge': '{ \
             "challenge": { \
-                "source_code_file_name" : "median.py", \
-                "test_suite_file_name" : "test_median.py", \
+                "source_code_file_name" : "code_name_variable", \
+                "test_suite_file_name" : "test_name_variable", \
                 "repair_objective" : "repair_variable" , \
                 "complexity" : "complexity_variable" \
             } \
         }'
     } 
-    replace_text = dataChallenge['challenge'].replace('repair_variable',repair_objectiveParam)
-    dataChallenge['challenge'] = replace_text
-    replace_text2 = dataChallenge['challenge'].replace('complexity_variable',complexityString)
-    dataChallenge['challenge'] = replace_text2
+    dataChallenge['challenge'] = dataChallenge['challenge'].replace('code_name_variable',code_name)
+    dataChallenge['challenge'] = dataChallenge['challenge'].replace('test_name_variable',test_name)
+    dataChallenge['challenge'] = dataChallenge['challenge'].replace('repair_variable',repair_objective)
+    dataChallenge['challenge'] = dataChallenge['challenge'].replace('complexity_variable',complexityString)
 
     return dataChallenge     
 # ------- end Section functions ------- #
