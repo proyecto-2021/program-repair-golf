@@ -13,11 +13,6 @@ class RubyChallengeDAO(object):
 	def get_challenges(self):
 		return db.session.query(RubyChallengeModel).all()
 
-	def get_challenge_data(self, id):
-		challenge = db.session.query(RubyChallengeModel).filter_by(id=id).first().get_data()
-		del challenge['id']
-		return challenge
-
 	def create_challenge(self, code, tests_code, repair_objective, complexity):
 		challenge = RubyChallengeModel(
     	    code = code,

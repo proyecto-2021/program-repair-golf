@@ -50,7 +50,7 @@ class Controller:
     def get_challenge(self, id):
         if not self.dao.exists(id):
                 return make_response(jsonify({'challenge': 'id doesnt exist'}), 404)
-        challenge = self.dao.get_challenge_data(id)
+        challenge = RubyChallenge(**self.dao.get_challenge(id)).get_content(exclude=['id'])
         return jsonify({'challenge': challenge})
 
     def get_all_challenges(self):
@@ -128,7 +128,7 @@ class Controller:
         #From new_challenge, take only values that must be updated.
         update_data = {key: value for (key, value) in new_challenge.get_content(for_db=True).items() if value is not None}
         self.dao.update_challenge(id, update_data)
-        response = self.dao.get_challenge_data(id)
+        response = RubyChallenge(**self.dao.get_challenge(id)).get_content(exclude=['id'])
         return jsonify({'challenge': response})
 
     def copy_files(self, old_challenge, new_challenge, is_test=False):
