@@ -24,8 +24,8 @@ def create_app(config_name='development'):
     db.init_app(app)
     migrate.init_app(app, db)
 
-    from .auth import auth as auth_blueprint
-    app.register_blueprint(auth_blueprint, url_prefix='/auth')
+    from .auth import users as users_blueprint
+    app.register_blueprint(users_blueprint, url_prefix='/')
 
     from .javascript import javascript as javascript_blueprint
     app.register_blueprint(javascript_blueprint, url_prefix='/javascript')  
