@@ -7,7 +7,7 @@ import json
 def test_post_pythonChallenge(client):
     repair_objective = "make to pass"
 
-    dataChallenge = post_function("valid_code.py", "valid_test_imp_valid_code.py", repair_objective, 2)
+    dataChallenge = post_function("valid_code_1.py", "valid_test_1.py", repair_objective, 2)
 
     response = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallenge)
 
@@ -18,7 +18,7 @@ def test_get_single_pythonChallenge(client):
     #---- post one challenge to test ---#    
     repair_objectiveParam = "prueba test"
 
-    dataChallengePost = post_function("valid_code.py", "valid_test_imp_valid_code.py", repair_objectiveParam, 3) 
+    dataChallengePost = post_function("valid_code_1.py", "valid_test_1.py", repair_objectiveParam, 3) 
     post_info = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePost)
     
     challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
@@ -32,7 +32,7 @@ def test_get_single_pythonChallenge(client):
             'code': '\ndef median(a,b,c):\n    res = 0\n    if ((a>=b and a<=c) or (a>=c and a<=b)):\n        res = a\n    if ((b>=a and b<=c) or (b>=c and b<=a)):\n        res = b\n    else:\n        res = c\n    return res\n\n', 
             'complexity': 3, 
             'repair_objective': 'prueba test', 
-            'tests_code': 'from valid_code import median\n\ndef test_one():\n    a = 1\n    b = 2\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_two():\n    a = 2\n    b = 1\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_three():\n    a = 3\n    b = 1\n    c = 2\n    res = median(a, b, c)\n    assert res == 2\n\n'
+            'tests_code': 'from valid_code_1 import median\n\ndef test_one():\n    a = 1\n    b = 2\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_two():\n    a = 2\n    b = 1\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_three():\n    a = 3\n    b = 1\n    c = 2\n    res = median(a, b, c)\n    assert res == 2\n\n'
         }
     }
 
@@ -60,9 +60,9 @@ def test_get_total_pythonChallenge(client):
     repair_objectiveParamTwo = "pruebita test"
     repair_objectiveParamThree = "pruebas test"
     
-    dataChallengePostOne = post_function("valid_code.py", "valid_test_imp_valid_code.py", repair_objectiveParamOne, 1)
-    dataChallengePostTwo = post_function("valid_code.py", "valid_test_imp_valid_code.py", repair_objectiveParamTwo, 2)
-    dataChallengePostThree = post_function("valid_code.py", "valid_test_imp_valid_code.py", repair_objectiveParamThree, 3)
+    dataChallengePostOne = post_function("valid_code_1.py", "valid_test_1.py", repair_objectiveParamOne, 1)
+    dataChallengePostTwo = post_function("valid_code_1.py", "valid_test_1.py", repair_objectiveParamTwo, 2)
+    dataChallengePostThree = post_function("valid_code_1.py", "valid_test_1.py", repair_objectiveParamThree, 3)
 
     client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostOne)
     client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostTwo)
@@ -75,10 +75,9 @@ def test_get_total_pythonChallenge(client):
     
     assert len(data['challenges']) == initial_challenge_len + 3
 
-
 def test_post_challenge_invalid_code(client):
     code_filename = "code_not_compile.py"
-    dataChallenge = post_function(code_filename, "valid_test_imp_valid_code.py", "Make all tests pass.", 2)
+    dataChallenge = post_function(code_filename, "valid_test_1.py", "Make all tests pass.", 2)
 
     response = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallenge)
 
@@ -89,7 +88,7 @@ def test_post_challenge_invalid_code(client):
 
 def test_post_challenge_invalid_test(client):
     test_filename = "test_not_compile.py"
-    dataChallenge = post_function("valid_code.py", test_filename, "Make all tests pass.", 2)
+    dataChallenge = post_function("valid_code_1.py", test_filename, "Make all tests pass.", 2)
 
     response = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallenge)
 
@@ -97,6 +96,16 @@ def test_post_challenge_invalid_test(client):
     #get json with the error
     json_response = parseDataTextAJson(response.json)
     assert json_response['Error'] == 'Syntax error at ' + test_filename
+
+def test_post_invalid_repaired_challenge(client):
+    dataChallenge = post_function("code_repair_2.py", "valid_test_2.py", "Make all tests pass.", 2)
+
+    response = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallenge)
+
+    assert response.status_code == 409
+    #get json with the error
+    json_response = parseDataTextAJson(response.json)
+    assert json_response['Error'] == 'At least one test must fail'
 
     
 # -------Section functions ------- #
