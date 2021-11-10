@@ -77,7 +77,7 @@ class RubyChallenge:
 
 	def codes_compile(self):
 		return self.code.compiles() and self.tests_code.compiles()
-	
+
 	def code_compile(self, is_test=False):
 		if is_test:
 			return self.tests_code.compiles()
@@ -92,8 +92,8 @@ class RubyChallenge:
 		dependence_name = (p.communicate()[0].decode(sys.stdout.encoding).strip().split("'")[1])
 		return dependence_name == self.code.get_file_name()
 
-    def data_ok(self):
-        return self.repair_objective and self.complexity_ok() and self.code.file_name_ok() and self.tests_code.file_name_ok()
+	def data_ok(self):
+		return self.repair_objective and self.complexity_ok() and self.code.file_name_ok() and self.tests_code.file_name_ok()
 
-    def complexity_ok(self): 
-        return self.complexity.isdigit() and int(self.complexity) in range(1, 6)
+	def complexity_ok(self):
+		return self.complexity.isdigit() and int(self.complexity) in range(1, 6)
