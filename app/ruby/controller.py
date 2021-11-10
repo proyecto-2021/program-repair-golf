@@ -1,5 +1,6 @@
 from flask import jsonify, make_response
 from os import mkdir
+from os.path import isdir
 from tempfile import gettempdir
 from shutil import rmtree
 from .rubychallenge import RubyChallenge
@@ -10,132 +11,148 @@ class Controller:
     def __init__(self, files_path):
         self.files_path = files_path
         self.dao = RubyChallengeDAO()
+        self.ruby_tmp = gettempdir() + '/ruby-tmp/'
 
     def post_challenge(self, code_file, tests_code_file, json):
         data = json['challenge']
 
         challenge = RubyChallenge(data['repair_objective'], data['complexity'])
         challenge.set_code(self.files_path, data['source_code_file_name'], code_file)
-        challenge.set_tests_code(self.files_path, data['test_suite_file_name'], tests_code_file)
+        challenge.set_code(self.files_path, data['test_suite_file_name'], tests_code_file, is_test=True)
+
+        if not challenge.data_ok():
+            return make_response(jsonify({'challenge': 'the json information is incomplete/erroneous'}), 400)
 
         if not challenge.save_code():
             return make_response(jsonify({'challenge': 'source_code already exists'}), 409)
 
-        if not challenge.save_tests_code():
+        if not challenge.save_code(is_test=True):
             challenge.remove_code()
             return make_response(jsonify({'challenge': 'test_suite already exists'}), 409)
 
         if not challenge.codes_compile():
             challenge.remove_code()
-            challenge.remove_tests_code()
-            return make_response(jsonify({'challenge': 'source_code and/or test_suite not compile'}), 400)
+            challenge.remove_code(is_test=True)
+            return make_response(jsonify({'challenge': 'source_code and/or test_suite doesnt compile'}), 400)
 
         if not challenge.dependencies_ok():
             challenge.remove_code()
-            challenge.remove_tests_code()
+            challenge.remove_code(is_test=True)
             return make_response(jsonify({'challenge': 'test_suite dependencies are wrong'}), 400)
 
         if not challenge.tests_fail():
             challenge.remove_code()
-            challenge.remove_tests_code()
-            return make_response(jsonify({'challenge': 'test_suite does not fail'}),400)
+            challenge.remove_code(is_test=True)
+            return make_response(jsonify({'challenge': 'test_suite doesnt fail'}),400)
 
-        response = challenge.get_content()
-        response['id'] = self.dao.create_challenge(**challenge.get_content_for_db())
+        response = challenge.get_content(exclude=['id'])
+        response['id'] = self.dao.create_challenge(**challenge.get_content(exclude=['id', 'best_score'], for_db=True))
 
         return jsonify({'challenge': response})
 
     def get_challenge(self, id):
-        challenge = self.dao.get_challenge_data(id)
+        if not self.dao.exists(id):
+                return make_response(jsonify({'challenge': 'id doesnt exist'}), 404)
+        challenge = RubyChallenge(**self.dao.get_challenge(id)).get_content(exclude=['id'])
         return jsonify({'challenge': challenge})
 
     def get_all_challenges(self):
-        challenges = self.dao.get_challenges_data()
-        return jsonify({'challenges': challenges})
+        all_challenges = []
+        for challenge in [challenge.get_dict() for challenge in self.dao.get_challenges()]:
+            challenge_content = RubyChallenge(**challenge).get_content(exclude=['tests_code'])
+            all_challenges.append(challenge_content)
+        return jsonify({'challenges': all_challenges})
 
     def post_repair(self, id, repair_code):
+        if not self.dao.exists(id):
+            return make_response(jsonify({'challenge': 'id doesnt exist'}),404)
         challenge = RubyChallenge(**self.dao.get_challenge(id))
-        ruby_tmp = gettempdir() + '/ruby-tmp/'
-        mkdir(ruby_tmp)
-        rep_candidate = RepairCandidate(challenge, repair_code, ruby_tmp)
+        if isdir(self.ruby_tmp):
+            rmtree(self.ruby_tmp)
+        mkdir(self.ruby_tmp)
+        rep_candidate = RepairCandidate(challenge, repair_code, self.ruby_tmp)
         rep_candidate.save_candidate()
 
         if not rep_candidate.compiles():
-            rmtree(ruby_tmp)
+            rmtree(self.ruby_tmp)
             return make_response(jsonify({'challenge': {'repair_code': 'is erroneous'}}),400)
 
         if not rep_candidate.test_ok():
-            rmtree(ruby_tmp)
+            rmtree(self.ruby_tmp)
             return make_response(jsonify({'challenge': {'tests_code': 'fails'}}),200)
 
-        score = rep_candidate.compute_score()
+        new_score = rep_candidate.compute_score()
 
-        if score < challenge.get_best_score() or challenge.get_best_score() == 0:
-            challenge.set_best_score(score)
-            self.dao.update_challenge(id,{'best_score':score})
+        if new_score < challenge.get_best_score() or challenge.get_best_score() == 0:
+            challenge.set_best_score(new_score)
+            self.dao.update_challenge(id,{'best_score':new_score})
         
-        rmtree(ruby_tmp)
-        return jsonify(rep_candidate.get_content(score))
+        rmtree(self.ruby_tmp)
+        return jsonify(rep_candidate.get_content(new_score))
 
     def modify_challenge(self, id, code_file, tests_code_file, json):
+        if not self.dao.exists(id):
+            return make_response(jsonify({'challenge': 'id doesnt exist'}), 404)
+
         data = {'repair_objective': None, 'complexity': None}
         data.update(json['challenge'])
-        challenge = self.dao.get_challenge(id)
-        old_challenge = RubyChallenge(**challenge)
+        old_challenge = RubyChallenge(**self.dao.get_challenge(id))
         new_challenge = RubyChallenge(data['repair_objective'], data['complexity'])
-        ruby_tmp = gettempdir() + '/ruby-tmp/'
-        mkdir(ruby_tmp)
+        if isdir(self.ruby_tmp):
+            rmtree(self.ruby_tmp)
+        mkdir(self.ruby_tmp)
         #If files names are in the request, set new_code names to them. If not, take old_challenge name.
-        nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.code.get_file_name()
-        nc_test_name = data['test_suite_file_name'] if 'test_suite_file_name' in data else old_challenge.tests_code.get_file_name()
+        nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.get_file_name()
+        nc_test_name = data['test_suite_file_name'] if 'test_suite_file_name' in data else old_challenge.get_file_name(is_test=True)
         
-        if code_file is not None:
-            new_challenge.set_code(ruby_tmp, nc_code_name, code_file)
-            new_challenge.save_code()
-            if not new_challenge.code_compile():
-                rmtree(ruby_tmp)
-                return make_response(jsonify({'code': 'code doesnt compile'}), 400)
-        else: #If no file is passed, set the old_challenge code as the new one (Needed to check dependencies)
-            old_challenge.copy_code(ruby_tmp)
-            new_challenge.set_code(ruby_tmp, old_challenge.code.get_file_name())
-            new_challenge.rename_code(nc_code_name)
+        if not self.set_new_challenge(nc_code_name, code_file, old_challenge, new_challenge):
+            return make_response(jsonify({'challenge': 'code doesnt compile'}), 400)
         
-        if tests_code_file is not None:
-            new_challenge.set_tests_code(ruby_tmp, nc_test_name, tests_code_file)
-            new_challenge.save_tests_code()
-            if not new_challenge.tests_compile():
-                rmtree(ruby_tmp)
-                return make_response(jsonify({'tests': 'tests doesnt compile'}), 400)
-        else:
-            old_challenge.copy_tests_code(ruby_tmp)
-            new_challenge.set_tests_code(ruby_tmp, old_challenge.tests_code.get_file_name())
-            new_challenge.rename_tests_code(nc_test_name)
+        if not self.set_new_challenge(nc_test_name, tests_code_file, old_challenge, new_challenge, is_test=True):
+            return make_response(jsonify({'challenge': 'test_suite doesnt compile'}), 400)
 
         if not new_challenge.dependencies_ok():
-            rmtree(ruby_tmp)
+            rmtree(self.ruby_tmp)
             return make_response(jsonify({'challenge': 'test_suite dependencies are wrong'}), 400)
 
         if not new_challenge.tests_fail():
-            rmtree(ruby_tmp)
-            return make_response(jsonify({'challenge': 'test_suite does not fail'}),400)
+            rmtree(self.ruby_tmp)
+            return make_response(jsonify({'challenge': 'test_suite doesnt fail'}),400)
 
         # Files are ok, copy it to respective directory
-        if old_challenge.code.get_file_name() != new_challenge.code.get_file_name():
-            if not new_challenge.move_code(self.files_path, names_match=False):
-                return make_response(jsonify({'code': 'code file name already exists'}))
-            old_challenge.remove_code()
-        else:
-            new_challenge.move_code(self.files_path)
+        if not self.copy_files(old_challenge, new_challenge):
+            return make_response(jsonify({'challenge': 'code_file_name already exists'}), 409)
 
-        if old_challenge.tests_code.get_file_name() != new_challenge.tests_code.get_file_name():
-            if not new_challenge.move_tests_code(self.files_path, names_match=False):
-                return make_response(jsonify({'tests': 'tests file name already exists'}))
-            old_challenge.remove_tests_code()
-        else:
-            new_challenge.move_tests_code(self.files_path)
+        if not self.copy_files(old_challenge, new_challenge, is_test=True):
+            return make_response(jsonify({'challenge': 'tests_file name already exists'}), 409)
 
-        rmtree(ruby_tmp)
+        rmtree(self.ruby_tmp)
 
-        self.dao.update_challenge(id, {key: value for (key, value) in new_challenge.get_content_for_db().items() if value is not None})
-        response = self.dao.get_challenge_data(id)
+        #From new_challenge, take only values that must be updated.
+        update_data = {key: value for (key, value) in new_challenge.get_content(for_db=True).items() if value is not None}
+        self.dao.update_challenge(id, update_data)
+        response = RubyChallenge(**self.dao.get_challenge(id)).get_content(exclude=['id'])
         return jsonify({'challenge': response})
+
+    def copy_files(self, old_challenge, new_challenge, is_test=False):
+        if old_challenge.get_file_name(is_test=is_test) != new_challenge.get_file_name(is_test=is_test):
+            if not new_challenge.move_code(self.files_path, names_match=False, is_test=is_test):
+                rmtree(self.ruby_tmp)
+                return False
+            old_challenge.remove_code(is_test=is_test)
+        else:
+            new_challenge.move_code(self.files_path, is_test=is_test)
+        return True
+
+    def set_new_challenge(self, name, filee, old_challenge, new_challenge, is_test=False):
+        if filee is not None:
+            new_challenge.set_code(self.ruby_tmp, name, filee, is_test=is_test)
+            new_challenge.save_code(is_test=is_test)
+            if not new_challenge.code_compile(is_test=is_test):
+                rmtree(self.ruby_tmp)
+                return False
+        else:
+            old_challenge.copy_code(self.ruby_tmp, is_test=is_test)
+            new_challenge.set_code(self.ruby_tmp, old_challenge.get_file_name(is_test=is_test), is_test=is_test)
+            new_challenge.rename_code(name, is_test=is_test)
+        return True
