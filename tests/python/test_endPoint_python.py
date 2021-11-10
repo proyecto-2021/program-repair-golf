@@ -20,43 +20,49 @@ def test_get_single_pythonChallenge(client):
 
     dataChallengePost = post_function("valid_code.py", "valid_test_imp_valid_code.py", repair_objectiveParam, 3) 
     post_info = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePost)
-
+    
     challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
     result = client.get('http://localhost:5000/python/api/v1/python-challenges/' + str(challenge_id))
     #---- end post ---#
 
     #data to be entered in the post test
-    dataEnteredPost = {'challenge': {'best_score': 0, 'code': '\ndef median(a,b,c):\n    res = 0\n    if ((a>=b and a<=c) or (a>=c and a<=b)):\n        res = a\n    if ((b>=a and b<=c) or (b>=c and b<=a)):\n        res = b\n    else:\n        res = c\n    return res\n\n', 'complexity': 3, 'repair_objective': 'prueba test', 'tests_code': 'from median import median\n\ndef test_one():\n    a = 1\n    b = 2\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_two():\n    a = 2\n    b = 1\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_three():\n    a = 3\n    b = 1\n    c = 2\n    res = median(a, b, c)\n    assert res == 2\n\n'}}
+    post_expected_response = {
+        'challenge': {
+            'best_score': 0, 
+            'code': '\ndef median(a,b,c):\n    res = 0\n    if ((a>=b and a<=c) or (a>=c and a<=b)):\n        res = a\n    if ((b>=a and b<=c) or (b>=c and b<=a)):\n        res = b\n    else:\n        res = c\n    return res\n\n', 
+            'complexity': 3, 
+            'repair_objective': 'prueba test', 
+            'tests_code': 'from valid_code import median\n\ndef test_one():\n    a = 1\n    b = 2\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_two():\n    a = 2\n    b = 1\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_three():\n    a = 3\n    b = 1\n    c = 2\n    res = median(a, b, c)\n    assert res == 2\n\n'
+        }
+    }
 
     #data obtained through the get ready for manipulation
     dataChallenge = parseDataTextAJson(result.json)
 
     #I get each value within the dictionary
     repair_objective = dataChallenge['challenge']['repair_objective']
-    best_score       = dataChallenge['challenge']['best_score']
     complexity       = dataChallenge['challenge']['complexity']
     code             = dataChallenge['challenge']['code']
 
     assert isinstance(complexity,int) == True
     assert len(repair_objective) > 0
     assert len(code) > 0
-    assert result.json == dataEnteredPost 
-    clear_data_base()
+    assert result.json == post_expected_response
 
 # testing multiple challenges
 def test_get_total_pythonChallenge(client):
     #get challenge count before test
     responsive = client.get('http://localhost:5000/python/api/v1/python-challenges')
     initial_challenge_len = len(parseDataTextAJson(responsive.json)['challenges'])
-
+    
     #--- start post challenges ---#
     repair_objectiveParamOne = "probando test"
     repair_objectiveParamTwo = "pruebita test"
     repair_objectiveParamThree = "pruebas test"
     
-    dataChallengePostOne = post_function("valid_code.py", "valid_test_imp_valid_code.py", repair_objectiveParamOne,1)
-    dataChallengePostTwo = post_function("valid_code.py", "valid_test_imp_valid_code.py", repair_objectiveParamTwo,2)
-    dataChallengePostThree = post_function("valid_code.py", "valid_test_imp_valid_code.py", repair_objectiveParamThree,3)
+    dataChallengePostOne = post_function("valid_code.py", "valid_test_imp_valid_code.py", repair_objectiveParamOne, 1)
+    dataChallengePostTwo = post_function("valid_code.py", "valid_test_imp_valid_code.py", repair_objectiveParamTwo, 2)
+    dataChallengePostThree = post_function("valid_code.py", "valid_test_imp_valid_code.py", repair_objectiveParamThree, 3)
 
     client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostOne)
     client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostTwo)
