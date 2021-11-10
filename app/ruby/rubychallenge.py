@@ -17,25 +17,11 @@ class RubyChallenge:
 	def get_best_score(self):
 		return self.best_score
 
-	def get_content_for_db(self):
-		return {
-			'code': self.code.get_full_name(),
-			'tests_code': self.tests_code.get_full_name(),
-			'repair_objective': self.repair_objective,
-			'complexity': self.complexity
-		}
-
-	def get_content_for_repair(self):
-		return {
-			'repair_objective': self.repair_objective,
-			'best_score': self.best_score
-		}
-
-	def get_content(self, exclude=[]):
+	def get_content(self, exclude=[], for_db=False):
 		dict = {
 			'id': self.id,
-			'code': self.code.get_content(),
-			'tests_code': self.tests_code.get_content(),
+			'code': self.code.get_content() if not for_db else self.code.get_full_name(),
+			'tests_code': self.tests_code.get_content() if not for_db else self.tests_code.get_full_name(),
 			'repair_objective': self.repair_objective,
 			'complexity': self.complexity,
 			'best_score': self.best_score

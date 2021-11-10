@@ -23,7 +23,7 @@ class RepairCandidate(object):
 	def get_content(self, score):
 		return {'repair' :
             {
-                'challenge': self.challenge.get_content_for_repair(),
+                'challenge': self.challenge.get_content(exclude=['id','code','tests_code','complexity']),
                 'player': {'username': 'Agustin'},
                 'attemps': '1',
                 'score': score

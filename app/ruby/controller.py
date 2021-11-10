@@ -43,7 +43,7 @@ class Controller:
             return make_response(jsonify({'challenge': 'test_suite doesnt fail'}),400)
 
         response = challenge.get_content(exclude=['id'])
-        response['id'] = self.dao.create_challenge(**challenge.get_content_for_db())
+        response['id'] = self.dao.create_challenge(**challenge.get_content(exclude=['id', 'best_score'], for_db=True))
 
         return jsonify({'challenge': response})
 
@@ -126,7 +126,7 @@ class Controller:
         rmtree(self.ruby_tmp)
 
         #From new_challenge, take only values that must be updated.
-        update_data = {key: value for (key, value) in new_challenge.get_content_for_db().items() if value is not None}
+        update_data = {key: value for (key, value) in new_challenge.get_content(for_db=True).items() if value is not None}
         self.dao.update_challenge(id, update_data)
         response = self.dao.get_challenge_data(id)
         return jsonify({'challenge': response})
