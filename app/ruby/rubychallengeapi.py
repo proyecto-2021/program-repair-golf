@@ -5,7 +5,6 @@ from json import loads
 from .controller import Controller
 
 class RubyChallengeAPI(MethodView):
-
     def __init__(self):
         self.files_path = current_app.config.get('FILES_PATH')
         self.controller = Controller(self.files_path)
@@ -17,7 +16,6 @@ class RubyChallengeAPI(MethodView):
             json = loads(request.form.get('challenge'))
             return self.controller.post_challenge(code, tests_code, json)
         else:
-
             repair_candidate = request.files['source_code_file']
             return self.controller.post_repair(id, repair_candidate)
 
