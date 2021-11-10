@@ -10,10 +10,10 @@ import os, subprocess, math, nltk, shutil
 def repair_challenge_go(id):
     code_solution_file = request.files['source_code_file']
     subprocess.run(["mkdir","solution"],cwd="public/challenges",stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
-    code_solution_path = 'public/challenges/solution/code_solution.go'
+    code_solution_path = os.path.abspath('public/challenges/solution/code_solution.go')
     code_solution_file.save(code_solution_path)
     
-    is_good_code_solution_file = subprocess.run(["go build",code_solution_path],stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)   
+    is_good_code_solution_file = subprocess.run(["go build"], cwd=os.path.abspath("public/challenges/solution"),stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
     if is_good_code_solution_file.returncode == 2:
         return make_response((jsonify({"code_solution_file":"with errors"}),409))
     
@@ -25,7 +25,7 @@ def repair_challenge_go(id):
     
     shutil.copy (tests_code,"public/challenges/solution/code_test.go")
     
-    the_challenge_is_solved = subprocess.run(["go test"],cwd="public/challenges/solution",stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
+    the_challenge_is_solved = subprocess.run(["go test"],cwd=os.path.abspath("public/challenges/solution"),stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
     if the_challenge_is_solved.returncode == 1:
         return make_response((jsonify({"the challenge":"not solved"}),409))  
     
@@ -60,7 +60,7 @@ def repair_challenge_go(id):
         }
     }
 
-    subprocess.run(["rm","-r","solution"],cwd="public/challenges",stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
+    subprocess.run(["rm" "-r" "solution"],cwd=os.path.abspath("public/challenges"),stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
     
     return jsonify(request_return)
 
@@ -220,9 +220,9 @@ def create_go_challenge():
         if every_challenge.code == new_challenge.code:
             return make_response(jsonify({"challenge": "repeated"}), 409)
 
-    test_pass = subprocess.run(["go", "test"], cwd="public/challenges")
-    test_compilation = subprocess.run(["go", "test", "-c"], cwd="public/challenges")
-    code_compilation = subprocess.run(["go", "build", code_path], stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
+    test_pass = subprocess.run(["go" "test"], cwd=os.path.abspath("public/challenges"), shell=True)
+    test_compilation = subprocess.run(["go" "test" "-c"], cwd=os.path.abspath("public/challenges"),shell=True)
+    code_compilation = subprocess.run(["go" "build", code_path], stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL,shell=True)
 
     if code_compilation.returncode == 2:
         return make_response(jsonify({"code_file": "The code has syntax errors"}), 412)
