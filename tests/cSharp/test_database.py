@@ -7,7 +7,6 @@ import pytest
 
 @pytest.fixture
 def new_challenge():
-    db.session.query(CSharpChallengeModel).delete()
     challenge = CSharpChallengeModel(code="./tests/cSharp/test-files/Example1.cs",
                                      tests_code="./tests/cSharp/test-files/Example1Test.cs",
                                      repair_objective="testing the db",
@@ -37,8 +36,14 @@ def test_get_challenge_from_db_without_files_contents(client, expected_challenge
     challenge_from_get = get_challenge_db(ch_id)
     assert challenge_from_get == expected_challenge
 
+    # Cleanup
+    db.session.query(CSharpChallengeModel).delete()
+
 
 def test_get_challenge_from_db_with_files_contents(client, expected_challenge_w_f_contents):
     ch_id = expected_challenge_w_f_contents['id']
     challenge_from_get = get_challenge_db(ch_id, show_files_content=True)
     assert challenge_from_get == expected_challenge_w_f_contents
+
+    # Cleanup
+    db.session.query(CSharpChallengeModel).delete()
