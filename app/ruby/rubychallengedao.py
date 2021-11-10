@@ -10,16 +10,8 @@ class RubyChallengeDAO(object):
         del challenge['id']
         return challenge
 
-    def get_challenge_data(self, id):
-        challenge = db.session.query(RubyChallengeModel).filter_by(id=id).first().get_data()
-        del challenge['id']
-        return challenge
-
-    def get_challenges_data(self):
-        challenges = [challenge.get_data() for challenge in db.session.query(RubyChallengeModel).all()]
-        for c in challenges:
-            del c['tests_code']
-        return challenges
+    def get_challenges(self):
+        return db.session.query(RubyChallengeModel).all()
 
     def create_challenge(self, code, tests_code, repair_objective, complexity):
         challenge = RubyChallengeModel(
@@ -34,11 +26,8 @@ class RubyChallengeDAO(object):
         return challenge.get_dict()['id']
 
     def update_challenge(self, id, changes):
-        if len(changes) == 0:
-            return True
         result = db.session.query(RubyChallengeModel).filter_by(id=id).update(changes)
         db.session.commit()
-        return result > 0
 
     def exists(self, id):
         return db.session.query(RubyChallengeModel).filter_by(id=id).first() is not None

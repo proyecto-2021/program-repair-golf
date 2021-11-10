@@ -45,20 +45,23 @@ class Controller:
             challenge.remove_code(is_test=True)
             return make_response(jsonify({'challenge': 'test_suite doesnt fail'}),400)
 
-        response = challenge.get_content()
-        response['id'] = self.dao.create_challenge(**challenge.get_content_for_db())
+        response = challenge.get_content(exclude=['id'])
+        response['id'] = self.dao.create_challenge(**challenge.get_content(exclude=['id', 'best_score'], for_db=True))
 
         return jsonify({'challenge': response})
 
     def get_challenge(self, id):
         if not self.dao.exists(id):
                 return make_response(jsonify({'challenge': 'id doesnt exist'}), 404)
-        challenge = self.dao.get_challenge_data(id)
+        challenge = RubyChallenge(**self.dao.get_challenge(id)).get_content(exclude=['id'])
         return jsonify({'challenge': challenge})
 
     def get_all_challenges(self):
-        challenges = self.dao.get_challenges_data()
-        return jsonify({'challenges': challenges})
+        all_challenges = []
+        for challenge in [challenge.get_dict() for challenge in self.dao.get_challenges()]:
+            challenge_content = RubyChallenge(**challenge).get_content(exclude=['tests_code'])
+            all_challenges.append(challenge_content)
+        return jsonify({'challenges': all_challenges})
 
     def post_repair(self, id, repair_code):
         if not self.dao.exists(id):
@@ -102,33 +105,11 @@ class Controller:
         nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.get_file_name()
         nc_test_name = data['test_suite_file_name'] if 'test_suite_file_name' in data else old_challenge.get_file_name(is_test=True)
         
-        # if not self.set_new_challenge(nc_code_name, code_file, old_challenge, new_challenge):
-        #     return make_response(jsonify({'challenge': 'code doesnt compile'}), 400)
+        if not self.set_new_challenge(nc_code_name, code_file, old_challenge, new_challenge):
+            return make_response(jsonify({'challenge': 'code doesnt compile'}), 400)
         
-        if code_file is not None:
-            new_challenge.set_code(self.ruby_tmp, nc_code_name, code_file)
-            new_challenge.save_code()
-            if not new_challenge.code_compile():
-                rmtree(self.ruby_tmp)
-                return make_response(jsonify({'challenge': 'code doesnt compile'}), 400)
-        else: #If no file is passed, set the old_challenge code as the new one (Needed to check dependencies)
-            old_challenge.copy_code(self.ruby_tmp)
-            new_challenge.set_code(self.ruby_tmp, old_challenge.get_file_name())
-            new_challenge.rename_code(nc_code_name)
-        
-        # if not self.set_new_challenge(nc_test_name, tests_code_file, old_challenge, new_challenge, is_test=True):
-        #     return make_response(jsonify({'challenge': 'test_suite doesnt compile'}), 400)
-
-        if tests_code_file is not None:
-            new_challenge.set_code(self.ruby_tmp, nc_test_name, tests_code_file, is_test=True)
-            new_challenge.save_code(is_test=True)
-            if not new_challenge.code_compile(is_test=True):
-                rmtree(self.ruby_tmp)
-                return make_response(jsonify({'challenge': 'test_suite doesnt compile'}), 400)
-        else:
-            old_challenge.copy_code(self.ruby_tmp, is_test=True)
-            new_challenge.set_code(self.ruby_tmp, old_challenge.get_file_name(is_test=True), is_test=True)
-            new_challenge.rename_code(nc_test_name, is_test=True)
+        if not self.set_new_challenge(nc_test_name, tests_code_file, old_challenge, new_challenge, is_test=True):
+            return make_response(jsonify({'challenge': 'test_suite doesnt compile'}), 400)
 
         if not new_challenge.dependencies_ok():
             rmtree(self.ruby_tmp)
@@ -148,9 +129,9 @@ class Controller:
         rmtree(self.ruby_tmp)
 
         #From new_challenge, take only values that must be updated.
-        update_data = {key: value for (key, value) in new_challenge.get_content_for_db().items() if value is not None}
+        update_data = {key: value for (key, value) in new_challenge.get_content(for_db=True).items() if value is not None}
         self.dao.update_challenge(id, update_data)
-        response = self.dao.get_challenge_data(id)
+        response = RubyChallenge(**self.dao.get_challenge(id)).get_content(exclude=['id'])
         return jsonify({'challenge': response})
 
     def copy_files(self, old_challenge, new_challenge, is_test=False):
@@ -163,18 +144,15 @@ class Controller:
             new_challenge.move_code(self.files_path, is_test=is_test)
         return True
 
-    # def set_new_challenge(self, name, filee, old_challenge, new_challenge, is_test=False):
-    #     if filee is not None:
-    #         new_challenge.set_code(self.ruby_tmp, name, filee, is_test=is_test)
-    #         new_challenge.save_code(is_test=is_test)
-    #         if not new_challenge.code_compile(is_test=is_test):
-    #             rmtree(self.ruby_tmp)
-    #             return False
-    #     else:
-    #         old_challenge.copy_code(self.ruby_tmp, is_test=is_test)
-    #         if is_test:
-    #             new_challenge.set_code(self.ruby_tmp, old_challenge.tests_code.get_file_name(), is_test=True)
-    #         else:
-    #             new_challenge.set_code(self.ruby_tmp, old_challenge.code.get_file_name())
-    #         new_challenge.rename_code(name, is_test=is_test)
-    #         return True
+    def set_new_challenge(self, name, filee, old_challenge, new_challenge, is_test=False):
+        if filee is not None:
+            new_challenge.set_code(self.ruby_tmp, name, filee, is_test=is_test)
+            new_challenge.save_code(is_test=is_test)
+            if not new_challenge.code_compile(is_test=is_test):
+                rmtree(self.ruby_tmp)
+                return False
+        else:
+            old_challenge.copy_code(self.ruby_tmp, is_test=is_test)
+            new_challenge.set_code(self.ruby_tmp, old_challenge.get_file_name(is_test=is_test), is_test=is_test)
+            new_challenge.rename_code(name, is_test=is_test)
+        return True
