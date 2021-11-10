@@ -17,6 +17,16 @@ def create_challenge(code_name=None, tests_name=None, repair_objective=None, com
 
 
 def challenge_json(dic_data):
-    #method to implement
-    pass
+    json_dic = '{ "challenge": { '
+    if dic_data[next(iter(dic_data))] is not None:
+        first_key = list(dic_data)[0]
+    for key in dic_data:
+        if dic_data[key] is not None:
+            if key == first_key:
+                json_dic += f'"{key}" : "{dic_data[key]}"'
+            else:
+                json_dic += f', "{key}" : "{dic_data[key]}"'
+
+    json_dic += ' } }'
+    return {'challenge': json_dic}
 
