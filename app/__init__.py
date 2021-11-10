@@ -12,7 +12,8 @@ def create_app(config_name='development'):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     config[config_name].init_app(app)
 
-    from .models import User, Role
+    from .auth.usermodel import User
+    from .models import Role
     from .javascript.models_js import JavascriptChallenge 
     from .ruby.rubychallengemodel import RubyChallengeModel
     from .java.models_java import Challenge_java
