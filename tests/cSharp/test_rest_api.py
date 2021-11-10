@@ -6,8 +6,26 @@ from . import client
 
 
 def test_post_challenge(client):
-    #method to implement
-    pass
+    url = 'cSharp/c-sharp-challenges'
+    data = create_challenge('Example1', 'Example1Test', 'Testing', '5', 'Example1', 'Example1Test')
+
+    with open('tests/cSharp/test-files/Example1.cs') as f:
+        content_code = f.read()
+    with open('tests/cSharp/test-files/Example1Test.cs') as f:
+        content_tests_code = f.read()
+
+    response = client.post(url, data=data)
+    response_json = response.json
+    assert response.status_code == 200
+    del response_json['challenge']['id']
+    expected_response = {"challenge": { "code": content_code,
+                                        "tests_code":  content_tests_code,
+                                        "repair_objective": "Testing",
+                                        "complexity": 5,
+                                        "best_score": 0
+                                    }
+                        }
+    assert response_json == expected_response
 
 
 
