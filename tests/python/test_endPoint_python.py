@@ -15,15 +15,14 @@ def test_post_pythonChallenge(client):
 
 # testing a single challenge 
 def test_get_single_pythonChallenge(client):
-    clear_data_base()
-
     #---- post one challenge to test ---#    
     repair_objectiveParam = "prueba test"
 
-    dataChallengePost = post_function("valid_code.py", "valid_test_imp_valid_code.py", repair_objectiveParam,3) 
-    client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePost)
+    dataChallengePost = post_function("valid_code.py", "valid_test_imp_valid_code.py", repair_objectiveParam, 3) 
+    post_info = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePost)
 
-    result = client.get('http://localhost:5000/python/api/v1/python-challenges/1')
+    challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
+    result = client.get('http://localhost:5000/python/api/v1/python-challenges/' + str(challenge_id))
     #---- end post ---#
 
     #data to be entered in the post test
@@ -46,7 +45,9 @@ def test_get_single_pythonChallenge(client):
 
 # testing multiple challenges
 def test_get_total_pythonChallenge(client):
-    clear_data_base()
+    #get challenge count before test
+    responsive = client.get('http://localhost:5000/python/api/v1/python-challenges')
+    initial_challenge_len = len(parseDataTextAJson(responsive.json)['challenges'])
 
     #--- start post challenges ---#
     repair_objectiveParamOne = "probando test"
@@ -66,8 +67,7 @@ def test_get_total_pythonChallenge(client):
     
     data = parseDataTextAJson(responsive.json)
     
-    assert len(data['challenges']) == 3
-    clear_data_base()
+    assert len(data['challenges']) == initial_challenge_len + 3
 
 
 
