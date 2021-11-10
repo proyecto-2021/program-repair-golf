@@ -1,4 +1,4 @@
-from valid_code import median
+from valid_code_1 import median
 
 def test_one():
     a = 1
