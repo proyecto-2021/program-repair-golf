@@ -35,7 +35,7 @@ def cleanup():
     db.session.query(CSharpChallengeModel).delete()
     path = "./example-challenges/c-sharp-challenges"
     for dirname in os.listdir(path):
-        if dirname != "Median":
+        if os.path.isdir(path + '/' + dirname) and dirname != "Median":
             shutil.rmtree(path + '/' + dirname)
 
 
