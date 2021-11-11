@@ -1,7 +1,8 @@
 from .PythonChallenge import PythonChallenge
 from nltk import edit_distance
 from .PythonSourceCode import PythonSourceCode
-from .subprocess_utils import valid_python_challenge
+from .subprocess_utils import valid_python_challenge, delete_file
+from .PythonChallengeDAO import PythonChallengeDAO
 
 class PythonChallengeRepair:
 
@@ -10,10 +11,10 @@ class PythonChallengeRepair:
         self.code_repair = PythonSourceCode(code = code_repair, name = self.challenge.code.name)
         
     def is_valid_repair(self): 
-        return valid_python_challenge(self.challenge.test.path, self.code_repair.path, True)
+        return valid_python_challenge(self.code_repair.path, self.challenge.test.path,  True)
     
     def compute_repair_score(self):
-        return edit_distance(self.challenge.code.content, self.code_repair.code.content)
+        return edit_distance(self.challenge.code.content, self.code_repair.content)
 
     def return_content(self, score):
         challenge_reponse = {
@@ -28,7 +29,7 @@ class PythonChallengeRepair:
 
     def delete_temp(self):
         delete_file(self.challenge.test.path)
-        delete_file(self.code_repair.code.path)
+        delete_file(self.code_repair.path)
 
     #Save temporary code repair and test code
     def temporary_save(self, path):
