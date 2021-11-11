@@ -96,8 +96,13 @@ class PythonController:
     repair_challenge.delete_temp()
     
     #Creating response to return
-    response  = repair_challenge.return_content(score)
-  
+    challenge_response = repair_challenge.return_content()
+    response = {'challenge': challenge_response, 
+                'player': {'username': "Elon Musk"}, 
+                'attempts': 1, 
+                'score': score
+                }
+
     return response
 
   #takes the challenge to a temp location and checks if it's valid
