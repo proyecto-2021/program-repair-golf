@@ -2,17 +2,15 @@ import subprocess
 
 class Go_src:
 
-    def __init__(self, path, file=None):
+    def __init__(self, path=None, file=None):
         self.path = path
+        self.file = file
 
     def get_path(self):
         return self.path
 
-    #def get_file_name(self):
-    #    return self.file_name
-
-    #def get_path_test(self):
-    #    return self.path_test
+    def get_file(self):
+        return self.file
 
     def code_compiles(self):
         return subprocess.run(["go", "build", self.get_path()], stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
@@ -33,6 +31,9 @@ class Go_src:
     def remove(self):
         os.remove(get_path())
 
-    #def write(self):
-    #    ...
+    def write_file(self, file_update):
+        with open(self.get_file()) as f:
+            with open(file_update, 'w') as file_to_update:
+                for line in f:
+                    file_to_update.write(line)
 
