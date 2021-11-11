@@ -7,8 +7,6 @@ from .PythonController import PythonController
 from .PythonChallenge import PythonChallenge
 from json import loads
 from os import path
-from .file_utils import *
-from .subprocess_utils import *
 
 class PythonViews(MethodView):
 
@@ -53,7 +51,6 @@ class PythonViews(MethodView):
 
     def repair_challenge(id):
         
-        print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n Aca pase\n")
         #Repair candidate 
         code_repair = request.files.get('source_code_file').read()
         #Result of validated rapair candidate
