@@ -1,5 +1,7 @@
 from app import create_app, db
 import pytest
+import os
+import shutil
 
 
 @pytest.fixture(scope='module')
