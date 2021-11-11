@@ -3,10 +3,11 @@ import pytest
 from app import create_app, db
 from . import client
 from app.cSharp.models import CSharpChallengeModel
+import shutil
 
 
 def test_post_challenge(client):
-    #arrange
+    #Arrange
     url = 'cSharp/c-sharp-challenges'
     data = create_challenge('Example1', 'Example1Test', 'Testing', '5', 'Example1', 'Example1Test')
 
@@ -21,7 +22,7 @@ def test_post_challenge(client):
                                         "best_score": 0
                                        }
                         }
-    #act
+    #Act
     response = client.post(url, data=data)
     response_json = response.json
 
@@ -29,9 +30,9 @@ def test_post_challenge(client):
     assert response.status_code == 200
     del response_json['challenge']['id']
     assert response_json == expected_response
-    
-    #cleanup
-    db.session.query(CSharpChallengeModel).delete()
+
+    #Cleanup
+    cleanup()
 
 def test_post_with_sintax_error_in_code(client):
     #Arrange
@@ -41,12 +42,14 @@ def test_post_with_sintax_error_in_code(client):
     
     #Act
     response = client.post(url, data=data)
+
+    #Aassert
     assert response.status_code == 409
     response_json = response.json
     assert  expected_response == response_json
     
-    #cleanup
-    db.session.query(CSharpChallengeModel)
+    #Cleanup
+    cleanup()
 
 def test_post_challenge_wit_incorrect_complexity(client):
     #Arrange
@@ -58,6 +61,8 @@ def test_post_challenge_wit_incorrect_complexity(client):
     #Act
     response = client.post(url, data=data)
     response1 = client.post(url, data=data1)
+
+    #Assert
     assert response.status_code == 409
     assert response1.status_code == 409
     response_json = response.json
@@ -65,11 +70,18 @@ def test_post_challenge_wit_incorrect_complexity(client):
     assert  expected_response == response_json
     assert  expected_response == response1_json
 
-    #cleanup
-    db.session.query(CSharpChallengeModel)
+    #Cleanup
+    cleanup()
     
 
 
+
+def cleanup():
+    db.session.query(CSharpChallengeModel).delete()
+    path = "./example-challenges/c-sharp-challenges"
+    for dirname in os.listdir(path):
+        if dirname != "Median":
+            shutil.rmtree(path + '/' + dirname)
 
 
 def create_challenge(code_name=None, tests_name=None, repair_objective=None, complexity=None, code=None, tests_code=None):
@@ -82,7 +94,6 @@ def create_challenge(code_name=None, tests_name=None, repair_objective=None, com
     dict_data = { 'source_code_file_name': code_name, 'test_suite_file_name': tests_name, 'repair_objective': repair_objective, 'complexity': complexity }
     challenge.update(challenge_json(dict_data))
     return challenge
-
 
 
 def challenge_json(dic_data):
@@ -98,6 +109,7 @@ def challenge_json(dic_data):
 
     json_dic += ' } }'
     return {'challenge': json_dic}
+
 
 
 
