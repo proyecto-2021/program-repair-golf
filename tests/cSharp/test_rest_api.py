@@ -24,9 +24,12 @@ def test_post_challenge(client):
     #act
     response = client.post(url, data=data)
     response_json = response.json
+
+    #Assert
     assert response.status_code == 200
     del response_json['challenge']['id']
     assert response_json == expected_response
+    
     #cleanup
     db.session.query(CSharpChallengeModel).delete()
 
@@ -41,10 +44,30 @@ def test_post_with_sintax_error_in_code(client):
     assert response.status_code == 409
     response_json = response.json
     assert  expected_response == response_json
+    
+    #cleanup
     db.session.query(CSharpChallengeModel)
 
 def test_post_challenge_wit_incorrect_complexity(client):
-    pass
+    #Arrange
+    url = 'cSharp/c-sharp-challenges'
+    data = create_challenge('Example1', 'Example1Test', 'Testing', '-1', 'Example1', 'Example1Test')
+    data1 =create_challenge('Example01', 'Example01Test', 'Testing', '6', 'Example01', 'Example01Test')
+    expected_response = {'Complexity': 'Must be between 1 and 5'}
+    
+    #Act
+    response = client.post(url, data=data)
+    response1 = client.post(url, data=data1)
+    assert response.status_code == 409
+    assert response1.status_code == 409
+    response_json = response.json
+    response1_json = response1.json
+    assert  expected_response == response_json
+    assert  expected_response == response1_json
+
+    #cleanup
+    db.session.query(CSharpChallengeModel)
+    
 
 
 
@@ -75,4 +98,8 @@ def challenge_json(dic_data):
 
     json_dic += ' } }'
     return {'challenge': json_dic}
+
+
+
+
 
