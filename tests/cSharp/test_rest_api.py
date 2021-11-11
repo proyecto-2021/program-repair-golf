@@ -51,10 +51,10 @@ def test_post_with_sintax_error_in_code(client):
     #Cleanup
     cleanup()
 
-def test_post_challenge_wit_incorrect_complexity(client):
+def test_post_challenge_with_incorrect_complexity(client):
     #Arrange
     url = 'cSharp/c-sharp-challenges'
-    data = create_challenge('Example1', 'Example1Test', 'Testing', '-1', 'Example1', 'Example1Test')
+    data = create_challenge('Example1', 'Example1Test', 'Testing', '0', 'Example1', 'Example1Test')
     data1 =create_challenge('Example01', 'Example01Test', 'Testing', '6', 'Example01', 'Example01Test')
     expected_response = {'Complexity': 'Must be between 1 and 5'}
     
@@ -72,6 +72,9 @@ def test_post_challenge_wit_incorrect_complexity(client):
 
     #Cleanup
     cleanup()
+def test_post_challenge_with_sintax_error_in_test(client):
+    #method to implement
+pass
     
 
 
