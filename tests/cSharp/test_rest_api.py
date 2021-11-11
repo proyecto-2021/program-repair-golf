@@ -134,6 +134,9 @@ def test_post_challenge_not_found(client):
     #Cleanup
     cleanup()
 
+def test_post_repeated_challenge(client):
+    #method to implement
+    pass
 
 
 def cleanup():
