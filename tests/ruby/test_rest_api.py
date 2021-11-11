@@ -67,7 +67,7 @@ def test_get_one_after_post(client):
 def test_get_all_after_post(client):
     url = '/ruby/challenges'
     r = client.get(url)
-    json = r.json['challenges']
+    list1 = r.json['challenges']
 
     url = '/ruby/challenge'
     data = get_data('example3', 'example_test3', 'Testing', '4', 'example_challenge', 'example_test3')
@@ -76,12 +76,12 @@ def test_get_all_after_post(client):
 
     url = '/ruby/challenges'
     r3 = client.get(url)
-    json_after_post = r3.json['challenges']
+    list2 = r3.json['challenges']
 
     assert r.status_code == 200
     assert r2.status_code == 200
     assert r3.status_code == 200
-    assert len(json) + 1 == len(json_after_post)
+    assert len(list1) == len(list2) - 1
 
 def test_post_repair(client):
     url = '/ruby/challenge'
@@ -373,4 +373,19 @@ def test_get_invalid_challenge(client):
     r = client.get(url)
 
     assert r.status_code == 404
-    assert r.json['challenge'] == 'id doesnt exist'
+
+def test_get_all_after_post2(client):
+    url = '/ruby/challenge'
+    data = get_data('example21', 'example_test21', 'Testing', '4', 'example_challenge', 'example_test21')
+    r = client.post(url, data=data)
+
+    json = r.json['challenge']
+    del json['tests_code']
+
+    url = '/ruby/challenges'
+    r2 = client.get(url)
+    list = r2.json['challenges']
+
+    assert r.status_code == 200
+    assert r2.status_code == 200
+    assert json in list
