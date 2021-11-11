@@ -1,5 +1,7 @@
 from .PythonChallenge import PythonChallenge
 from nltk import edit_distance
+from .PythonSourceCode import PythonSourceCode
+from .subprocess_utils import valid_python_challenge
 
 class PythonChallengeRepair:
 
@@ -8,7 +10,7 @@ class PythonChallengeRepair:
         self.code_repair = PythonSourceCode(code = code_repair, name = self.challenge.code.name)
         
     def is_valid_repair(self): 
-        return valid_python_challenge(self.challenge.test.path, self.code_repair.code.path, True)
+        return valid_python_challenge(self.challenge.test.path, self.code_repair.path, True)
     
     def compute_repair_score(self):
         return edit_distance(self.challenge.code.content, self.code_repair.code.content)
