@@ -33,9 +33,18 @@ def test_get_one_after_create(client, data):
     assert challenge == data
 
 @pytest.mark.parametrize("data", get_tests_data(5))
+def test_get_all_after_create(client, data):
+    dao = RubyChallengeDAO()
+    list1 = dao.get_challenges()
+
+    dao.create_challenge(**data)
+    list2 = dao.get_challenges()
+
+    assert len(list1) == len(list2) - 1
+
+@pytest.mark.parametrize("data", get_tests_data(5))
 def test_check_existence_after_create(client, data):
     dao = RubyChallengeDAO()
-
     id = dao.create_challenge(**data)
 
     assert dao.exists(id)
