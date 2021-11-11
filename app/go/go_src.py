@@ -2,15 +2,19 @@ import subprocess
 
 class Go_src:
 
-    def __init__(self, path=None, file=None):
+    def __init__(self, path=None, file=None, file_2=None):
         self.path = path
         self.file = file
+        self.file_2 = file_2
 
     def get_path(self):
         return self.path
 
     def get_file(self):
         return self.file
+
+    def get_file_2(self):
+        return self.file_2
 
     def code_compiles(self):
         return subprocess.run(["go", "build", self.get_path()], stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
@@ -22,8 +26,8 @@ class Go_src:
         return subprocess.run(["go", "test"], cwd=self.get_path())
 
     def get_content(self):
-        f = open(self.get_path(),'r')
-        return f.read()
+        with open(self.get_path(),'r') as f:
+            return f.read()
 
     def save(self):
         self.file.save(self.get_path())
@@ -36,4 +40,10 @@ class Go_src:
             with open(file_update, 'w') as file_to_update:
                 for line in f:
                     file_to_update.write(line)
+
+    def write_file_2(self):
+        with open(self.get_file()) as f:
+            with open(self.get_file_2()) as g:
+                for line in f:
+                    g.write(line) 
 
