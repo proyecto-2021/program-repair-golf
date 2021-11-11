@@ -51,19 +51,21 @@ class PythonViews(MethodView):
 
         return jsonify({"challenge" : update_result})
 
-    def repair_challenge(self, id):
+    def repair_challenge(id):
+        
+        print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n Aca pase\n")
         #Repair candidate 
         code_repair = request.files.get('source_code_file').read()
         #Result of validated rapair candidate
         repair_result = PythonController.repair_challenge(id, code_repair)
 
-        if 'Error' in result:
+        if 'Error' in repair_result:
             return make_response(jsonify(repair_result), 409)
 
         return jsonify({"repair": repair_result})
 
-python_view = PythonViews.as_view('python_api')
+python_view = PythonViews.as_view('python_api_crud')
 python.add_url_rule('/api/v1/python-challenges', defaults={'id': None}, view_func=python_view, methods=['GET'])
 python.add_url_rule('/api/v1/python-challenges', view_func=python_view, methods=['POST'])
 python.add_url_rule('/api/v1/python-challenges/<int:id>', view_func=python_view, methods=['GET', 'PUT'])
-python.add_url_rule('/api/v1/python-challenges/<int:id>/repair', view_func=python_view, methods=['POST'])
+python.add_url_rule('/api/v1/python-challenges/<int:id>/repair', view_func= PythonViews.repair_challenge, methods=['POST'])
