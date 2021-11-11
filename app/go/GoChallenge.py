@@ -1,4 +1,4 @@
-#from app.go.src_code import .......
+from .go.src_code import Go_src
 
 class GoChallenge:
 
@@ -14,10 +14,18 @@ class GoChallenge:
     def get_code(self):
         return self.code
 
+    def get_code_content(self):
+        self.code = Go_src(path=path_code)
+        return self.code.get_content()
+
     #Dependiendo lo que necesitemos, deberiamos tener 2 creo.
     #Uno que retorne el path y otro el contenido
     def get_tests_code(self):
         return self.tests_code
+
+    def get_tests_content(self):
+        self.tests_code = Go_src(path=path_tests_code)
+        return self.code.get_content()
 
     def get_best_score(self):
         return self.best_score
@@ -45,3 +53,12 @@ class GoChallenge:
 
     def set_complexity(self, complexity):
         self.complexity = complexity
+
+    def codes_compiles():
+        return self.code.code_compiles() and self.tests_code.test_compiles()
+
+    def code_compiles():
+        return self.code.code_compiles()
+
+    def tests_compiles():
+        return self.code.test_compiles()
