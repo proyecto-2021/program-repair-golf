@@ -107,6 +107,9 @@ def test_post_challenge_test_no_fails(client):
     #Cleanup
     cleanup()
     
+def test_post_challenge_not_found(client):
+    #method to implement
+    pass
 
 
 
