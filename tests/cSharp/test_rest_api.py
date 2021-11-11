@@ -34,19 +34,18 @@ def test_post_challenge(client):
 def test_get_all_challenges_after_post(client):
     #Arrange
     url = 'cSharp/c-sharp-challenges'
-    data = create_challenge('Example5', 'Example5Test', 'Testing', '5', 'Example5', 'Example5Test')
+    data = create_challenge('Example1', 'Example1Test', 'Testing', '5', 'Example1', 'Example1Test')
 
-    with open('tests/cSharp/test-files/Example5.cs') as f:
+    with open('tests/cSharp/test-files/Example1.cs') as f:
         content_code = f.read()
-    with open('tests/cSharp/test-files/Example5Test.cs') as f:
+    with open('tests/cSharp/test-files/Example1Test.cs') as f:
         content_tests_code = f.read()
-
-    expected_response = {'challenges': [{"code": content_code,
-                                        "tests_code": content_tests_code,
+    expected_response = {"challenges": [{ "code": content_code,
+                                        "tests_code":  content_tests_code,
                                         "repair_objective": "Testing",
                                         "complexity": 5,
                                         "best_score": 0
-                                    }]
+                                       }]
                         }
     #Act
     client.post(url, data=data)
