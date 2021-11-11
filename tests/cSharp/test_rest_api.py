@@ -30,6 +30,10 @@ def test_post_challenge(client):
     #cleanup
     db.session.query(CSharpChallengeModel).delete()
 
+def test_post_with_sintax_error_in_code(client):
+    #method to implement
+    pass 
+
 
 
 def create_challenge(code_name=None, tests_name=None, repair_objective=None, complexity=None, code=None, tests_code=None):
