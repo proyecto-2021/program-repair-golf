@@ -63,13 +63,15 @@ def test_get_all_challenges_after_post(client):
 
 
 def test_get_none_load(client):
+    #Arrange
     url = 'cSharp/c-sharp-challenges'
-
+    #Act
     resp = client.get(url)
-
+    #Assert
     assert resp.json == {'challenges': 'None Loaded'}
     assert len(resp.json) == 1 
     assert resp.status_code == 200
+
 
 def create_challenge(code_name=None, tests_name=None, repair_objective=None, complexity=None, code=None, tests_code=None):
     challenge = {}
