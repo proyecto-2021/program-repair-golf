@@ -366,3 +366,11 @@ def test_put_only_codes(client):
         "complexity": "4",
         "best_score": 0
     }
+
+def test_get_invalid_challenge(client):
+    url = '/ruby/challenge/1000'
+
+    r = client.get(url)
+
+    assert r.status_code == 404
+    assert r.json['challenge'] == 'id doesnt exist'
