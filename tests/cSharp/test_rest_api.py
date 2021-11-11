@@ -72,9 +72,24 @@ def test_post_challenge_with_incorrect_complexity(client):
 
     #Cleanup
     cleanup()
+
 def test_post_challenge_with_sintax_error_in_test(client):
-    #method to implement
-pass
+    #Arrange
+    url = 'cSharp/c-sharp-challenges'
+    data = create_challenge('Example3', 'Example3Test', 'Testing', '3', 'Example3', 'Example3Test')
+    expected_response = {'Test': 'Sintax errors'}
+    
+    #Act
+    response = client.post(url, data=data)
+
+    #Aassert
+    assert response.status_code == 409
+    response_json = response.json
+    assert  expected_response == response_json
+
+    #Cleanup
+    cleanup()
+
     
 
 
