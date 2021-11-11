@@ -65,10 +65,8 @@ def test_post_challenge_with_incorrect_complexity(client):
     #Assert
     assert response.status_code == 409
     assert response1.status_code == 409
-    response_json = response.json
-    response1_json = response1.json
-    assert  expected_response == response_json
-    assert  expected_response == response1_json
+    assert  expected_response == response.json
+    assert  expected_response == response1.json
 
     #Cleanup
     cleanup()
@@ -84,8 +82,7 @@ def test_post_challenge_with_sintax_error_in_test(client):
 
     #Aassert
     assert response.status_code == 409
-    response_json = response.json
-    assert  expected_response == response_json
+    assert  expected_response == response.json
 
     #Cleanup
     cleanup()
@@ -101,8 +98,7 @@ def test_post_challenge_test_no_fails(client):
 
     #Aassert
     assert response.status_code == 409
-    response_json = response.json
-    assert  expected_response == response_json
+    assert  expected_response == response.json
 
     #Cleanup
     cleanup()
@@ -133,12 +129,6 @@ def test_post_challenge_not_found(client):
     assert response3.status_code == 404
     assert response4.status_code == 404
     assert response5.status_code == 404
-    #response_json = response.json
-    #response1_json = response1.json
-    #response2_json = response2.json
-    #response3_json = response3.json
-    #response4_json = response4.json
-    #response5_json = response5.json
     assert  expected_response == response.json
     assert  expected_response == response1.json
     assert  expected_response == response2.json
@@ -175,10 +165,9 @@ def test_post_repeated_challenge(client):
     assert response.status_code == 200
     assert response1.status_code == 409
     response_json = response.json
-    response1_json = response1.json
     del response_json['challenge']['id']
     assert  expected_response == response_json
-    assert  expected_response1 == response1_json
+    assert  expected_response1 == response1.json
 
     #Cleanup
     cleanup()
