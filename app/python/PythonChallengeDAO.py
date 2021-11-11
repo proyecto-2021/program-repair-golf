@@ -23,9 +23,9 @@ class PythonChallengeDAO:
   
   def update_best_score(id, score):
     
-    challenge = get_challenge(id)
+    challenge = PythonChallengeDAO.get_challenge(id)
     if challenge.best_score == 0 or score < challenge.best_score:
-      db.session.query(PythonChallengeModel).filter_by(id=id).update(best_score = score)
+      db.session.query(PythonChallengeModel).filter_by(id=id).update(dict({'best_score': score}))
       db.session.commit()
 
   def update_challenge(id, new_data):
