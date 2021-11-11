@@ -5,51 +5,54 @@ from . import client
 from app.cSharp.models import CSharpChallengeModel
 import shutil
 
-
-def test_post_challenge(client):
-    #arrange
-    url = 'cSharp/c-sharp-challenges'
+@pytest.fixture
+def create_test_data():
     data = create_challenge('Example1', 'Example1Test', 'Testing', '5', 'Example1', 'Example1Test')
 
     with open('tests/cSharp/test-files/Example1.cs') as f:
         content_code = f.read()
     with open('tests/cSharp/test-files/Example1Test.cs') as f:
         content_tests_code = f.read()
-    expected_response = {"challenge": { "code": content_code,
-                                        "tests_code":  content_tests_code,
+    
+    return {'data':data, 
+            'content_code':content_code,
+            'content_tests_code':content_tests_code
+            }
+
+def test_post_challenge(client, create_test_data):
+    #arrange
+    url = 'cSharp/c-sharp-challenges'
+    
+    expected_response = {"challenge": { "code": create_test_data['content_code'],
+                                        "tests_code":  create_test_data['content_tests_code'],
                                         "repair_objective": "Testing",
                                         "complexity": 5,
                                         "best_score": 0
                                        }
                         }
     #act
-    response = client.post(url, data=data)
+    response = client.post(url, data=create_test_data['data'])
     response_json = response.json
-    
+
     assert response.status_code == 200
     del response_json['challenge']['id']
     assert response_json == expected_response
     cleanup()
 
 
-def test_get_all_challenges_after_post(client):
+def test_get_all_challenges_after_post(client, create_test_data):
     #Arrange
     url = 'cSharp/c-sharp-challenges'
-    data = create_challenge('Example1', 'Example1Test', 'Testing', '5', 'Example1', 'Example1Test')
 
-    with open('tests/cSharp/test-files/Example1.cs') as f:
-        content_code = f.read()
-    with open('tests/cSharp/test-files/Example1Test.cs') as f:
-        content_tests_code = f.read()
-    expected_response = {"challenges": [{ "code": content_code,
-                                        "tests_code":  content_tests_code,
+    expected_response = {"challenges": [{ "code": create_test_data['content_code'],
+                                        "tests_code":  create_test_data['content_tests_code'],
                                         "repair_objective": "Testing",
                                         "complexity": 5,
                                         "best_score": 0
                                        }]
                         }
     #Act
-    client.post(url, data=data)
+    client.post(url, data=create_test_data['data'])
     resp = client.get(url)
     resp_json = resp.json
     print(resp_json)
