@@ -30,6 +30,9 @@ def test_post_challenge(client):
     assert response_json == expected_response
     cleanup()
 
+def test_get_by_id(cliente):
+    #TODO 
+    pass
 
 def cleanup():
     db.session.query(CSharpChallengeModel).delete()
