@@ -94,8 +94,11 @@ class PythonController:
 
     #delete files 
     repair_challenge.delete_temp()
-
-    return repair_challenge.return_content(score)
+    
+    #Creating response to return
+    response  = repair_challenge.return_content(score)
+  
+    return response
 
   #takes the challenge to a temp location and checks if it's valid
   @staticmethod
