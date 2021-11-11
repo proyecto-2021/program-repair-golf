@@ -10,8 +10,8 @@ urlTest = 'example-challenges/java-challenges/MedianTest.java'
 
 exampleClass = 'tests/java/example_java/Prueba.java'
 exampleTest = 'tests/java/example_java/PruebaTest.java'
-#c1 = '/home/leo/Escritorio/Proyecto/program-repair-golf/example-challenges/java-challenges/Median.java'
-#c2 = '/home/leo/Escritorio/Proyecto/program-repair-golf/example-challenges/java-challenges/MedianTest.java'
+
+
 def createQuery():
 	fileClass = open(urlClass, 'rb')
 	fileTest = open(urlTest, 'rb')
@@ -50,7 +50,7 @@ def createQuery2(urlClass, urlTest):
 
 def test_post_java(client):
 	db.session.query(Challenge_java).delete()
-	location = '/java/java-challenges'
+	
 	url = 'http://localhost:5000/java/java-challenges'
 
 	data = createQuery()
@@ -76,7 +76,7 @@ def test_post_get_all(client):
 	
 def test_many_loads(client):
 	db.session.query(Challenge_java).delete()
-	url = url = 'http://localhost:5000/java/java-challenges'
+	url = 'http://localhost:5000/java/java-challenges'
 
 	data = createQuery()
 	data2 = createQuery2(exampleClass, exampleTest)
@@ -95,7 +95,7 @@ def test_many_loads(client):
 
 def test_upload_exist(client):
 	db.session.query(Challenge_java).delete()
-	url = url = 'http://localhost:5000/java/java-challenges'
+	url = 'http://localhost:5000/java/java-challenges'
 	data = createQuery()
 	datab = createQuery()
 	resp = client.post(url, data=data)
@@ -104,11 +104,13 @@ def test_upload_exist(client):
 	assert resp.status_code == 200
 	assert resp2.status_code == 404
 
-	'''
+	
 def test_get_java(client):
-	resp = client.get('/java/java-challenges')
+	db.session.query(Challenge_java).delete()
+	url = 'http://localhost:5000/java/java-challenges'
+	resp = client.get(url)
 	a = resp.json
 	
 	assert resp.status_code == 200
 	assert a['challenges'] == []
-	'''
+	
