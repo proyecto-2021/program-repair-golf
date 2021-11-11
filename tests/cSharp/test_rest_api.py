@@ -3,6 +3,7 @@ import pytest
 from app import create_app, db
 from . import client
 from app.cSharp.models import CSharpChallengeModel
+import shutil
 
 
 def test_post_challenge(client):
@@ -27,9 +28,15 @@ def test_post_challenge(client):
     assert response.status_code == 200
     del response_json['challenge']['id']
     assert response_json == expected_response
-    #cleanup
-    db.session.query(CSharpChallengeModel).delete()
+    cleanup()
 
+
+def cleanup():
+    db.session.query(CSharpChallengeModel).delete()
+    path = "./example-challenges/c-sharp-challenges"
+    for dirname in os.listdir(path):
+        if os.path.isdir(path + '/' + dirname) and dirname != "Median":
+            shutil.rmtree(path + '/' + dirname)
 
 
 def create_challenge(code_name=None, tests_name=None, repair_objective=None, complexity=None, code=None, tests_code=None):
@@ -42,7 +49,6 @@ def create_challenge(code_name=None, tests_name=None, repair_objective=None, com
     dict_data = { 'source_code_file_name': code_name, 'test_suite_file_name': tests_name, 'repair_objective': repair_objective, 'complexity': complexity }
     challenge.update(challenge_json(dict_data))
     return challenge
-
 
 
 def challenge_json(dic_data):
@@ -58,4 +64,3 @@ def challenge_json(dic_data):
 
     json_dic += ' } }'
     return {'challenge': json_dic}
-
