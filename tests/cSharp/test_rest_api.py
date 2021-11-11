@@ -25,6 +25,7 @@ def test_post_challenge(client):
     #act
     response = client.post(url, data=data)
     response_json = response.json
+    
     assert response.status_code == 200
     del response_json['challenge']['id']
     assert response_json == expected_response
@@ -51,6 +52,7 @@ def test_get_all_challenges_after_post(client):
     client.post(url, data=data)
     resp = client.get(url)
     resp_json = resp.json
+    print(resp_json)
 
     #Assert
     assert len(resp_json) == 1
@@ -59,7 +61,7 @@ def test_get_all_challenges_after_post(client):
     assert resp_json == expected_response
 
     #CleanUp
-    db.session.query(CSharpChallengeModel).delete()
+    cleanup()
 
 
 def test_get_none_load(client):
