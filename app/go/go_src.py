@@ -1,4 +1,4 @@
-import subprocess
+import subprocess, os
 
 class Go_src:
 
@@ -24,6 +24,12 @@ class Go_src:
 
     def test_run(self):
         return subprocess.run(["go", "test"], cwd=self.get_path())
+
+    def remove_file(self):
+        return subprocess.run(["rm" "-r" "solution"],cwd=os.path.abspath(self.get_path),stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
+
+    def generic_compile(self, command, path):
+        return subprocess.run(command, cwd=os.path.abspath(self.get_path()),stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
 
     def get_content(self):
         with open(self.get_path(),'r') as f:
