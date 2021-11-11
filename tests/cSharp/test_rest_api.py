@@ -31,8 +31,35 @@ def test_post_challenge(client):
     db.session.query(CSharpChallengeModel).delete()
 
 def test_get_all_challenges_after_post(client):
-    #to do: implement this method
-    pass
+    #Arrange
+    url = 'cSharp/c-sharp-challenges'
+    data = create_challenge('Example5', 'Example5Test', 'Testing', '5', 'Example5', 'Example5Test')
+
+    with open('tests/cSharp/test-files/Example5.cs') as f:
+        content_code = f.read()
+    with open('tests/cSharp/test-files/Example5Test.cs') as f:
+        content_tests_code = f.read()
+
+    expected_response = {'challenges': [{"code": content_code,
+                                        "tests_code": content_tests_code,
+                                        "repair_objective": "Testing",
+                                        "complexity": 5,
+                                        "best_score": 0
+                                    }]
+                        }
+    #Act
+    client.post(url, data=data)
+    resp = client.get(url)
+    resp_json = resp.json
+
+    #Assert
+    assert len(resp_json) == 1
+    assert resp.status_code == 200
+    del resp_json['challenges'][0]['id']
+    assert resp_json == expected_response
+
+    #CleanUp
+    db.session.query(CSharpChallengeModel).delete()
 
 def create_challenge(code_name=None, tests_name=None, repair_objective=None, complexity=None, code=None, tests_code=None):
     challenge = {}
@@ -44,8 +71,6 @@ def create_challenge(code_name=None, tests_name=None, repair_objective=None, com
     dict_data = { 'source_code_file_name': code_name, 'test_suite_file_name': tests_name, 'repair_objective': repair_objective, 'complexity': complexity }
     challenge.update(challenge_json(dict_data))
     return challenge
-
-
 
 def challenge_json(dic_data):
     json_dic = '{ "challenge": { '
