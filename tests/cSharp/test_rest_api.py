@@ -108,8 +108,31 @@ def test_post_challenge_test_no_fails(client):
     cleanup()
     
 def test_post_challenge_not_found(client):
-    #method to implement
-    pass
+    #Arrange
+    url = 'cSharp/c-sharp-challenges'
+    data = create_challenge('codeDoesNotExist', 'Example01Test', 'Testing', '4', 'Example01Test')
+    data1 = create_challenge('Example1', 'TestDoesNoExist', 'Testing', '1', 'Example1')
+    data2 = create_challenge('codeDoesNotExist', 'TestDoesNotExist', 'Testing', '4')
+    expected_response = {"challenge": "Data not found"}
+
+    #Act
+    response = client.post(url, data=data)
+    response1 = client.post(url, data=data1)
+    response2 = client.post(url, data=data2)
+    
+    #Aassert
+    assert response.status_code == 404
+    assert response1.status_code == 404
+    assert response2.status_code == 404
+    response_json = response.json
+    response1_json = response1.json
+    response2_json = response2.json
+    assert  expected_response == response_json
+    assert  expected_response == response1_json
+    assert  expected_response == response2_json
+
+    #Cleanup
+    cleanup()
 
 
 
