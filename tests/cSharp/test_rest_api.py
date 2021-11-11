@@ -135,8 +135,40 @@ def test_post_challenge_not_found(client):
     cleanup()
 
 def test_post_repeated_challenge(client):
-    #method to implement
-    pass
+    #Arrange
+    url = 'cSharp/c-sharp-challenges'
+    data = create_challenge('Example1', 'Example1Test', 'Testing', '5', 'Example1', 'Example1Test')
+    data1 =create_challenge('Example1', 'Example1Test', 'Testing', '5', 'Example1', 'Example1Test')
+    with open('tests/cSharp/test-files/Example1.cs') as f:
+        content_code = f.read()
+    with open('tests/cSharp/test-files/Example1Test.cs') as f:
+        content_tests_code = f.read()
+    expected_response = {"challenge": { "code": content_code,
+                                        "tests_code":  content_tests_code,
+                                        "repair_objective": "Testing",
+                                        "complexity": 5,
+                                        "best_score": 0
+                                       }
+                        }
+    expected_response1 = {'Challenge': 'Already exists'}
+    
+    #Act
+    response = client.post(url, data=data)
+    response1 = client.post(url, data=data1)
+
+    #Assert
+    assert response.status_code == 200
+    assert response1.status_code == 409
+    response_json = response.json
+    response1_json = response1.json
+    del response_json['challenge']['id']
+    assert  expected_response == response_json
+    assert  expected_response1 == response1_json
+
+    #Cleanup
+    cleanup()
+    
+
 
 
 def cleanup():
