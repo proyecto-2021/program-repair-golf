@@ -222,7 +222,6 @@ def create_go_challenge():
         repair_objective=challenge_data['repair_objective'],
         complexity=challenge_data['complexity'],
         best_score=math.inf)
-    new_challenge = goDAO.create_go_challenge(code_path, test_suite_path, challenge_data['repair_objective'], challenge_data['complexity'], math.inf)
 
     #all_the_challenges = db.session.query(GoChallenge).all()
     all_the_challenges = goDAO.get_all_challenges()

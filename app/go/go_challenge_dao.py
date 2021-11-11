@@ -10,7 +10,6 @@ class goChallengeDAO():
 		return db.session.query(GoChallenge).all()
 
 	def get_challenge_by_id(self, id):
-		#return GoChallenge.query.filter_by(id=id).first()
 		return db.session.query(GoChallenge).filter_by(id=id).first()
 
 	def create_challenge(self, challenge):
