@@ -113,23 +113,38 @@ def test_post_challenge_not_found(client):
     data = create_challenge('codeDoesNotExist', 'Example01Test', 'Testing', '4', 'Example01Test')
     data1 = create_challenge('Example1', 'TestDoesNoExist', 'Testing', '1', 'Example1')
     data2 = create_challenge('codeDoesNotExist', 'TestDoesNotExist', 'Testing', '4')
+    data3 = create_challenge('Example1', 'Example1Test', 'Testing', 'Example1', 'Example1Test')
+    data4 = create_challenge('Example1', 'Example1Test', '2', 'Example1', 'Example1Test')
+    data5 = create_challenge('Example1', 'Example1Test', 'Example1', 'Example1Test')
     expected_response = {"challenge": "Data not found"}
 
     #Act
     response = client.post(url, data=data)
     response1 = client.post(url, data=data1)
     response2 = client.post(url, data=data2)
+    response3 = client.post(url, data=data3)
+    response4 = client.post(url, data=data4)
+    response5 = client.post(url, data=data5)
     
     #Aassert
     assert response.status_code == 404
     assert response1.status_code == 404
     assert response2.status_code == 404
-    response_json = response.json
-    response1_json = response1.json
-    response2_json = response2.json
-    assert  expected_response == response_json
-    assert  expected_response == response1_json
-    assert  expected_response == response2_json
+    assert response3.status_code == 404
+    assert response4.status_code == 404
+    assert response5.status_code == 404
+    #response_json = response.json
+    #response1_json = response1.json
+    #response2_json = response2.json
+    #response3_json = response3.json
+    #response4_json = response4.json
+    #response5_json = response5.json
+    assert  expected_response == response.json
+    assert  expected_response == response1.json
+    assert  expected_response == response2.json
+    assert expected_response == response3.json
+    assert expected_response == response4.json
+    assert expected_response == response5.json
 
     #Cleanup
     cleanup()
