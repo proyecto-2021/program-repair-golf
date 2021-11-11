@@ -89,7 +89,9 @@ def test_post_challenge_with_sintax_error_in_test(client):
 
     #Cleanup
     cleanup()
-
+def test_post_challenge_test_no_fails(client):
+    #method to implement
+    pass
     
 
 
