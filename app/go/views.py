@@ -15,10 +15,12 @@ def repair_challenge_go(id):
     
     is_good_code_solution_file = subprocess.run(["go build"], cwd=os.path.abspath("public/challenges/solution"),stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
     if is_good_code_solution_file.returncode == 2:
+        subprocess.run(["rm -r solution"],cwd=os.path.abspath("public/challenges"),stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
         return make_response((jsonify({"code_solution_file":"with errors"}),409))
     
     challenge_original = GoChallenge.query.filter_by(id=id).first()
     if challenge_original is None:
+        subprocess.run(["rm -r solution"],cwd=os.path.abspath("public/challenges"),stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
         return make_response(jsonify({'Challenge' : 'this challenge does not exist'}), 404)
     challenge_to_dict = challenge_original.convert_dict()
     tests_code = challenge_to_dict["tests_code"]
@@ -27,6 +29,7 @@ def repair_challenge_go(id):
     
     the_challenge_is_solved = subprocess.run(["go test"],cwd=os.path.abspath("public/challenges/solution"),stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
     if the_challenge_is_solved.returncode == 1:
+        subprocess.run(["rm -r solution"],cwd=os.path.abspath("public/challenges"),stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
         return make_response((jsonify({"the challenge":"not solved"}),409))  
     
     challenge_original_code = challenge_to_dict["code"]
@@ -60,7 +63,7 @@ def repair_challenge_go(id):
         }
     }
 
-    subprocess.run(["rm" "-r" "solution"],cwd=os.path.abspath("public/challenges"),stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
+    subprocess.run(["rm -r solution"],cwd=os.path.abspath("public/challenges"),stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
     
     return jsonify(request_return)
 
@@ -201,10 +204,12 @@ def create_go_challenge():
     challenge_data = json.loads(request.form.get('challenge'))['challenge']
 
     code_file = request.files["source_code_file"]
+    code_name=challenge_data['source_code_file_name']
     code_path = 'public/challenges/' + challenge_data['source_code_file_name']
     code_file.save(code_path)
 
     test_suite_file = request.files["test_suite_file"]
+    test_name=challenge_data['test_suite_file_name']
     test_suite_path = 'public/challenges/' + challenge_data['test_suite_file_name']
     test_suite_file.save(test_suite_path)
 
@@ -220,10 +225,9 @@ def create_go_challenge():
         if every_challenge.code == new_challenge.code:
             return make_response(jsonify({"challenge": "repeated"}), 409)
 
-    test_pass = subprocess.run(["go" "test"], cwd=os.path.abspath("public/challenges"), shell=True)
-    test_compilation = subprocess.run(["go" "test" "-c"], cwd=os.path.abspath("public/challenges"),shell=True)
-    code_compilation = subprocess.run(["go" "build", code_path], stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL,shell=True)
-
+    test_pass = subprocess.run([f'go test {code_name} {test_name}'], cwd=os.path.abspath("public/challenges"), shell=True)
+    test_compilation = subprocess.run([f'go test -c {code_name} {test_name}'], cwd=os.path.abspath("public/challenges"),shell=True)
+    code_compilation = subprocess.run([f'go build {code_name}'], cwd = 'public/challenges', stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell = True)
     if code_compilation.returncode == 2:
         return make_response(jsonify({"code_file": "The code has syntax errors"}), 412)
     elif test_compilation.returncode == 1 or test_compilation.returncode == 2:
