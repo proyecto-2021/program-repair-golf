@@ -61,9 +61,15 @@ def test_get_all_challenges_after_post(client):
     #CleanUp
     db.session.query(CSharpChallengeModel).delete()
 
+
 def test_get_none_load(client):
-    #to do: implement this method
-    pass  
+    url = 'cSharp/c-sharp-challenges'
+
+    resp = client.get(url)
+
+    assert resp.json == {'challenges': 'None Loaded'}
+    assert len(resp.json) == 1 
+    assert resp.status_code == 200
 
 def create_challenge(code_name=None, tests_name=None, repair_objective=None, complexity=None, code=None, tests_code=None):
     challenge = {}
