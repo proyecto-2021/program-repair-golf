@@ -48,3 +48,17 @@ def test_check_existence_after_create(client, data):
     id = dao.create_challenge(**data)
 
     assert dao.exists(id)
+
+@pytest.mark.parametrize("data1,data2", zip(get_tests_data(5), get_tests_data(5)))
+def test_update_after_create(client, data1, data2):
+    dao = RubyChallengeDAO()
+    id = dao.create_challenge(**data1)
+    challenge1 = dao.get_challenge(id)
+    data1['best_score'] = 0
+
+    data2['best_score'] = random.randint(1,100)
+    dao.update_challenge(id, data2)
+    challenge2 = dao.get_challenge(id)
+
+    assert challenge1 == data1
+    assert challenge2 == data2
