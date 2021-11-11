@@ -17,8 +17,9 @@ class ChallengeCandidate():
         path_actual = UPLOAD_FOLDER + challenge['tests_code'] + '.java'
         path_destino = UPLOAD_TMP + challenge['tests_code'] + '.java'
         os.replace(path_actual, path_destino)
-        FileManagement.upload_file(file_repair, UPLOAD_TMP)
-        path_file_repair = UPLOAD_TMP + file_repair.filename
+        FileManagement.upload_file_repair(file_repair, UPLOAD_TMP, challenge)
+        #path_file_repair = UPLOAD_TMP + file_repair.filename
+        path_file_repair = UPLOAD_TMP + challenge['code'] + '.java'
         if ChallengeCandidate.compile_repair(path_file_repair): 
             if ChallengeCandidate.compile_test_repair(path_destino):
                 name_test = challenge['tests_code']
