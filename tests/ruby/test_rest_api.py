@@ -373,6 +373,7 @@ def test_get_invalid_challenge(client):
     r = client.get(url)
 
     assert r.status_code == 404
+    assert r.json['challenge'] == 'id doesnt exist'
 
 def test_get_all_after_post2(client):
     url = '/ruby/challenge'
@@ -389,3 +390,11 @@ def test_get_all_after_post2(client):
     assert r.status_code == 200
     assert r2.status_code == 200
     assert json in list
+
+def test_put_invalid_challenge(client):
+    url = '/ruby/challenge/1000'
+    data = get_data(None, None, 'Testing put only new data', '2')
+    r = client.put(url, data=data)
+
+    assert r.status_code == 404
+    assert r.json['challenge'] == 'id doesnt exist'
