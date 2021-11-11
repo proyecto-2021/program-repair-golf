@@ -31,6 +31,9 @@ def test_post_challenge(client):
     db.session.query(CSharpChallengeModel).delete()
 
 
+def test_update_incorrect_complexity(client):
+    #to do: implement this method
+    pass
 
 def create_challenge(code_name=None, tests_name=None, repair_objective=None, complexity=None, code=None, tests_code=None):
     challenge = {}
