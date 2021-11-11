@@ -2,9 +2,12 @@ from flask import Flask
 from config import config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_jwt import JWT, jwt_required, current_identity
+
 
 db = SQLAlchemy()
 migrate = Migrate()
+
 
 def create_app(config_name='development'):
     app = Flask(__name__)
@@ -23,6 +26,10 @@ def create_app(config_name='development'):
 
     db.init_app(app)
     migrate.init_app(app, db)
+
+    from .auth import authenticate, identity
+    jwt = JWT(app, authenticate, identity)
+    #jwt.init_app(app)
 
     from .auth import users as users_blueprint
     app.register_blueprint(users_blueprint, url_prefix='/')

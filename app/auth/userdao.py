@@ -13,3 +13,11 @@ def add_user(username, password):
 
 def get_user_by_name(name):
     return User.query.filter_by(username=name).first()
+
+
+def get_all_users():
+    return User.query.all()
+
+
+def get_user_by_id(user_id):
+    return User.query.filter_by(id=user_id).first()
