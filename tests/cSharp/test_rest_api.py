@@ -89,9 +89,23 @@ def test_post_challenge_with_sintax_error_in_test(client):
 
     #Cleanup
     cleanup()
+
 def test_post_challenge_test_no_fails(client):
-    #method to implement
-    pass
+    #Arrange
+    url = 'cSharp/c-sharp-challenges'
+    data = create_challenge('Example4', 'Example4Test', 'Testing', '1', 'Example4', 'Example4Test')
+    expected_response = {'Test': 'At least one has to fail'}
+    
+    #Act
+    response = client.post(url, data=data)
+
+    #Aassert
+    assert response.status_code == 409
+    response_json = response.json
+    assert  expected_response == response_json
+
+    #Cleanup
+    cleanup()
     
 
 
