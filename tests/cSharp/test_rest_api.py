@@ -31,8 +31,17 @@ def test_post_challenge(client):
     db.session.query(CSharpChallengeModel).delete()
 
 def test_post_with_sintax_error_in_code(client):
-    #method to implement
-    pass 
+    #Arrange
+    url = 'cSharp/c-sharp-challenges'
+    data = create_challenge('Example2', 'Example1Test', 'Testing', '3', 'Example2', 'Example1Test')
+    expected_response = {'Challenge': 'Sintax errors'}
+    
+    #Act
+    response = client.post(url, data=data)
+    assert response.status_code == 409
+    response_json = response.json
+    assert  expected_response == response_json
+    db.session.query(CSharpChallengeModel)
 
 
 
