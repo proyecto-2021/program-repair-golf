@@ -23,7 +23,8 @@ class FileManagement():
             new_id = Challenge_java.__repr__(challenge_id)
             path = 'public/challenges/' + new_id['code'] + '.java'
             return FileManagement.get_code_file_by_path(path)
-        return make_response(jsonify({"ERROR": "id not exits"}))
+        raise Exception("Id not exits")
+        #return make_response(jsonify({"ERROR": "id not exits"}))
     
     # given an path file gets the code of the file
     def get_code_file_by_path(file):
@@ -42,7 +43,8 @@ class FileManagement():
             path_test = 'public/challenges/' + new_var['tests_code'] + '.java'
             new_var['tests_code'] = FileManagement.get_code_file_by_path(path_test)
             return new_var
-        return make_response(jsonify({"ERROR": "name of file no exist"}))
+        raise Exception("name of file no exist")
+        #return make_response(jsonify({"ERROR": "name of file no exist"}))
 
     # remove the of file in directory
     def delete_path(file_rm):
@@ -51,9 +53,11 @@ class FileManagement():
 
     def upload_file(file, path):
         if file is None:
-            return make_response(jsonify({"error_message": "One of the provided files has syntax errors."}))
+            raise Exception("One of the provided files has syntax errors.")
+            #return make_response(jsonify({"error_message": "One of the provided files has syntax errors."}))
         if file.filename == '' :
-            return make_response(jsonify("No name of file"), 404)
+            raise Exception("No name of file")
+            #return make_response(jsonify("No name of file"), 404)
         if file and FileManagement.allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(path, filename))

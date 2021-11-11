@@ -29,13 +29,11 @@ class controller():
         all_challenges=[]
         for i in challenge['challenges']:
             aux_challenge = Challenge_java.__repr__(i)
-            nombre_code = aux_challenge['code']
-            path='public/challenges/' + nombre_code + '.java'
-            filemostrar=FileManagement.get_code_file_by_path(path)
-            aux_challenge['code']=filemostrar
+            path='public/challenges/' + aux_challenge['code'] + '.java'
+            aux_challenge['code']= FileManagement.get_code_file_by_path(path)
             aux_challenge.pop('tests_code',None)
             all_challenges.append(aux_challenge)
-        return make_response(jsonify({"challenges":all_challenges}))
+        return all_challenges
 
     def challenges_id_java(id):
         challenge=DAO_java_challenge.challenges_id_java(id)
@@ -49,17 +47,21 @@ class controller():
             #recupero el codigojava del challenge
             nombre_code = challengeaux['code']
             path='public/challenges/' + nombre_code + '.java'
-            file = open (path,mode='r',encoding='utf-8')
-            filemostrar=file.read()
-            file.close()
+            
+            
+            #file = open (path,mode='r',encoding='utf-8')
+            #filemostrar=file.read()
+            #file.close()
+            filemostrar=FileManagement.get_code_file_by_path(path)     
             challengeaux['code']=filemostrar
-
+             
             #recupero el codigojava del test
             nombre_test =challengeaux['tests_code']
             path='public/challenges/' + nombre_test + '.java'
-            file = open (path,mode='r',encoding='utf-8')
-            filemostrar=file.read()
-            file.close()
+            #file = open (path,mode='r',encoding='utf-8')
+            #filemostrar=file.read()
+            #file.close()
+            filemostrar=FileManagement.get_code_file_by_path(path)  
             challengeaux['tests_code']=filemostrar
             #return make_response(jsonify({"challenge":challengeaux}))
             return challengeaux
@@ -120,14 +122,13 @@ class controller():
                 file = request.files['source_code_file']
                 test_suite = request.files['test_suite_file']
                 if Challenge.isValid(file, test_suite, dict_final):
-                    output = FileManagement.show_codes(code_file_name)
-                    return make_response(jsonify({"challenge": output}))
+                    return FileManagement.show_codes(code_file_name)
                 else:
-                    return make_response(jsonify({"ERROR": "Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar"}))
+                    raise Exception("Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar")
             else:
-                return make_response(jsonify("Nombre de archivo existente, cargue nuevamente"), 404)
+                raise Exception("Nombre de archivo existente, cargue nuevamente")
         else:
-            return make_response(jsonify("No ingreso los datos de los archivos java"))
+            raise Exception("No ingreso los datos de los archivos java")
 
     def repair_file(id):
         file_repair = request.files['source_code_file']
@@ -142,9 +143,12 @@ class controller():
                 if value_dist < curr['best_score']:
                     challenge.score = value_dist
                     db.session.add(challenge)
-                    db.session.commit()
-                return make_response(jsonify({"repair": {"challenge": ChallengeCandidate.create_desafio(challenge)}, "attempts": 1, "score": value_dist}))
+                    db.session.commit()                    
+                    return {"repair": {"challenge": ChallengeCandidate.create_desafio(challenge),"attempts": 1, "score": value_dist}}
+                else:
+                    raise Exception(f'La distancia de edicion es mayor o igual a la existente, tu puntuacion es: {value_dist}')
             else:
-                return make_response(jsonify("ERROR"))
+                raise Exception("Error")
         else:
-            return make_response(jsonify({"ERROR": "no existe id"}))        
+            raise Exception("No existe id")
+                   

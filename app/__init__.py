@@ -14,9 +14,9 @@ def create_app(config_name='development'):
 
     from .models import User, Role
     from .javascript.models_js import JavascriptChallenge 
-    from .ruby.models import RubyChallenge
+    from .ruby.rubychallengemodel import RubyChallengeModel
     from .java.models_java import Challenge_java
-    from .cSharp.models import CSharp_Challenge
+    from .cSharp.models import CSharpChallengeModel
     from .go.models_go import GoChallenge
     from .python.models import PythonChallengeModel
 
