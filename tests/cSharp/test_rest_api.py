@@ -30,9 +30,38 @@ def test_post_challenge(client):
     assert response_json == expected_response
     cleanup()
 
-def test_get_by_id(cliente):
-    #TODO 
-    pass
+def test_get_by_id(client):
+    #Arrange
+    url = 'cSharp/c-sharp-challenges'
+    data = create_challenge('Example1', 'Example1Test', 'Testing', '5', 'Example1', 'Example1Test')
+    with open('tests/cSharp/test-files/Example1.cs') as f:
+        content_code = f.read()
+    with open('tests/cSharp/test-files/Example1Test.cs') as f:
+        content_tests_code = f.read()
+    expected_response = {"Challenge": { "code": content_code,
+                                        "tests_code":  content_tests_code,
+                                        "repair_objective": "Testing",
+                                        "complexity": 5,
+                                        "best_score": 0
+                                       }
+                        }
+    resp_post = client.post(url, data=data)
+    resp_post_json = resp_post.json
+    challenge_id = resp_post_json['challenge']['id']
+    url+= '/' + str(challenge_id)
+    expected_response['Challenge']['id'] = challenge_id
+    
+    #Act
+    resp_get = client.get(url)
+    resp_get_json = resp_get.json
+
+    #Assert
+    assert resp_get_json == expected_response
+    assert resp_get.status_code == 200
+
+    #Cleanup
+    cleanup()
+    
 
 def cleanup():
     db.session.query(CSharpChallengeModel).delete()
