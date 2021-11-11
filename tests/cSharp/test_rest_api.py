@@ -30,7 +30,9 @@ def test_post_challenge(client):
     #cleanup
     db.session.query(CSharpChallengeModel).delete()
 
-
+def test_get_all_challenges_after_post(client):
+    #to do: implement this method
+    pass
 
 def create_challenge(code_name=None, tests_name=None, repair_objective=None, complexity=None, code=None, tests_code=None):
     challenge = {}
