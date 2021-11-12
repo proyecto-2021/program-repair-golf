@@ -1,5 +1,6 @@
 from .PythonChallengeDAO import PythonChallengeDAO
 from .PythonChallenge import PythonChallenge
+from .PythonChallengeRepair import PythonChallengeRepair
 
 class PythonController:
   
@@ -60,6 +61,48 @@ class PythonController:
     PythonChallengeDAO.update_challenge(id, challenge_update.to_json(content=False)) #updating in db
     #prepare response
     response = challenge_update.to_json(best_score=True)
+    return response
+
+  def repair_challenge(id, code_repair):
+    
+    if code_repair is None:
+      return {"Error": "No repair provided"}
+    
+    req_challenge = PythonChallengeDAO.get_challenge(id)
+
+    if req_challenge is None:
+      return {"Error": "Challenge not found"}
+
+    challenge = PythonChallenge(challenge_data= req_challenge)
+    repair_challenge = PythonChallengeRepair(challenge, code_repair)
+
+    path_temporary = "public/temp/"
+    #save temporary codes
+    repair_challenge.temporary_save(path_temporary)
+
+    #validate repair
+    result = repair_challenge.is_valid_repair()
+    
+    if 'Error' in result:
+      return result
+
+    #compute score
+    score = repair_challenge.compute_repair_score()
+    
+    #update best score
+    PythonChallengeDAO.update_best_score(id, score)
+
+    #delete files 
+    repair_challenge.delete_temp()
+    
+    #Creating response to return
+    challenge_response = repair_challenge.return_content()
+    response = {'challenge': challenge_response, 
+                'player': {'username': "Elon Musk"}, 
+                'attempts': 1, 
+                'score': score
+                }
+
     return response
 
   #takes the challenge to a temp location and checks if it's valid

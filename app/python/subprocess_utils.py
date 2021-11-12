@@ -1,12 +1,13 @@
 import subprocess
+from .file_utils import get_filename
 
 def valid_python_challenge(code_path, test_path, test_pass = False):
     #checks for any syntax errors in code
     if not no_syntax_errors(code_path):
-        return {"Error": "Syntax error at " + code_path}
+        return {"Error": "Syntax error at " + get_filename(code_path)}
     #checks for any syntax errors in tests code
     elif not no_syntax_errors(test_path):
-        return {"Error": "Syntax error at " + test_path}
+        return {"Error": "Syntax error at " + get_filename(test_path)}
     #checks if at least one test don't pass
     test_failed = tests_fail(test_path)
     if test_failed and test_pass:
