@@ -71,8 +71,6 @@ class RubyCode:
         return subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) != 0
 
 class RubyTestCode(RubyCode):
-    #def __init__(self, arg):
-    
     def dependencies_ok(self, code):
         command = 'grep "require_relative" ' + self.get_full_name()
         p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
