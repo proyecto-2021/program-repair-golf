@@ -51,7 +51,7 @@ class FileManagement():
         if path.exists(file_rm):
             remove(file_rm)
 
-    def upload_file(file, path):
+    def upload_file_test(file, path, dict):
         if file is None:
             raise Exception("One of the provided files has syntax errors.")
             #return make_response(jsonify({"error_message": "One of the provided files has syntax errors."}))
@@ -60,7 +60,32 @@ class FileManagement():
             #return make_response(jsonify("No name of file"), 404)
         if file and FileManagement.allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                file.save(os.path.join(path, filename))
+                name_archivo_test = dict['test_suite_file_name'] + '.java'
+                file.save(os.path.join(path, name_archivo_test))
+    
+    def upload_file_class(file, path, dict):
+        if file is None:
+            raise Exception("One of the provided files has syntax errors.")
+            #return make_response(jsonify({"error_message": "One of the provided files has syntax errors."}))
+        if file.filename == '' :
+            raise Exception("No name of file")
+            #return make_response(jsonify("No name of file"), 404)
+        if file and FileManagement.allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                name_archivo = dict['source_code_file_name'] + '.java'
+                file.save(os.path.join(path, name_archivo))
+                
+    def upload_file_repair(file, path, dict):
+        if file is None:
+            raise Exception("One of the provided files has syntax errors.")
+            #return make_response(jsonify({"error_message": "One of the provided files has syntax errors."}))
+        if file.filename == '' :
+            raise Exception("No name of file")
+            #return make_response(jsonify("No name of file"), 404)
+        if file and FileManagement.allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                name_archivo = dict['code'] + '.java'
+                file.save(os.path.join(path, name_archivo))
 
     def allowed_file(filename):
         return '.' in filename and \

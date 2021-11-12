@@ -5,6 +5,7 @@ from . import go
 from .models_go import GoChallenge
 import os, subprocess, math, nltk, shutil
 from .go_challenge_dao import goChallengeDAO
+from .go_src import Go_src
 
 
 goDAO = goChallengeDAO()
@@ -231,11 +232,14 @@ def create_go_challenge():
 
     test_pass = subprocess.run(["go" "test"], cwd=os.path.abspath("public/challenges"), shell=True)
     test_compilation = subprocess.run(["go" "test" "-c"], cwd=os.path.abspath("public/challenges"),shell=True)
-    code_compilation = subprocess.run(["go" "build", code_path], stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL,shell=True)
+    #code_compilation = subprocess.run(["go" "build", code_path], stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL,shell=True)
 
-    if code_compilation.returncode == 2:
+    codigo = Go_src(path=code_path)
+    tests = Go_src(path="public/challenges")
+
+    if codigo.code_compiles().returncode == 2:
         return make_response(jsonify({"code_file": "The code has syntax errors"}), 412)
-    elif test_compilation.returncode == 1 or test_compilation.returncode == 2:
+    elif tests.test_compiles().returncode == 1 or test_compilation.returncode == 2:
         return make_response(jsonify({"test_code_file": "The test code has syntax errors"}), 412)
     elif test_pass.returncode == 0:
         return make_response(jsonify({"ERROR: tests": "There must be at least one test that fails"}), 412)
