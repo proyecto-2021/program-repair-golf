@@ -78,6 +78,11 @@ def test_update_code_w_sintax_error(client,create_test_data):
     cleanup()
 
 
+def test_update_code_passes_all_tests(client, create_test_data):
+    # todo: implement this method
+    pass
+
+
 def test_get_all_challenges_after_post(client, create_test_data):
     #Arrange
     url = 'cSharp/c-sharp-challenges'
