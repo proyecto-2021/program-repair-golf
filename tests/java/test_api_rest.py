@@ -114,3 +114,29 @@ def test_get_java(client):
 	assert resp.status_code == 200
 	assert a['challenges'] == []
 	
+def test_get_Id_after_post(client):
+	db.session.query(Challenge_java).delete()
+	url = 'http://localhost:5000/java/java-challenges'
+	data = createQuery()
+
+	p = client.post(url, data=data)
+	json = p.json['challenge']
+	id = json['id']
+
+	url2 = f'http://localhost:5000/java/java-challenges/{id}'
+	p2 = client.get(url2)
+	json2 = p2.json['challenge']
+	id2=json2['id']
+
+	assert p.status_code == 200
+	assert p2.status_code == 200
+	assert id == id2
+
+def test_get_Id_noesxite(client):
+	db.session.query(Challenge_java).delete()
+	id=1
+	url2 = f'http://localhost:5000/java/java-challenges/{id}'
+	p2 = client.get(url2)
+	
+	assert p2.status_code == 404
+	
