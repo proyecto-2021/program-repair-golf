@@ -1,4 +1,4 @@
-from .rubycode import RubyCode
+from .rubycode import RubyCode, RubyTestCode
 import subprocess, sys
 
 class RubyChallenge:
@@ -47,12 +47,6 @@ class RubyChallenge:
 
 	def tests_fail(self):
 		return self.tests_code.run_fail()
-
-	def dependencies_ok(self):
-		command = 'grep "require_relative" ' + self.tests_code.get_full_name()
-		p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-		dependence_name = (p.communicate()[0].decode(sys.stdout.encoding).strip().split("'")[1])
-		return dependence_name == self.code.get_file_name()
 
 	def data_ok(self):
 		return self.repair_objective and self.complexity_ok() and self.code.file_name_ok() and self.tests_code.file_name_ok()
