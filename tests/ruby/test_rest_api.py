@@ -398,3 +398,11 @@ def test_put_invalid_challenge(client):
 
     assert r.status_code == 404
     assert r.json['challenge'] == 'id doesnt exist'
+
+def test_post_invalid_data(client):
+    url = '/ruby/challenge'
+    data = get_data('   ', '  ', '', '7', 'example_challenge', 'example_test21')
+    r = client.post(url, data=data)
+
+    assert r.status_code == 400
+    assert r.json['challenge'] == 'the json information is incomplete/erroneous'
