@@ -4,6 +4,11 @@ from app import db
 from . import go
 from .models_go import GoChallenge
 import os, subprocess, math, nltk, shutil
+from .go_challenge_dao import goChallengeDAO
+from .go_src import Go_src
+
+
+goDAO = goChallengeDAO()
 
 
 @go.route('api/v1/go-challenges/<int:id>/repair', methods=['POST'])
@@ -67,7 +72,8 @@ def repair_challenge_go(id):
 
 @go.route('/api/v1/go-challenges', methods=['GET'])
 def get_all_challenges():
-    challenges = db.session.query(GoChallenge).all()
+    #challenges = db.session.query(GoChallenge).all()
+    challenges = goDAO.get_all_challenges()
     if not challenges:
         return make_response(jsonify({'challenges' : 'not found'}), 404)
     
@@ -83,9 +89,11 @@ def get_all_challenges():
     return jsonify({"challenges" : challenges_to_show})
 
 
+
 @go.route('/api/v1/go-challenges/<id>', methods=['GET'])
 def return_single_challenge(id):
-    challenge_by_id=GoChallenge.query.filter_by(id=id).first()
+    #challenge_by_id=GoChallenge.query.filter_by(id=id).first()
+    challenge_by_id = goDAO.get_challenge_by_id(id)
     if challenge_by_id is None:
         return "ID Not Found", 404
     challenge_to_return=challenge_by_id.convert_dict()
@@ -97,7 +105,8 @@ def return_single_challenge(id):
 
 @go.route('/api/v1/go-challenges/<id>', methods=['PUT'])
 def update_a_go_challenge(id):
-    challenge = GoChallenge.query.filter_by(id = id).first()
+    #challenge = GoChallenge.query.filter_by(id = id).first()
+    challenge = goDAO.get_challenge_by_id(id)
     if challenge is None:
         return make_response(jsonify({'challenge' : 'not found'}), 404)
     
@@ -215,18 +224,22 @@ def create_go_challenge():
         complexity=challenge_data['complexity'],
         best_score=math.inf)
 
-    all_the_challenges = db.session.query(GoChallenge).all()
+    #all_the_challenges = db.session.query(GoChallenge).all()
+    all_the_challenges = goDAO.get_all_challenges()
     for every_challenge in all_the_challenges:
         if every_challenge.code == new_challenge.code:
             return make_response(jsonify({"challenge": "repeated"}), 409)
 
     test_pass = subprocess.run(["go" "test"], cwd=os.path.abspath("public/challenges"), shell=True)
     test_compilation = subprocess.run(["go" "test" "-c"], cwd=os.path.abspath("public/challenges"),shell=True)
-    code_compilation = subprocess.run(["go" "build", code_path], stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL,shell=True)
+    #code_compilation = subprocess.run(["go" "build", code_path], stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL,shell=True)
 
-    if code_compilation.returncode == 2:
+    codigo = Go_src(path=code_path)
+    tests = Go_src(path="public/challenges")
+
+    if codigo.code_compiles().returncode == 2:
         return make_response(jsonify({"code_file": "The code has syntax errors"}), 412)
-    elif test_compilation.returncode == 1 or test_compilation.returncode == 2:
+    elif tests.test_compiles().returncode == 1 or test_compilation.returncode == 2:
         return make_response(jsonify({"test_code_file": "The test code has syntax errors"}), 412)
     elif test_pass.returncode == 0:
         return make_response(jsonify({"ERROR: tests": "There must be at least one test that fails"}), 412)
