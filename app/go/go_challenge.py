@@ -35,10 +35,10 @@ class GoChallenge:
         }
 
     def set_code(self, path_code):
-        self.code = path_code
+        self.code.set_path(path_code)
 
     def set_tets_code(self, path_tests_code):
-        self.tests_code = path_tests_code
+        self.tests_code.set_path(path_tests_code)
 
     def set_repair_objective(self, repair_objective):
         self.repair_objective = repair_objective
@@ -59,5 +59,7 @@ path_code = Go_src(path='example-challenges/go-challenges/median.go')
 path_test = Go_src(path='example-challenges/go-challenges/median_test.go')
 go_challenge = GoChallenge(path_code.get_path(), path_test.get_path(), 'Make asd pass.', '2')
 
-print(go_challenge.code_compiles())
+go_challenge.set_code('app/go/views.py')
+print(go_challenge.get_code())
+print(go_challenge.get_tests_code())
 
