@@ -29,3 +29,14 @@ def test_pythonsourcecode_builder_else(client):
     assert pythonSourceCodeInstance.name == 'valid_test_1.py'
     assert pythonSourceCodeInstance.content == pathRead
 
+# testing builder 
+def test_pythonsourcecode_builder_else_invalid(client): 
+    path = 'tests/rompien2'
+    
+    import_error = False    
+    try:
+        pythonSourceCodeInstance = PythonSourceCode(path=path );
+    except FileNotFoundError:
+        import_error = True
+
+    assert import_error == True 
