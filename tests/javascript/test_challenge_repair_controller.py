@@ -24,20 +24,20 @@ def test_score_ok_3(client):
 
 def test_calculate_score(client):
     result = ChallengeRepairController.calculate_score(
-        "example-challenges/javascript-challenges/median.js",
-        "example-challenges/javascript-challenges/median.js")
+        "tests/javascript/file_testing_folder/file_testing_folder_2/median.js",
+        "tests/javascript/file_testing_folder/file_testing_folder_2/median.js")
     assert result == 0
 
 
 def test_repair_1(client):
     with pytest.raises(Exception) as e_info:
-        ChallengeRepairController.repair(1, "example-challenges/javascript-challenges/median.js")
+        ChallengeRepairController.repair(1, "tests/javascript/file_testing_folder/file_testing_folder_2/median.js")
 
 def test_repair_2(client):
     with pytest.raises(Exception) as e_info:
         challenge = JavascriptChallenge(
         code = "something.js",
-        tests_code = "example-challenges/javascript-challenges/median.test.js",
+        tests_code = "tests/javascript/file_testing_folder/file_testing_folder_2/median.js",
         repair_objective = "something",
         complexity = 0,
         best_score = 0,
@@ -46,14 +46,14 @@ def test_repair_2(client):
         db.session.add(challenge)
         db.session.commit()
         
-        ChallengeRepairController.repair(1, "example-challenges/javascript-challenges/median.js")
+        ChallengeRepairController.repair(1, "tests/javascript/file_testing_folder/file_testing_folder_2/median.js")
 
 
 @pytest.mark.skip(reason="module does not work")
 def test_repair_skip(client):
     challenge = JavascriptChallenge(
-        code = "example-challenges/javascript-challenges/median.js",
-        tests_code = "example-challenges/javascript-challenges/median.test.js",
+        code = "tests/javascript/file_testing_folder/file_testing_folder_2/median.js",
+        tests_code = "tests/javascript/file_testing_folder/file_testing_folder_2/median.test.js",
         repair_objective = "something",
         complexity = 0,
         best_score = 0,
@@ -62,5 +62,5 @@ def test_repair_skip(client):
     db.session.add(challenge)
     db.session.commit()
 
-    result = ChallengeRepairController.repair(2,"example-challenges/javascript-challenges/median.js")
+    result = ChallengeRepairController.repair(2,"tests/javascript/file_testing_folder/file_testing_folder_2/median.js")
     assert True

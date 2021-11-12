@@ -8,8 +8,8 @@ from . import client
 def test_get_challenge_1(client):
 
     challenge = JavascriptChallenge(
-        code = "example-challenges/javascript-challenges/median.js",
-        tests_code = "example-challenges/javascript-challenges/median.test.js",
+        code = "tests/javascript/file_testing_folder/median.js",
+        tests_code = "tests/javascript/file_testing_folder/median.test.js",
         repair_objective = "something",
         complexity = 0,
         best_score = 0,
@@ -34,8 +34,8 @@ def test_get_challenges(client):
 @pytest.mark.skip(reason="needs improvement")
 def test_create_challenge(client):
     challenge = ChallengeController.create_challenge(
-        "example-challenges/javascript-challenges/median.js",
-        "example-challenges/javascript-challenges/median.test.js",
+        "tests/javascript/file_testing_folder/median.js",
+        "tests/javascript/file_testing_folder/median.test.js",
         "repair_objective",
         0,
         "median",
