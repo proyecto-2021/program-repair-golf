@@ -1,3 +1,3 @@
 #!/bin/bash
 
-pytest --cov=app --cov-branch --cov-report=html -vv tests/cSharp
+pytest --cov=app/cSharp --cov-branch --cov-report=html ./tests/cSharp
