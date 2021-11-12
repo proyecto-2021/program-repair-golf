@@ -28,6 +28,7 @@ def upgrade():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('code')
     )
+    op.alter_column('c_sharp__challenge', 'repair_objetive', new_column_name='repair_objective')
     # ### end Alembic commands ###
 
 
