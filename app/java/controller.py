@@ -48,19 +48,13 @@ class controller():
             nombre_code = challengeaux['code']
             path='public/challenges/' + nombre_code + '.java'
             
-            
-            #file = open (path,mode='r',encoding='utf-8')
-            #filemostrar=file.read()
-            #file.close()
             filemostrar=FileManagement.get_code_file_by_path(path)     
             challengeaux['code']=filemostrar
              
             #recupero el codigojava del test
             nombre_test =challengeaux['tests_code']
             path='public/challenges/' + nombre_test + '.java'
-            #file = open (path,mode='r',encoding='utf-8')
-            #filemostrar=file.read()
-            #file.close()
+            
             filemostrar=FileManagement.get_code_file_by_path(path)  
             challengeaux['tests_code']=filemostrar
             #return make_response(jsonify({"challenge":challengeaux}))
