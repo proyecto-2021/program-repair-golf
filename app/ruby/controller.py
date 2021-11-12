@@ -15,11 +15,18 @@ class Controller:
         self.ruby_tmp = gettempdir() + '/ruby-tmp/'
 
     def post_challenge(self, code_file, tests_code_file, json_challenge):
-        if not code_file or not tests_code_file or not json_challenge:
+        if not (code_file and tests_code_file and json_challenge):
             return make_response(jsonify({'challenge': 'code, tests_code and json challenge are necessary'}), 400)
 
         json = loads(json_challenge)
-        data = json['challenge']
+        data = json.get('challenge')
+
+        if not data:
+            return make_response(jsonify({'challenge': 'the json hasnt challenge field'}), 400)
+
+        fields = ['source_code_file_name','test_suite_file_name','complexity','repair_objective']
+        if not all(f in data for f in fields):
+            return make_response(jsonify({'challenge': 'the challenge information is incomplete'}), 400)
 
         challenge = RubyChallenge(data['repair_objective'], data['complexity'])
         challenge.set_code(self.files_path, data['source_code_file_name'], code_file)
