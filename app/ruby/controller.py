@@ -120,10 +120,10 @@ class Controller:
             return make_response(jsonify({'challenge': 'test_suite doesnt fail'}),400)
 
         # Files are ok, copy it to respective directory
-        if not self.copy_files(old_challenge, new_challenge):
+        if not self.copy_files(old_challenge.get_code(), new_challenge.get_code()):
             return make_response(jsonify({'challenge': 'code_file_name already exists'}), 409)
 
-        if not self.copy_files(old_challenge, new_challenge, is_test=True):
+        if not self.copy_files(old_challenge.get_tests_code(), new_challenge.get_tests_code()):
             return make_response(jsonify({'challenge': 'tests_file name already exists'}), 409)
 
         rmtree(self.ruby_tmp)
@@ -134,14 +134,14 @@ class Controller:
         response = RubyChallenge(**self.dao.get_challenge(id)).get_content(exclude=['id'])
         return jsonify({'challenge': response})
 
-    def copy_files(self, old_challenge, new_challenge, is_test=False):
-        if old_challenge.get_file_name(is_test=is_test) != new_challenge.get_file_name(is_test=is_test):
-            if not new_challenge.move_code(self.files_path, names_match=False, is_test=is_test):
+    def copy_files(self, old_challenge_code, new_challenge_code):
+        if old_challenge_code.get_file_name() != new_challenge_code.get_file_name():
+            if not new_challenge_code.move(self.files_path, names_match=False):
                 rmtree(self.ruby_tmp)
                 return False
-            old_challenge.remove_code(is_test=is_test)
+            old_challenge_code.remove()
         else:
-            new_challenge.move_code(self.files_path, is_test=is_test)
+            new_challenge_code.move(self.files_path)
         return True
 
     def set_new_challenge(self, name, file, old_challenge_code, new_challenge, is_test=False):

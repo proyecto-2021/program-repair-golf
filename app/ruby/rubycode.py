@@ -37,7 +37,7 @@ class RubyCode:
         self.file.save(dst=self.get_full_name())
         return True
 
-    def move(self, path, names_match):
+    def move(self, path, names_match=True):
         dst = path + self.get_file_name() + '.rb'
         if not names_match:
             if os.path.isfile(dst):
