@@ -107,7 +107,34 @@ def test_post_invalid_repaired_challenge(client):
     json_response = parseDataTextAJson(response.json)
     assert json_response['Error'] == 'At least one test must fail'
 
+
+def test_update_simple_fields(client):
+    #make a post and save id
+    dataChallengePost = post_function(code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective="Make all tests pass.", complexity=1) 
+    post_info = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePost)
     
+    challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
+    #send an update request
+    updateRequest = post_function(repair_objective="updated", complexity=3)
+    response = client.put('http://localhost:5000/python/api/v1/python-challenges/' + str(challenge_id), data=updateRequest)
+
+    update_expected_response = {
+        'challenge': {
+            'best_score': 0, 
+            'code': '\ndef median(a,b,c):\n    res = 0\n    if ((a>=b and a<=c) or (a>=c and a<=b)):\n        res = a\n    if ((b>=a and b<=c) or (b>=c and b<=a)):\n        res = b\n    else:\n        res = c\n    return res\n\n', 
+            'complexity': '3', 
+            'repair_objective': 'updated', 
+            'tests_code': 'from valid_code_1 import median\n\ndef test_one():\n    a = 1\n    b = 2\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_two():\n    a = 2\n    b = 1\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_three():\n    a = 3\n    b = 1\n    c = 2\n    res = median(a, b, c)\n    assert res == 2\n\n'
+        }
+    }    
+
+    assert response.status_code == 200
+    assert response.json == update_expected_response
+    #check te same with get
+    response = client.get('http://localhost:5000/python/api/v1/python-challenges/' + str(challenge_id))
+    #print(f"response\n\n\n\n\n\n{response.json['challenge']['complexity']} \n\n\n\n\nexpected\n{update_expected_response['challenge']['complexity']}\n\n")
+    assert response.json == update_expected_response
+
 # -------Section functions ------- #
 def parseDataTextAJson(result):
     dataResultText = json.dumps(result)
