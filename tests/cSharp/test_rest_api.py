@@ -66,6 +66,22 @@ def test_get_by_id(client, create_test_data):
     #Cleanup
     cleanup()
 
+def test_get_non_existent_challenge(client):
+    #Arrange
+    url = 'cSharp/c-sharp-challenges/1'
+    expected_response = {'Challenge': 'Not found'}
+
+    #Act
+    resp = client.get(url)
+    resp_json = resp.json
+
+    #Assert
+    assert resp_json == expected_response
+    assert resp.status_code == 404
+
+    #Cleanup
+    cleanup()
+
 def test_get_all_challenges_after_post(client, create_test_data):
     #Arrange
     url = 'cSharp/c-sharp-challenges'
