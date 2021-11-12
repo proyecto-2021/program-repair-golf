@@ -23,7 +23,7 @@ def test_get_challenge_1(client):
     challenge_2 = ChallengeDAO.get_challenge(1)
     assert challenge == challenge_2
 
-def test_get_expcionti(client):
+def test_get_challenge_exception_raise(client):
     with pytest.raises(Exception):
         ChallengeDAO.get_challenge(5)
 

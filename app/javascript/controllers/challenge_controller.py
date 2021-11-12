@@ -9,9 +9,9 @@ class ChallengeController():
 
     def get_challenge(id):
         challenge = ChallengeDAO.get_challenge(id)
-        challenge.code = open_file(challenge.code)
-        challenge.tests_code = open_file(challenge.tests_code)
         challenge_dict = challenge.to_dict()
+        challenge_dict['code'] = open_file(challenge.code)
+        challenge_dict['tests_code'] = open_file(challenge.tests_code)
         del challenge_dict['id']
         return challenge_dict
 
