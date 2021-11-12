@@ -39,22 +39,17 @@ def test_post_challenge(client, create_test_data):
     assert response_json == expected_response
     cleanup()
 
-def test_get_by_id(client):
+def test_get_by_id(client, create_test_data):
     #Arrange
     url = 'cSharp/c-sharp-challenges'
-    data = create_challenge('Example1', 'Example1Test', 'Testing', '5', 'Example1', 'Example1Test')
-    with open('tests/cSharp/test-files/Example1.cs') as f:
-        content_code = f.read()
-    with open('tests/cSharp/test-files/Example1Test.cs') as f:
-        content_tests_code = f.read()
-    expected_response = {"Challenge": { "code": content_code,
-                                        "tests_code":  content_tests_code,
+    expected_response = {"Challenge": { "code": create_test_data['content_code'],
+                                        "tests_code":  create_test_data['content_tests_code'],
                                         "repair_objective": "Testing",
                                         "complexity": 5,
                                         "best_score": 0
                                        }
                         }
-    resp_post = client.post(url, data=data)
+    resp_post = client.post(url, data=create_test_data['data'])
     resp_post_json = resp_post.json
     challenge_id = resp_post_json['challenge']['id']
     url+= '/' + str(challenge_id)
@@ -70,7 +65,6 @@ def test_get_by_id(client):
 
     #Cleanup
     cleanup()
-    
 
 def test_get_all_challenges_after_post(client, create_test_data):
     #Arrange
