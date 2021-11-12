@@ -11,9 +11,6 @@ def test_pythonsourcecode_builder_if(client):
     
     codeToCompare = read_file('tests/python/example_programs_test/valid_code_1.py','r')
 
-    fileReadResult = pythonSourceCodeInstance.get_content()
-    
-    assert fileReadResult == codeToCompare
     assert pythonSourceCodeInstance.name == 'matias'
     assert pythonSourceCodeInstance.content == codeToRead
 
@@ -40,3 +37,30 @@ def test_pythonsourcecode_builder_else_invalid(client):
         import_error = True
 
     assert import_error == True 
+
+# testing method get_content
+def test_pythonsourcecode_get_content(client): 
+    codeToRead = read_file('tests/python/example_programs_test/valid_code_1.py','rb')
+
+    pythonSourceCodeInstance = PythonSourceCode(code = codeToRead , name = 'matias');
+    
+    codeToCompare = read_file('tests/python/example_programs_test/valid_code_1.py','r')
+    
+    fileReadResult = pythonSourceCodeInstance.get_content()
+
+    assert fileReadResult == codeToCompare
+
+# testing method update
+def test_pythonsourcecode_update(client):
+    codeToRead = read_file('tests/python/example_programs_test/valid_code_1.py','rb')
+
+    #name and content before update
+    pythonSourceCodeInstance = PythonSourceCode(code = codeToRead , name = 'matias');
+    
+    codeToReadTwo = read_file('tests/python/example_programs_test/valid_code_3.py','rb')
+
+    #name and content after update
+    pythonSourceCodeInstance.update(content = codeToReadTwo, name = 'nachow')
+
+    assert pythonSourceCodeInstance.name == 'nachow'
+    assert pythonSourceCodeInstance.content == codeToReadTwo
