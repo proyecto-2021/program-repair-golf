@@ -1,7 +1,6 @@
 from flask.views import MethodView
 from . import ruby
 from flask import request, current_app
-from json import loads
 from .controller import Controller
 
 class RubyChallengeAPI(MethodView):
@@ -10,9 +9,9 @@ class RubyChallengeAPI(MethodView):
         self.controller = Controller(self.files_path)
 
     def post(self):
-        code = request.files['source_code_file']
-        tests_code = request.files['test_suite_file']
-        json = loads(request.form.get('challenge'))
+        code = request.files.get('source_code_file')
+        tests_code = request.files.get('test_suite_file')
+        json = request.form.get('challenge')
         return self.controller.post_challenge(code, tests_code, json)
 
     def get(self, id):
@@ -22,13 +21,9 @@ class RubyChallengeAPI(MethodView):
             return self.controller.get_challenge(id)
 
     def put(self, id):
-        code = None
-        tests_code = None
-        if 'source_code_file' in request.files:
-            code = request.files['source_code_file']
-        if 'test_suite_file' in request.files:
-            tests_code = request.files['test_suite_file']
-        json = loads(request.form.get('challenge'))
+        code = request.files.get('source_code_file')
+        tests_code = request.files.get('test_suite_file')
+        json = request.form.get('challenge')
         return self.controller.modify_challenge(id, code, tests_code, json)
        
 class RubyChallengeRepairAPI(MethodView):
@@ -37,7 +32,7 @@ class RubyChallengeRepairAPI(MethodView):
         self.controller = Controller(self.files_path)
 
     def post(self, id):
-        repair_candidate = request.files['source_code_file']
+        repair_candidate = request.files.get('source_code_file')
         return self.controller.post_repair(id, repair_candidate)
 
 

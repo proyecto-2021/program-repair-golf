@@ -1,6 +1,7 @@
 from flask import jsonify, make_response
 from os import mkdir
 from os.path import isdir
+from json import loads
 from tempfile import gettempdir
 from shutil import rmtree
 from .rubychallenge import RubyChallenge
@@ -14,7 +15,11 @@ class Controller:
         self.ruby_tmp = gettempdir() + '/ruby-tmp/'
 
     def post_challenge(self, code_file, tests_code_file, json):
-        data = json['challenge']
+        #if not code_file or not tests_code_file or not json:
+        #    return make_response(jsonify({'challenge': 'code, tests_code and json challenge are necessary'}), 400)
+
+        json_challenge = loads(json)
+        data = json_challenge['challenge']
 
         challenge = RubyChallenge(data['repair_objective'], data['complexity'])
         challenge.set_code(self.files_path, data['source_code_file_name'], code_file)
@@ -94,8 +99,10 @@ class Controller:
         if not self.dao.exists(id):
             return make_response(jsonify({'challenge': 'id doesnt exist'}), 404)
 
+        json_challenge = loads(json)
+
         data = {'repair_objective': None, 'complexity': None}
-        data.update(json['challenge'])
+        data.update(json_challenge['challenge'])
         old_challenge = RubyChallenge(**self.dao.get_challenge(id))
         new_challenge = RubyChallenge(data['repair_objective'], data['complexity'])
         if isdir(self.ruby_tmp):
