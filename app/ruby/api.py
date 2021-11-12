@@ -11,8 +11,8 @@ class RubyChallengeAPI(MethodView):
     def post(self):
         code = request.files.get('source_code_file')
         tests_code = request.files.get('test_suite_file')
-        json = request.form.get('challenge')
-        return self.controller.post_challenge(code, tests_code, json)
+        json_challenge = request.form.get('challenge')
+        return self.controller.post_challenge(code, tests_code, json_challenge)
 
     def get(self, id):
         if id is None:
@@ -23,8 +23,8 @@ class RubyChallengeAPI(MethodView):
     def put(self, id):
         code = request.files.get('source_code_file')
         tests_code = request.files.get('test_suite_file')
-        json = request.form.get('challenge')
-        return self.controller.modify_challenge(id, code, tests_code, json)
+        json_challenge = request.form.get('challenge')
+        return self.controller.modify_challenge(id, code, tests_code, json_challenge)
        
 class RubyChallengeRepairAPI(MethodView):
     def __init__(self):
