@@ -6,8 +6,8 @@ class RubyChallenge:
 		self.repair_objective = repair_objective
 		self.complexity = complexity
 		self.best_score = best_score
-		self.code = None
-		self.tests_code = None
+		self.code = RubyCode()
+		self.tests_code = RubyCode()
 		self.id = id
 		if code is not None:
 			self.code = RubyCode(full_name=code)
@@ -46,11 +46,11 @@ class RubyChallenge:
 			return self.tests_code.get_full_name()
 		return self.code.get_full_name()
 
-	def set_code(self, files_path, file_name, file=None, is_test=False):
-		if is_test:
-			self.tests_code = RubyCode(files_path, file_name, file)
-		else:
-			self.code = RubyCode(files_path, file_name, file)
+	def set_code(self, files_path, file_name, file=None):
+		self.code.set_code(files_path, file_name, file)
+
+	def set_tests_code(self, files_path, file_name, file=None):
+		self.tests_code.set_code(files_path, file_name, file)
 
 	def set_best_score(self, new_score):
 		self.best_score = new_score

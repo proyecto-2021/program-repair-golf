@@ -4,7 +4,8 @@ from .rubycode import RubyCode
 class RepairCandidate(object):
     def __init__(self, challenge, repair_code, path):
         self.challenge = challenge
-        self.repair_code = RubyCode(path, self.challenge.code.get_file_name(), repair_code)
+        self.repair_code = RubyCode()
+        self.repair_code.set_code(path, self.challenge.code.get_file_name(), repair_code)
         self.path = path
 
     def save_candidate(self):
