@@ -40,10 +40,10 @@ def test_post_challenge(client, create_test_data):
     cleanup()
 
 
-def test_update_incorrect_complexity(client):
+def test_update_incorrect_complexity(client, create_test_data):
     #Arrange
     url_post = 'cSharp/c-sharp-challenges'
-    data = create_challenge('Example1', 'Example1Test', 'Testing', '5', 'Example1', 'Example1Test')
+    data = create_test_data['data']
 
     data_put = { 'complexity': 8}
     #Act
