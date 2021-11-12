@@ -5,7 +5,7 @@ from json import loads
 from tempfile import gettempdir
 from shutil import rmtree
 from .rubychallenge import RubyChallenge
-from .rubychallengedao import RubyChallengeDAO
+from .models.rubychallengedao import RubyChallengeDAO
 from .repaircandidate import RepairCandidate
 
 class Controller:
