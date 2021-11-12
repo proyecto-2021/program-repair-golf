@@ -1,4 +1,4 @@
-import os, subprocess
+import os, subprocess, sys
 from shutil import move, copy
 
 class RubyCode:
@@ -66,14 +66,13 @@ class RubyCode:
         command = 'ruby -c ' + self.get_full_name()
         return subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0
 
-    def run_fail(self):
+    def run_fails(self):
         command = 'ruby ' + self.get_full_name()
         return subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) != 0
 
 class RubyTestCode(RubyCode):
     #def __init__(self, arg):
     
-
     def dependencies_ok(self, code):
         command = 'grep "require_relative" ' + self.get_full_name()
         p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)

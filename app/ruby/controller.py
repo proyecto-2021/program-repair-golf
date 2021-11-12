@@ -40,12 +40,12 @@ class Controller:
             challenge.get_tests_code().remove()
             return make_response(jsonify({'challenge': 'source_code and/or test_suite doesnt compile'}), 400)
 
-        if not challenge.dependencies_ok():
+        if not challenge.get_tests_code().dependencies_ok(challenge.get_code()):
             challenge.get_code().remove()
             challenge.get_tests_code().remove()
             return make_response(jsonify({'challenge': 'test_suite dependencies are wrong'}), 400)
 
-        if not challenge.tests_fail():
+        if not challenge.get_tests_code().run_fails():
             challenge.get_code().remove()
             challenge.get_tests_code().remove()
             return make_response(jsonify({'challenge': 'test_suite doesnt fail'}),400)
@@ -123,11 +123,11 @@ class Controller:
         if not self.set_new_challenge(nc_test_name, tests_code_file, old_challenge.get_tests_code(), new_challenge.get_tests_code()):
             return make_response(jsonify({'challenge': 'test_suite doesnt compile'}), 400)
 
-        if not new_challenge.dependencies_ok():
+        if not new_challenge.get_tests_code().dependencies_ok(new_challenge.get_code()):
             rmtree(self.ruby_tmp)
             return make_response(jsonify({'challenge': 'test_suite dependencies are wrong'}), 400)
 
-        if not new_challenge.tests_fail():
+        if not new_challenge.get_tests_code().run_fails():
             rmtree(self.ruby_tmp)
             return make_response(jsonify({'challenge': 'test_suite doesnt fail'}),400)
 
