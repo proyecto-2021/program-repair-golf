@@ -105,10 +105,10 @@ class Controller:
         nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.get_code().get_file_name()
         nc_test_name = data['test_suite_file_name'] if 'test_suite_file_name' in data else old_challenge.get_tests_code().get_file_name()
         
-        if not self.set_new_challenge(nc_code_name, code_file, old_challenge.get_code(), new_challenge):
+        if not self.set_new_challenge(nc_code_name, code_file, old_challenge.get_code(), new_challenge.get_code()):
             return make_response(jsonify({'challenge': 'code doesnt compile'}), 400)
         
-        if not self.set_new_challenge(nc_test_name, tests_code_file, old_challenge.get_tests_code(), new_challenge, is_test=True):
+        if not self.set_new_challenge(nc_test_name, tests_code_file, old_challenge.get_tests_code(), new_challenge.get_tests_code()):
             return make_response(jsonify({'challenge': 'test_suite doesnt compile'}), 400)
 
         if not new_challenge.dependencies_ok():
@@ -144,11 +144,7 @@ class Controller:
             new_challenge_code.move(self.files_path)
         return True
 
-    def set_new_challenge(self, name, file, old_challenge_code, new_challenge, is_test=False):
-        if is_test:
-            new_challenge_code = new_challenge.get_tests_code()
-        else:
-            new_challenge_code = new_challenge.get_code()
+    def set_new_challenge(self, name, file, old_challenge_code, new_challenge_code):
         if file is not None:
             new_challenge_code.set_code(self.ruby_tmp, name, file)
             new_challenge_code.save()
