@@ -1,5 +1,6 @@
 from app.python.models import *
 from . import client
+from app.python.file_utils import read_file
 import json
 
 
@@ -26,15 +27,7 @@ def test_get_single_pythonChallenge(client):
     #---- end post ---#
 
     #data to be entered in the post test
-    post_expected_response = {
-        'challenge': {
-            'best_score': 0, 
-            'code': '\ndef median(a,b,c):\n    res = 0\n    if ((a>=b and a<=c) or (a>=c and a<=b)):\n        res = a\n    if ((b>=a and b<=c) or (b>=c and b<=a)):\n        res = b\n    else:\n        res = c\n    return res\n\n', 
-            'complexity': '3', 
-            'repair_objective': 'prueba test', 
-            'tests_code': 'from valid_code_1 import median\n\ndef test_one():\n    a = 1\n    b = 2\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_two():\n    a = 2\n    b = 1\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_three():\n    a = 3\n    b = 1\n    c = 2\n    res = median(a, b, c)\n    assert res == 2\n\n'
-        }
-    }
+    post_expected_response = create_expected_response(0, "valid_code_1.py", "3", 'prueba test', "valid_test_1.py")
 
     #data obtained through the get ready for manipulation
     dataChallenge = parseDataTextAJson(result.json)
@@ -56,21 +49,19 @@ def test_get_total_pythonChallenge(client):
     #--- start post challenges ---#
     repair_objectiveParamOne = "probando test"
     repair_objectiveParamTwo = "pruebita test"
-    repair_objectiveParamThree = "pruebas test"
     
     dataChallengePostOne = request_creator(code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objectiveParamOne, complexity=1)
     dataChallengePostTwo = request_creator(code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objectiveParamTwo, complexity=2)
 
     client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostOne)
     client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostTwo)
-    client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostThree)
     #--- end post challenges ---#
 
     responsive = client.get('http://localhost:5000/python/api/v1/python-challenges')
     
     data = parseDataTextAJson(responsive.json)
     
-    assert len(data['challenges']) == initial_challenge_len + 3
+    assert len(data['challenges']) == initial_challenge_len + 2
 
 def test_post_challenge_invalid_code(client):
     code_filename = "code_not_compile.py"
@@ -116,15 +107,7 @@ def test_update_simple_fields(client):
     updateRequest = request_creator(repair_objective="updated", complexity=3)
     response = client.put('http://localhost:5000/python/api/v1/python-challenges/' + str(challenge_id), data=updateRequest)
 
-    update_expected_response = {
-        'challenge': {
-            'best_score': 0, 
-            'code': '\ndef median(a,b,c):\n    res = 0\n    if ((a>=b and a<=c) or (a>=c and a<=b)):\n        res = a\n    if ((b>=a and b<=c) or (b>=c and b<=a)):\n        res = b\n    else:\n        res = c\n    return res\n\n', 
-            'complexity': '3', 
-            'repair_objective': 'updated', 
-            'tests_code': 'from valid_code_1 import median\n\ndef test_one():\n    a = 1\n    b = 2\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_two():\n    a = 2\n    b = 1\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_three():\n    a = 3\n    b = 1\n    c = 2\n    res = median(a, b, c)\n    assert res == 2\n\n'
-        }
-    }    
+    update_expected_response = create_expected_response(0, "valid_code_1.py", "3", 'updated', "valid_test_1.py")
 
     assert response.status_code == 200
     assert response.json == update_expected_response
@@ -164,3 +147,17 @@ def request_creator(**params):
 
     return dataChallenge     
 # ------- end Section functions ------- #
+
+def create_expected_response(best_score, code_name, complexity, repair_objective, test_name):
+    code = read_file('tests/python/example_programs_test/' + code_name, 'r')
+    test = read_file('tests/python/example_programs_test/' + test_name, 'r')
+    expected_response = {
+        'challenge': {
+            'best_score': best_score,
+            'code': code,
+            'complexity': complexity,
+            'repair_objective': repair_objective,
+            'tests_code': test
+        }
+    }
+    return expected_response
