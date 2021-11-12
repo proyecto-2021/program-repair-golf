@@ -30,7 +30,7 @@ class Controller:
             challenge.get_code().remove()
             return make_response(jsonify({'challenge': 'test_suite already exists'}), 409)
 
-        if not challenge.codes_compile():
+        if not challenge.get_code().compiles() or not challenge.get_tests_code().compiles():
             challenge.get_code().remove()
             challenge.get_tests_code().remove()
             return make_response(jsonify({'challenge': 'source_code and/or test_suite doesnt compile'}), 400)

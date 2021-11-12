@@ -45,9 +45,6 @@ class RubyChallenge:
 	def set_best_score(self, new_score):
 		self.best_score = new_score
 
-	def codes_compile(self):
-		return self.code.compiles() and self.tests_code.compiles()
-
 	def tests_fail(self):
 		return self.tests_code.run_fail()
 
