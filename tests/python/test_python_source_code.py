@@ -16,3 +16,16 @@ def test_pythonsourcecode_builder_if(client):
     assert fileReadResult == codeToCompare
     assert pythonSourceCodeInstance.name == 'matias'
     assert pythonSourceCodeInstance.content == codeToRead
+
+# testing builder 
+def test_pythonsourcecode_builder_else(client): 
+    path = 'tests/python/example_programs_test/valid_test_1.py'
+    
+    pythonSourceCodeInstance = PythonSourceCode(path=path );
+    
+    pathRead = read_file(path,'rb')
+
+    assert pythonSourceCodeInstance.path == path 
+    assert pythonSourceCodeInstance.name == 'valid_test_1.py'
+    assert pythonSourceCodeInstance.content == pathRead
+
