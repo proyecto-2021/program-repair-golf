@@ -7,7 +7,7 @@ import json
 def test_post_pythonChallenge(client):
     repair_objective = "make to pass"
 
-    dataChallenge = post_function("valid_code_1.py", "valid_test_1.py", repair_objective, 2)
+    dataChallenge = post_function(code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objective, complexity=2)
 
     response = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallenge)
 
@@ -18,7 +18,7 @@ def test_get_single_pythonChallenge(client):
     #---- post one challenge to test ---#    
     repair_objectiveParam = "prueba test"
 
-    dataChallengePost = post_function("valid_code_1.py", "valid_test_1.py", repair_objectiveParam, 3) 
+    dataChallengePost = post_function(code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objectiveParam, complexity=3) 
     post_info = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePost)
     
     challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
@@ -60,9 +60,9 @@ def test_get_total_pythonChallenge(client):
     repair_objectiveParamTwo = "pruebita test"
     repair_objectiveParamThree = "pruebas test"
     
-    dataChallengePostOne = post_function("valid_code_1.py", "valid_test_1.py", repair_objectiveParamOne, 1)
-    dataChallengePostTwo = post_function("valid_code_1.py", "valid_test_1.py", repair_objectiveParamTwo, 2)
-    dataChallengePostThree = post_function("valid_code_1.py", "valid_test_1.py", repair_objectiveParamThree, 3)
+    dataChallengePostOne = post_function(code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objectiveParamOne, complexity=1)
+    dataChallengePostTwo = post_function(code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objectiveParamTwo, complexity=2)
+    dataChallengePostThree = post_function(code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objectiveParamThree, complexity=3)
 
     client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostOne)
     client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostTwo)
@@ -77,7 +77,7 @@ def test_get_total_pythonChallenge(client):
 
 def test_post_challenge_invalid_code(client):
     code_filename = "code_not_compile.py"
-    dataChallenge = post_function(code_filename, "valid_test_1.py", "Make all tests pass.", 2)
+    dataChallenge = post_function(code_name=code_filename, test_name="valid_test_1.py", repair_objective="Make all tests pass.", complexity=2)
 
     response = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallenge)
 
@@ -88,7 +88,7 @@ def test_post_challenge_invalid_code(client):
 
 def test_post_challenge_invalid_test(client):
     test_filename = "test_not_compile.py"
-    dataChallenge = post_function("valid_code_1.py", test_filename, "Make all tests pass.", 2)
+    dataChallenge = post_function(code_name="valid_code_1.py", test_name=test_filename, repair_objective="Make all tests pass.", complexity=2)
 
     response = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallenge)
 
@@ -97,8 +97,9 @@ def test_post_challenge_invalid_test(client):
     json_response = parseDataTextAJson(response.json)
     assert json_response['Error'] == 'Syntax error at ' + test_filename
 
+#post challenge with no errors in tests (so its repaired)
 def test_post_invalid_repaired_challenge(client):
-    dataChallenge = post_function("code_repair_2.py", "valid_test_2.py", "Make all tests pass.", 2)
+    dataChallenge = post_function(code_name="code_repair_2.py", test_name="valid_test_2.py", repair_objective="Make all tests pass.", complexity=2)
 
     response = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallenge)
 
@@ -116,28 +117,28 @@ def parseDataTextAJson(result):
 
     return dataResultJson
 
-def post_function(code_name, test_name, repair_objective, complexity):
+def post_function(**params):
     
-    complexityString = str(complexity)
-
-    source_code_fileTemp = open('tests/python/example_programs_test/' + code_name, 'rb')
-    test_suite_fileTemp = open('tests/python/example_programs_test/' + test_name, 'rb')
-    dataChallenge = {
-        'source_code_file' : source_code_fileTemp,
-        'test_suite_file' : test_suite_fileTemp,
-        'challenge': '{ \
-            "challenge": { \
-                "source_code_file_name" : "code_name_variable", \
-                "test_suite_file_name" : "test_name_variable", \
-                "repair_objective" : "repair_variable" , \
-                "complexity" : "complexity_variable" \
-            } \
-        }'
-    } 
-    dataChallenge['challenge'] = dataChallenge['challenge'].replace('code_name_variable',code_name)
-    dataChallenge['challenge'] = dataChallenge['challenge'].replace('test_name_variable',test_name)
-    dataChallenge['challenge'] = dataChallenge['challenge'].replace('repair_variable',repair_objective)
-    dataChallenge['challenge'] = dataChallenge['challenge'].replace('complexity_variable',complexityString)
+    #we check each param's presence and add it to dataChallenge
+    dataChallenge = {}
+    challenge_str = '{ "challenge": { '
+    initial_len = len(challenge_str)    #just to know if its been updated in the end
+    if params.get('code_name') is not None:
+        source_code_fileTemp = open('tests/python/example_programs_test/' + params.get('code_name'), 'rb')
+        dataChallenge['source_code_file'] = source_code_fileTemp
+        challenge_str += '"source_code_file_name" : "' + params.get('code_name') + '", '
+    if params.get('test_name') is not None:
+        test_suite_fileTemp = open('tests/python/example_programs_test/' + params.get('test_name'), 'rb')
+        dataChallenge['test_suite_file'] = test_suite_fileTemp
+        challenge_str += '"test_suite_file_name" : "' + params.get('test_name') + '", '
+    if params.get('repair_objective') is not None:
+        challenge_str += '"repair_objective" : "' + params.get('repair_objective') + '" , '
+    if params.get('complexity') is not None:
+        challenge_str += '"complexity" : "' + str(params.get('complexity')) + '" '
+    challenge_str += '} }'
+    #checking if some param has been passed
+    if len(challenge_str) > initial_len + len('} }'):
+        dataChallenge['challenge'] = challenge_str
 
     return dataChallenge     
 # ------- end Section functions ------- #
