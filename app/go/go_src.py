@@ -16,14 +16,17 @@ class Go_src:
     def get_file_2(self):
         return self.file_2
 
+    def set_path(self, new_path):
+        self.path = new_path
+
     def code_compiles(self):
-        return subprocess.run(["go", "build", self.get_path()], stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
+        return (subprocess.run(["go", "build", self.get_path()], stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)).returncode == 0
 
     def test_compiles(self):
-        return subprocess.run(["go", "test", "-c"], cwd=self.get_path())
+        return (subprocess.run(["go", "test", "-c"], cwd=self.get_path())).returncode == 0
 
     def test_run(self):
-        return subprocess.run(["go", "test"], cwd=self.get_path())
+        return (subprocess.run(["go", "test"], cwd=self.get_path())).returncode == 0
 
     def remove_file(self):
         return subprocess.run(["rm" "-r" "solution"],cwd=os.path.abspath(self.get_path),stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
@@ -39,7 +42,7 @@ class Go_src:
         self.file.save(self.get_path())
 
     def remove(self):
-        os.remove(get_path())
+        os.remove(self.get_path())
 
     def write_file(self, file_update):
         with open(self.get_file()) as f:
