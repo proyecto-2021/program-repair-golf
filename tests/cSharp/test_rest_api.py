@@ -78,6 +78,11 @@ def test_get_none_load(client):
     assert resp.status_code == 200
 
 
+def test_post_repair(client):
+    #todo: implement this method
+    pass
+
+
 def cleanup():
     db.session.query(CSharpChallengeModel).delete()
     path = "./example-challenges/c-sharp-challenges"
