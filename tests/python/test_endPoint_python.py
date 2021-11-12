@@ -116,9 +116,6 @@ def parseDataTextAJson(result):
 
     return dataResultJson
 
-def clear_data_base():
-    db.session.query(PythonChallengeModel).delete()
-
 def post_function(code_name, test_name, repair_objective, complexity):
     
     complexityString = str(complexity)
