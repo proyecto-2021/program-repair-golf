@@ -78,10 +78,31 @@ def test_get_none_load(client):
     assert resp.status_code == 200
 
 
-def test_post_repair(client):
-    #todo: implement this method
-    pass
+def test_post_repair(client, create_test_data):
+    #Arrange
+    url_post = 'cSharp/c-sharp-challenges'
+    data = create_test_data['data']
+    data_repair = {'source_code_file': open('tests/cSharp/test-files/Example1Repair.cs', 'rb')}
+    
+    expected_response = {'repair': { 'challenge':{
+                                                'repair_objective': 'Testing',
+                                                'best_score': 3 
+                                                },
+                                    'score': 3
+                                    }
+                        }
+    
+    #Act
+    resp_post = client.post(url_post, data=data)
+    challenge_id = resp_post.json['challenge']['id'] 
 
+    url_repair = 'cSharp/c-sharp-challenges/' + str(challenge_id) + '/repair'
+    resp_repair = client.post(url_repair, data=data_repair)
+
+    #Assert
+    assert resp_repair.status_code == 200
+    assert resp_repair.json == expected_response
+    cleanup()
 
 def cleanup():
     db.session.query(CSharpChallengeModel).delete()
