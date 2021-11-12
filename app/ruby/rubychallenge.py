@@ -14,6 +14,12 @@ class RubyChallenge:
 		if tests_code is not None:
 			self.tests_code = RubyCode(full_name=tests_code)
 
+	def get_code(self):
+		return self.code
+
+	def get_tests_code(self):
+		return self.tests_code
+
 	def get_best_score(self):
 		return self.best_score
 
