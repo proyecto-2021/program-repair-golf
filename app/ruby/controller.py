@@ -1,6 +1,7 @@
 from flask import jsonify, make_response
 from os import mkdir
 from os.path import isdir
+from json import loads
 from tempfile import gettempdir
 from shutil import rmtree
 from .rubychallenge import RubyChallenge
@@ -13,7 +14,11 @@ class Controller:
         self.dao = RubyChallengeDAO()
         self.ruby_tmp = gettempdir() + '/ruby-tmp/'
 
-    def post_challenge(self, code_file, tests_code_file, json):
+    def post_challenge(self, code_file, tests_code_file, json_challenge):
+        if not code_file or not tests_code_file or not json_challenge:
+            return make_response(jsonify({'challenge': 'code, tests_code and json challenge are necessary'}), 400)
+
+        json = loads(json_challenge)
         data = json['challenge']
 
         challenge = RubyChallenge(data['repair_objective'], data['complexity'])
@@ -64,12 +69,18 @@ class Controller:
         return jsonify({'challenges': all_challenges})
 
     def post_repair(self, id, repair_code):
+        if not repair_code:
+            return make_response(jsonify({'challenge': 'repair_code is necessary'}), 400)
+
         if not self.dao.exists(id):
             return make_response(jsonify({'challenge': 'id doesnt exist'}),404)
+
         challenge = RubyChallenge(**self.dao.get_challenge(id))
+
         if isdir(self.ruby_tmp):
             rmtree(self.ruby_tmp)
         mkdir(self.ruby_tmp)
+
         rep_candidate = RepairCandidate(challenge, repair_code, self.ruby_tmp)
         rep_candidate.save_candidate()
 
@@ -82,7 +93,6 @@ class Controller:
             return make_response(jsonify({'challenge': {'tests_code': 'fails'}}),200)
 
         new_score = rep_candidate.compute_score()
-
         if new_score < challenge.get_best_score() or challenge.get_best_score() == 0:
             challenge.set_best_score(new_score)
             self.dao.update_challenge(id,{'best_score':new_score})
@@ -90,9 +100,11 @@ class Controller:
         rmtree(self.ruby_tmp)
         return jsonify(rep_candidate.get_content(new_score))
 
-    def modify_challenge(self, id, code_file, tests_code_file, json):
+    def modify_challenge(self, id, code_file, tests_code_file, json_challenge):
         if not self.dao.exists(id):
             return make_response(jsonify({'challenge': 'id doesnt exist'}), 404)
+
+        json = loads(json_challenge)
 
         data = {'repair_objective': None, 'complexity': None}
         data.update(json['challenge'])
