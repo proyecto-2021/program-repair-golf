@@ -129,6 +129,21 @@ def test_update_simple_fields(client):
     response = client.get(api_url + '/' + str(challenge_id))
     assert response.json == update_expected_response
 
+def test_update_valid_code(client):
+    code_path = examples_path + "valid_code_1.py"
+    test_path = examples_path + "valid_test_1.py"
+    dataChallengePost = request_creator(code_path=code_path, test_path=test_path, code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective="Make all tests pass.", complexity=1)
+    post_info = client.post(api_url, data=dataChallengePost)
+
+    challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
+    #send an update request
+    update_request = request_creator(code_path=examples_path + "valid_code_3.py")
+    response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+
+    assert response.status_code == 200
+    #the file has been saved correctly
+    assert response.json['challenge']['code'] == read_file(examples_path + 'valid_code_3.py', 'r')
+
 # -------Section functions ------- #
 def parseDataTextAJson(result):
     dataResultText = json.dumps(result)
