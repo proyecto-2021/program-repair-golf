@@ -66,6 +66,9 @@ class RubyCode:
         command = 'ruby -c ' + self.get_full_name()
         return subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) == 0
 
-    def run_fail(self):
+    def run(self):
         command = 'ruby ' + self.get_full_name()
-        return subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) != 0
+        return subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+
+    def run_fail(self):
+        return self.run() != 0
