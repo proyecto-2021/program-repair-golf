@@ -104,6 +104,10 @@ def test_post_repair(client, create_test_data):
     assert resp_repair.json == expected_response
     cleanup()
 
+def test_repair_code_w_sintax_error(client):
+    #todo: implement this method
+    pass
+
 def cleanup():
     db.session.query(CSharpChallengeModel).delete()
     path = "./example-challenges/c-sharp-challenges"
