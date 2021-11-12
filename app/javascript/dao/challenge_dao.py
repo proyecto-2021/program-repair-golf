@@ -2,6 +2,7 @@ from app.javascript.exceptions.challenge_dao_exception import challenge_dao_exce
 from ..models_js import JavascriptChallenge, db
 
 class ChallengeDAO():
+    
     def get_challenge(id):
         challenge = JavascriptChallenge.query.filter(id == JavascriptChallenge.id).first()
         if not challenge: 
@@ -23,7 +24,7 @@ class ChallengeDAO():
         return challenge
 
     def update_challenge(id, code, test_code, repair_objective, complexity, best_score):
-        print(best_score)
+      
         challenge = ChallengeDAO.get_challenge(id)
         if code:
             challenge.code = code
