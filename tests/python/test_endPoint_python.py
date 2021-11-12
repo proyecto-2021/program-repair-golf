@@ -7,7 +7,7 @@ import json
 def test_post_pythonChallenge(client):
     repair_objective = "make to pass"
 
-    dataChallenge = post_function(code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objective, complexity=2)
+    dataChallenge = request_creator(code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objective, complexity=2)
 
     response = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallenge)
 
@@ -18,7 +18,7 @@ def test_get_single_pythonChallenge(client):
     #---- post one challenge to test ---#    
     repair_objectiveParam = "prueba test"
 
-    dataChallengePost = post_function(code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objectiveParam, complexity=3) 
+    dataChallengePost = request_creator(code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objectiveParam, complexity=3)
     post_info = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePost)
     
     challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
@@ -41,7 +41,6 @@ def test_get_single_pythonChallenge(client):
 
     #I get each value within the dictionary
     repair_objective = dataChallenge['challenge']['repair_objective']
-    complexity       = dataChallenge['challenge']['complexity']
     code             = dataChallenge['challenge']['code']
 
     assert len(repair_objective) > 0
@@ -59,9 +58,8 @@ def test_get_total_pythonChallenge(client):
     repair_objectiveParamTwo = "pruebita test"
     repair_objectiveParamThree = "pruebas test"
     
-    dataChallengePostOne = post_function(code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objectiveParamOne, complexity=1)
-    dataChallengePostTwo = post_function(code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objectiveParamTwo, complexity=2)
-    dataChallengePostThree = post_function(code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objectiveParamThree, complexity=3)
+    dataChallengePostOne = request_creator(code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objectiveParamOne, complexity=1)
+    dataChallengePostTwo = request_creator(code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objectiveParamTwo, complexity=2)
 
     client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostOne)
     client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostTwo)
@@ -76,7 +74,7 @@ def test_get_total_pythonChallenge(client):
 
 def test_post_challenge_invalid_code(client):
     code_filename = "code_not_compile.py"
-    dataChallenge = post_function(code_name=code_filename, test_name="valid_test_1.py", repair_objective="Make all tests pass.", complexity=2)
+    dataChallenge = request_creator(code_name=code_filename, test_name="valid_test_1.py", repair_objective="Make all tests pass.", complexity=2)
 
     response = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallenge)
 
@@ -87,7 +85,7 @@ def test_post_challenge_invalid_code(client):
 
 def test_post_challenge_invalid_test(client):
     test_filename = "test_not_compile.py"
-    dataChallenge = post_function(code_name="valid_code_1.py", test_name=test_filename, repair_objective="Make all tests pass.", complexity=2)
+    dataChallenge = request_creator(code_name="valid_code_1.py", test_name=test_filename, repair_objective="Make all tests pass.", complexity=2)
 
     response = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallenge)
 
@@ -98,7 +96,7 @@ def test_post_challenge_invalid_test(client):
 
 #post challenge with no errors in tests (so its repaired)
 def test_post_invalid_repaired_challenge(client):
-    dataChallenge = post_function(code_name="code_repair_2.py", test_name="valid_test_2.py", repair_objective="Make all tests pass.", complexity=2)
+    dataChallenge = request_creator(code_name="code_repair_2.py", test_name="valid_test_2.py", repair_objective="Make all tests pass.", complexity=2)
 
     response = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallenge)
 
@@ -110,12 +108,12 @@ def test_post_invalid_repaired_challenge(client):
 
 def test_update_simple_fields(client):
     #make a post and save id
-    dataChallengePost = post_function(code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective="Make all tests pass.", complexity=1) 
+    dataChallengePost = request_creator(code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective="Make all tests pass.", complexity=1)
     post_info = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePost)
     
     challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
     #send an update request
-    updateRequest = post_function(repair_objective="updated", complexity=3)
+    updateRequest = request_creator(repair_objective="updated", complexity=3)
     response = client.put('http://localhost:5000/python/api/v1/python-challenges/' + str(challenge_id), data=updateRequest)
 
     update_expected_response = {
@@ -132,7 +130,6 @@ def test_update_simple_fields(client):
     assert response.json == update_expected_response
     #check te same with get
     response = client.get('http://localhost:5000/python/api/v1/python-challenges/' + str(challenge_id))
-    #print(f"response\n\n\n\n\n\n{response.json['challenge']['complexity']} \n\n\n\n\nexpected\n{update_expected_response['challenge']['complexity']}\n\n")
     assert response.json == update_expected_response
 
 # -------Section functions ------- #
@@ -143,8 +140,7 @@ def parseDataTextAJson(result):
 
     return dataResultJson
 
-def post_function(**params):
-    
+def request_creator(**params):
     #we check each param's presence and add it to dataChallenge
     dataChallenge = {}
     challenge_str = '{ "challenge": { '
