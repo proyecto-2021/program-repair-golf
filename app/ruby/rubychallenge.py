@@ -36,16 +36,6 @@ class RubyChallenge:
 			del dict[key]
 		return dict
 
-	def get_file_name(self, is_test=False):
-		if is_test:
-			return self.tests_code.get_file_name()
-		return self.code.get_file_name()
-
-	def get_full_name(self, is_test=False):
-		if is_test:
-			return self.tests_code.get_full_name()
-		return self.code.get_full_name()
-
 	def set_code(self, files_path, file_name, file=None):
 		self.code.set_code(files_path, file_name, file)
 
@@ -55,39 +45,8 @@ class RubyChallenge:
 	def set_best_score(self, new_score):
 		self.best_score = new_score
 
-	def save_code(self, is_test=False):
-		if is_test:
-			return self.tests_code.save()
-		return self.code.save()
-
-	def remove_code(self, is_test=False):
-		if is_test:
-			self.tests_code.remove()
-		else:
-			self.code.remove()
-
-	def move_code(self, path, names_match=True, is_test=False):
-		if is_test:
-			return self.tests_code.move(path, names_match)
-		return self.code.move(path, names_match)
-
-	def copy_code(self, path, is_test=False):
-		if is_test:
-			return self.tests_code.copy(path)
-		return self.code.copy(path)
-
-	def rename_code(self, new_name, is_test=False):
-		if is_test:
-			return self.tests_code.rename(new_name)
-		return self.code.rename(new_name)
-
 	def codes_compile(self):
 		return self.code.compiles() and self.tests_code.compiles()
-
-	def code_compile(self, is_test=False):
-		if is_test:
-			return self.tests_code.compiles()
-		return self.code.compiles()
 
 	def tests_fail(self):
 		return self.tests_code.run_fail()

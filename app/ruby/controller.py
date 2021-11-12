@@ -23,26 +23,26 @@ class Controller:
         if not challenge.data_ok():
             return make_response(jsonify({'challenge': 'the json information is incomplete/erroneous'}), 400)
 
-        if not challenge.save_code():
+        if not challenge.get_code().save():
             return make_response(jsonify({'challenge': 'source_code already exists'}), 409)
 
-        if not challenge.save_code(is_test=True):
-            challenge.remove_code()
+        if not challenge.get_tests_code().save():
+            challenge.get_code().remove()
             return make_response(jsonify({'challenge': 'test_suite already exists'}), 409)
 
         if not challenge.codes_compile():
-            challenge.remove_code()
-            challenge.remove_code(is_test=True)
+            challenge.get_code().remove()
+            challenge.get_tests_code().remove()
             return make_response(jsonify({'challenge': 'source_code and/or test_suite doesnt compile'}), 400)
 
         if not challenge.dependencies_ok():
-            challenge.remove_code()
-            challenge.remove_code(is_test=True)
+            challenge.get_code().remove()
+            challenge.get_tests_code().remove()
             return make_response(jsonify({'challenge': 'test_suite dependencies are wrong'}), 400)
 
         if not challenge.tests_fail():
-            challenge.remove_code()
-            challenge.remove_code(is_test=True)
+            challenge.get_code().remove()
+            challenge.get_tests_code().remove()
             return make_response(jsonify({'challenge': 'test_suite doesnt fail'}),400)
 
         response = challenge.get_content(exclude=['id'])
@@ -102,8 +102,8 @@ class Controller:
             rmtree(self.ruby_tmp)
         mkdir(self.ruby_tmp)
         #If files names are in the request, set new_code names to them. If not, take old_challenge name.
-        nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.get_file_name()
-        nc_test_name = data['test_suite_file_name'] if 'test_suite_file_name' in data else old_challenge.get_file_name(is_test=True)
+        nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.get_code().get_file_name()
+        nc_test_name = data['test_suite_file_name'] if 'test_suite_file_name' in data else old_challenge.get_tests_code().get_file_name()
         
         if not self.set_new_challenge(nc_code_name, code_file, old_challenge.get_code(), new_challenge):
             return make_response(jsonify({'challenge': 'code doesnt compile'}), 400)
