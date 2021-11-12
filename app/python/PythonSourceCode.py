@@ -12,6 +12,13 @@ class PythonSourceCode:
       self.content = read_file(path, 'rb')
       self.name = get_filename(path)
 
+  def move_code(self, path):
+    #Save code repair
+    path_code_repair = path + self.name 
+    save_file(path_code_repair, 'wb', self.content)
+
+    self.path = path_code_repair
+
   def update(self, content, name):
     if content != None: self.content = content
     if name != None: self.name = name

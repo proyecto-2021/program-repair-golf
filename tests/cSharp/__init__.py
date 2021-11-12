@@ -13,3 +13,11 @@ def client():
             db.create_all()
             # Tests will be executed on the test_client object
             yield test_client
+    cleanup()
+
+
+def cleanup():
+    path = "./example-challenges/c-sharp-challenges"
+    for dirname in os.listdir(path):
+        if os.path.isdir(path + '/' + dirname) and dirname != "Median":
+            shutil.rmtree(path + '/' + dirname)
