@@ -25,8 +25,10 @@ def expected_challenge(new_challenge):
 @pytest.fixture
 def expected_challenge_w_f_contents(new_challenge):
     challenge = new_challenge.__repr__()
-    challenge['code'] = 'using System;\n\npublic class Example1 {\n    public static string example1() {\n        return "I\'m not a test";\n    }\n    public static void Main(string[] args) {\n        Console.WriteLine (example1());\n    }\n}\n'
-    challenge['tests_code'] = 'using NUnit.Framework;\n\n[TestFixture]\npublic class Example1Test {\n    [Test]\n    public void test1() {\n        string result = Example1.example1();\n        Assert.AreEqual("I\'m a test", result);\t\n    }\n}\n'
+    with open('tests/cSharp/test-files/Example1.cs') as f:
+        challenge['code'] = f.read()
+    with open('tests/cSharp/test-files/Example1Test.cs') as f:
+        challenge['tests_code'] = f.read()
     return challenge
 
 
