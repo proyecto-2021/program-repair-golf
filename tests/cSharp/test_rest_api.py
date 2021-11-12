@@ -31,6 +31,25 @@ def test_post_challenge(client):
     cleanup()
 
 
+def test_update_incorrect_complexity(client):
+    #Arrange
+    url_post = 'cSharp/c-sharp-challenges'
+    data = create_challenge('Example1', 'Example1Test', 'Testing', '5', 'Example1', 'Example1Test')
+
+    data_put = { 'complexity': 8}
+    #Act
+    resp_post = client.post(url_post, data=data)
+    challenge_id = resp_post.json['challenge']['id']
+    
+    url_put = 'cSharp/c-sharp-challenges/' + str(challenge_id) 
+    resp_put = client.put(url_put, data=data_put)
+
+    #Assert
+    assert resp_put.status_code == 409
+    assert resp_put.json == {'Complexity': 'Must be between 1 and 5'}
+    cleanup()
+
+
 def cleanup():
     db.session.query(CSharpChallengeModel).delete()
     path = "./example-challenges/c-sharp-challenges"
@@ -38,9 +57,6 @@ def cleanup():
         if dirname != "Median":
             shutil.rmtree(path + '/' + dirname)
 
-def test_update_incorrect_complexity(client):
-    #to do: implement this method
-    pass
 
 def create_challenge(code_name=None, tests_name=None, repair_objective=None, complexity=None, code=None, tests_code=None):
     challenge = {}
