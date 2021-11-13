@@ -51,3 +51,7 @@ def test_get_challenge_from_db_with_files_contents(client, expected_challenge_w_
 def test_exist_false(client):
     result = exist(1)
     assert not result
+
+def test_exist_true(client, expected_challenge):
+    # TODO
+    pass
