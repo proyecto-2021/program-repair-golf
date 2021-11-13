@@ -49,7 +49,7 @@ def test_post_challenge(client, create_test_data):
 def test_post_with_sintax_error_in_code(client):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
-    data = create_challenge('Example2', 'Example2Test', 'Testing', '3', 'Example2', 'Example2Test')
+    data = create_challenge('Example1', 'Example1Test', 'Testing', '5', 'ExampleSintaxErrors', 'BaseTest')
     expected_response = {'Challenge': 'Sintax errors'}
 
     # Act
