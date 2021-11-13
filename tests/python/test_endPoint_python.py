@@ -1,74 +1,141 @@
 from app.python.models import *
 from . import client
+from app.python.file_utils import read_file
 import json
 
+examples_path = 'tests/python/example_programs_test/'
+api_url = 'http://localhost:5000/python/api/v1/python-challenges'
 
 # testing of one post challenge
 def test_post_pythonChallenge(client):
     repair_objective = "make to pass"
-
-    dataChallenge = postFunction(repair_objective, 2)
-
-    response = client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallenge)
+    response = send_post(client, "valid_code_1.py", "valid_test_1.py", repair_objective, 2)
 
     assert response.status_code == 200
 
 # testing a single challenge 
 def test_get_single_pythonChallenge(client):
-    clear_data_base()
-
     #---- post one challenge to test ---#    
     repair_objectiveParam = "prueba test"
-
-    dataChallengePost = postFunction(repair_objectiveParam,3) 
-    client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePost)
-
-    result = client.get('http://localhost:5000/python/api/v1/python-challenges/1')
+    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", repair_objectiveParam, 3)
+    
+    challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
+    result = client.get(api_url + '/' + str(challenge_id))
     #---- end post ---#
 
     #data to be entered in the post test
-    dataEnteredPost = {'challenge': {'best_score': 0, 'code': '\ndef median(a,b,c):\n    res = 0\n    if ((a>=b and a<=c) or (a>=c and a<=b)):\n        res = a\n    if ((b>=a and b<=c) or (b>=c and b<=a)):\n        res = b\n    else:\n        res = c\n    return res\n\n', 'complexity': 3, 'repair_objective': 'prueba test', 'tests_code': 'from median import median\n\ndef test_one():\n    a = 1\n    b = 2\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_two():\n    a = 2\n    b = 1\n    c = 3\n    res = median(a, b, c)\n    assert res == 2\n\ndef test_three():\n    a = 3\n    b = 1\n    c = 2\n    res = median(a, b, c)\n    assert res == 2\n\n'}}
+    post_expected_response = create_expected_response(0, "valid_code_1.py", "3", 'prueba test', "valid_test_1.py")
 
     #data obtained through the get ready for manipulation
     dataChallenge = parseDataTextAJson(result.json)
 
     #I get each value within the dictionary
     repair_objective = dataChallenge['challenge']['repair_objective']
-    best_score       = dataChallenge['challenge']['best_score']
-    complexity       = dataChallenge['challenge']['complexity']
     code             = dataChallenge['challenge']['code']
 
-    assert isinstance(complexity,int) == True
     assert len(repair_objective) > 0
     assert len(code) > 0
-    assert result.json == dataEnteredPost 
-    clear_data_base()
+    assert result.json == post_expected_response
 
 # testing multiple challenges
 def test_get_total_pythonChallenge(client):
-    clear_data_base()
-
+    #get challenge count before test
+    responsive = client.get(api_url)
+    initial_challenge_len = len(parseDataTextAJson(responsive.json)['challenges'])
+    
     #--- start post challenges ---#
     repair_objectiveParamOne = "probando test"
-    repair_objectiveParamTwo = "pruebita test"
-    repair_objectiveParamThree = "pruebas test"
+    send_post(client, "valid_code_1.py", "valid_test_1.py", repair_objectiveParamOne, 1)
     
-    dataChallengePostOne = postFunction(repair_objectiveParamOne,1)
-    dataChallengePostTwo = postFunction(repair_objectiveParamTwo,2)
-    dataChallengePostThree = postFunction(repair_objectiveParamThree,3)
+    repair_objectiveParamTwo = "pruebita test"
+    send_post(client, "valid_code_1.py", "valid_test_1.py", repair_objectiveParamTwo, 2)
 
-    client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostOne)
-    client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostTwo)
-    client.post('http://localhost:5000/python/api/v1/python-challenges', data=dataChallengePostThree)
     #--- end post challenges ---#
 
-    responsive = client.get('http://localhost:5000/python/api/v1/python-challenges')
+    responsive = client.get(api_url)
     
     data = parseDataTextAJson(responsive.json)
     
-    assert len(data['challenges']) == 3
-    clear_data_base()
+    assert len(data['challenges']) == initial_challenge_len + 2
 
+def test_post_challenge_invalid_code(client):
+    response = send_post(client, "code_not_compile.py", "valid_test_1.py", "Make all tests pass.", 2)
+
+    assert response.status_code == 409
+    #get json with the error
+    json_response = parseDataTextAJson(response.json)
+    assert json_response['Error'] == 'Syntax error at ' + 'code_not_compile.py'
+
+def test_post_challenge_invalid_test(client):
+    response = send_post(client, "valid_code_1.py", "test_not_compile.py", "Make all tests pass.", 2)
+
+    assert response.status_code == 409
+    #get json with the error
+    json_response = parseDataTextAJson(response.json)
+    assert json_response['Error'] == 'Syntax error at ' + 'test_not_compile.py'
+
+#post challenge with no errors in tests (so its repaired)
+def test_post_invalid_repaired_challenge(client):
+    response = send_post(client, "code_repair_2.py", "valid_test_2.py", "Make all tests pass.", 2)
+
+    assert response.status_code == 409
+    #get json with the error
+    json_response = parseDataTextAJson(response.json)
+    assert json_response['Error'] == 'At least one test must fail'
+
+
+def test_update_simple_fields(client):
+    #make a post and save id
+    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", 1)
+    challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
+    #send an update request
+    update_request = request_creator(repair_objective="updated", complexity=3)
+    response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+
+    update_expected_response = create_expected_response(0, "valid_code_1.py", "3", 'updated', "valid_test_1.py")
+
+    assert response.status_code == 200
+    assert response.json == update_expected_response
+    #check te same with get
+    response = client.get(api_url + '/' + str(challenge_id))
+    assert response.json == update_expected_response
+
+def test_update_valid_code(client):
+    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", 1)
+
+    challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
+    #send an update request
+    update_request = request_creator(code_path=examples_path + "valid_code_3.py")
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+
+    assert update_response.status_code == 200
+    #the file has been saved correctly
+    assert update_response.json['challenge']['code'] == read_file(examples_path + 'valid_code_3.py', 'r')
+
+def test_update_not_compiling_code(client):
+    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", 1)
+
+    challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
+    #send an update request
+    update_request = request_creator(code_path=examples_path + "code_not_compile.py")
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+
+    assert update_response.status_code == 409
+    #the filename hasn't changed, its the same we used for post
+    assert update_response.json['Error'] == 'Syntax error at ' + 'valid_code_1.py'
+
+    
+def test_update_repaired_code(client):
+    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", 1)
+
+    challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
+    #send an update request with repaired code
+    update_request = request_creator(code_path=examples_path + "code_repair_2.py")
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+
+    assert update_response.status_code == 409
+    #the filename hasn't changed, its the same we used for post
+    assert update_response.json['Error'] == 'At least one test must fail'
 
 
 # -------Section functions ------- #
@@ -79,31 +146,51 @@ def parseDataTextAJson(result):
 
     return dataResultJson
 
-def clear_data_base():
-    db.session.query(PythonChallengeModel).delete()
-
-def postFunction(repair_objectiveParam,complexityParam):
+def request_creator(**params):
+    dataChallenge = {}
+    challenge_str = '{ "challenge": { '
+    initial_len = len(challenge_str)    #just to know if its been updated in the end
     
-    complexityString = str(complexityParam)
-
-    source_code_fileTemp = open('example-challenges/python-challenges/median.py','rb')
-    test_suite_fileTemp = open('example-challenges/python-challenges/test_median.py','rb')
-    dataChallenge = {
-        'source_code_file' : source_code_fileTemp,
-        'test_suite_file' : test_suite_fileTemp,
-        'challenge': '{ \
-            "challenge": { \
-                "source_code_file_name" : "median.py", \
-                "test_suite_file_name" : "test_median.py", \
-                "repair_objective" : "repair_variable" , \
-                "complexity" : "complexity_variable" \
-            } \
-        }'
-    } 
-    replace_text = dataChallenge['challenge'].replace('repair_variable',repair_objectiveParam)
-    dataChallenge['challenge'] = replace_text
-    replace_text2 = dataChallenge['challenge'].replace('complexity_variable',complexityString)
-    dataChallenge['challenge'] = replace_text2
+    #we check each param's presence and add it to dataChallenge
+    if params.get('code_path') is not None:
+        dataChallenge['source_code_file'] = open(params.get('code_path'), 'rb')
+    if params.get('test_path') is not None:
+        dataChallenge['test_suite_file'] = open(params.get('test_path'), 'rb')
+    if params.get('code_name') is not None:
+        challenge_str += '"source_code_file_name" : "' + params.get('code_name') + '", '
+    if params.get('test_name') is not None:
+        challenge_str += '"test_suite_file_name" : "' + params.get('test_name') + '", '
+    if params.get('repair_objective') is not None:
+        challenge_str += '"repair_objective" : "' + params.get('repair_objective') + '" , '
+    if params.get('complexity') is not None:
+        challenge_str += '"complexity" : "' + str(params.get('complexity')) + '" '
+    challenge_str += '} }'
+    #checking if some param has been passed
+    if len(challenge_str) > initial_len + len('} }'):
+        dataChallenge['challenge'] = challenge_str
 
     return dataChallenge     
 # ------- end Section functions ------- #
+
+def create_expected_response(best_score, code_name, complexity, repair_objective, test_name):
+    code = read_file(examples_path + code_name, 'r')
+    test = read_file(examples_path + test_name, 'r')
+    expected_response = {
+        'challenge': {
+            'best_score': best_score,
+            'code': code,
+            'complexity': complexity,
+            'repair_objective': repair_objective,
+            'tests_code': test
+        }
+    }
+    return expected_response
+
+def send_post(client, code_name, test_name, repair_objective, complexity):
+    code_path = examples_path + code_name
+    test_path = examples_path + test_name
+    
+    dataChallengePost = request_creator(code_path=code_path, test_path=test_path, code_name=code_name,
+     test_name=test_name, repair_objective=repair_objective, complexity=complexity)
+
+    return client.post(api_url, data=dataChallengePost)
