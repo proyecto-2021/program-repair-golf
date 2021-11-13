@@ -162,9 +162,19 @@ def test_get_Id_noesxite(client):
 	assert p2.status_code == 404
 
 
-#modify repair objective of an existing challenge
+#modify a non-existent challenge
+def test_PUT_Id_None(client):
+	delete_db
+	data = createQuery()
+	id=5
+	url = f'http://localhost:5000/java/java-challenges/{id}'
+	p1=client.put(url)
+	
+	assert p1.status_code== 404
+
 
 #modify complexity of an existing challenge 
+#modify repair objective of an existing challenge
 
 #modify a non-existent challenge
 #modify files ok 
