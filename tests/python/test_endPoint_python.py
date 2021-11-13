@@ -9,12 +9,7 @@ api_url = 'http://localhost:5000/python/api/v1/python-challenges'
 # testing of one post challenge
 def test_post_pythonChallenge(client):
     repair_objective = "make to pass"
-
-    code_path = examples_path + "valid_code_1.py"
-    test_path = examples_path + "valid_test_1.py"
-    dataChallenge = request_creator(code_path=code_path, test_path=test_path, code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objective, complexity=2)
-
-    response = client.post(api_url, data=dataChallenge)
+    response = send_post(client, "valid_code_1.py", "valid_test_1.py", repair_objective, 2)
 
     assert response.status_code == 200
 
@@ -22,11 +17,7 @@ def test_post_pythonChallenge(client):
 def test_get_single_pythonChallenge(client):
     #---- post one challenge to test ---#    
     repair_objectiveParam = "prueba test"
-
-    code_path = examples_path + "valid_code_1.py"
-    test_path = examples_path + "valid_test_1.py"
-    dataChallengePost = request_creator(code_path=code_path, test_path=test_path, code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objectiveParam, complexity=3)
-    post_info = client.post(api_url, data=dataChallengePost)
+    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", repair_objectiveParam, 3)
     
     challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
     result = client.get(api_url + '/' + str(challenge_id))
@@ -54,15 +45,11 @@ def test_get_total_pythonChallenge(client):
     
     #--- start post challenges ---#
     repair_objectiveParamOne = "probando test"
-    repair_objectiveParamTwo = "pruebita test"
+    send_post(client, "valid_code_1.py", "valid_test_1.py", repair_objectiveParamOne, 1)
     
-    code_path = examples_path + "valid_code_1.py"
-    test_path = examples_path + "valid_test_1.py"
-    dataChallengePostOne = request_creator(code_path=code_path, test_path=test_path, code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objectiveParamOne, complexity=1)
-    dataChallengePostTwo = request_creator(code_path=code_path, test_path=test_path, code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective=repair_objectiveParamTwo, complexity=2)
+    repair_objectiveParamTwo = "pruebita test"
+    send_post(client, "valid_code_1.py", "valid_test_1.py", repair_objectiveParamTwo, 2)
 
-    client.post(api_url, data=dataChallengePostOne)
-    client.post(api_url, data=dataChallengePostTwo)
     #--- end post challenges ---#
 
     responsive = client.get(api_url)
@@ -72,11 +59,7 @@ def test_get_total_pythonChallenge(client):
     assert len(data['challenges']) == initial_challenge_len + 2
 
 def test_post_challenge_invalid_code(client):
-    code_path = examples_path + "code_not_compile.py"
-    test_path = examples_path + "valid_test_1.py"
-    dataChallenge = request_creator(code_path=code_path, test_path=test_path, code_name='code_not_compile.py', test_name="valid_test_1.py", repair_objective="Make all tests pass.", complexity=2)
-
-    response = client.post(api_url, data=dataChallenge)
+    response = send_post(client, "code_not_compile.py", "valid_test_1.py", "Make all tests pass.", 2)
 
     assert response.status_code == 409
     #get json with the error
@@ -84,11 +67,7 @@ def test_post_challenge_invalid_code(client):
     assert json_response['Error'] == 'Syntax error at ' + 'code_not_compile.py'
 
 def test_post_challenge_invalid_test(client):
-    code_path = examples_path + "valid_code_1.py"
-    test_path = examples_path + "test_not_compile.py"
-    dataChallenge = request_creator(code_path=code_path, test_path=test_path, code_name="valid_code_1.py", test_name='test_not_compile.py', repair_objective="Make all tests pass.", complexity=2)
-
-    response = client.post(api_url, data=dataChallenge)
+    response = send_post(client, "valid_code_1.py", "test_not_compile.py", "Make all tests pass.", 2)
 
     assert response.status_code == 409
     #get json with the error
@@ -97,11 +76,7 @@ def test_post_challenge_invalid_test(client):
 
 #post challenge with no errors in tests (so its repaired)
 def test_post_invalid_repaired_challenge(client):
-    code_path = examples_path + "code_repair_2.py"
-    test_path = examples_path + "valid_test_2.py"
-    dataChallenge = request_creator(code_path=code_path, test_path=test_path, code_name="code_repair_2.py", test_name="valid_test_2.py", repair_objective="Make all tests pass.", complexity=2)
-
-    response = client.post(api_url, data=dataChallenge)
+    response = send_post(client, "code_repair_2.py", "valid_test_2.py", "Make all tests pass.", 2)
 
     assert response.status_code == 409
     #get json with the error
@@ -111,11 +86,7 @@ def test_post_invalid_repaired_challenge(client):
 
 def test_update_simple_fields(client):
     #make a post and save id
-    code_path = examples_path + "valid_code_1.py"
-    test_path = examples_path + "valid_test_1.py"
-    dataChallengePost = request_creator(code_path=code_path, test_path=test_path, code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective="Make all tests pass.", complexity=1)
-    post_info = client.post(api_url, data=dataChallengePost)
-    
+    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", 1)
     challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
     #send an update request
     update_request = request_creator(repair_objective="updated", complexity=3)
@@ -130,10 +101,7 @@ def test_update_simple_fields(client):
     assert response.json == update_expected_response
 
 def test_update_valid_code(client):
-    code_path = examples_path + "valid_code_1.py"
-    test_path = examples_path + "valid_test_1.py"
-    dataChallengePost = request_creator(code_path=code_path, test_path=test_path, code_name="valid_code_1.py", test_name="valid_test_1.py", repair_objective="Make all tests pass.", complexity=1)
-    post_info = client.post(api_url, data=dataChallengePost)
+    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", 1)
 
     challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
     #send an update request
@@ -191,3 +159,12 @@ def create_expected_response(best_score, code_name, complexity, repair_objective
         }
     }
     return expected_response
+
+def send_post(client, code_name, test_name, repair_objective, complexity):
+    code_path = examples_path + code_name
+    test_path = examples_path + test_name
+    
+    dataChallengePost = request_creator(code_path=code_path, test_path=test_path, code_name=code_name,
+     test_name=test_name, repair_objective=repair_objective, complexity=complexity)
+
+    return client.post(api_url, data=dataChallengePost)
