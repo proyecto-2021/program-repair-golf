@@ -180,7 +180,8 @@ def repair_Candidate(id):
             remove_path([repair_path, repair_path.replace('.cs', '.exe'),
                          challenge['tests_code'].replace(".cs", ".dll")])
             return make_response(jsonify({'repair': {'challenge': challenge_data, 'score': score}}), 200)
-
+    else:
+        return make_response(jsonify({"challenge": "There is no challenge for this id"}), 404)
 
 @cSharp.route('/c-sharp-challenges/<int:id>', methods=['GET'])
 def get_challenge(id):
