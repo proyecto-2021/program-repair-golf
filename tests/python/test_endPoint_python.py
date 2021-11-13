@@ -160,30 +160,36 @@ def parseDataTextAJson(result):
 
 # -------Section functions ------- #
 def request_creator(**params):
-    dataChallenge = {}
-    challenge_str = '{ "challenge": { '
-    initial_len = len(challenge_str)    #just to know if its been updated in the end
-    
     #we check each param's presence and add it to dataChallenge
+    dataChallenge = {}
+    #file checking
     if params.get('code_path') is not None:
         dataChallenge['source_code_file'] = open(params.get('code_path'), 'rb')
     if params.get('test_path') is not None:
         dataChallenge['test_suite_file'] = open(params.get('test_path'), 'rb')
-    if params.get('code_name') is not None:
-        challenge_str += '"source_code_file_name" : "' + params.get('code_name') + '", '
-    if params.get('test_name') is not None:
-        challenge_str += '"test_suite_file_name" : "' + params.get('test_name') + '", '
-    if params.get('repair_objective') is not None:
-        challenge_str += '"repair_objective" : "' + params.get('repair_objective') + '" , '
-    if params.get('complexity') is not None:
-        challenge_str += '"complexity" : "' + str(params.get('complexity')) + '" '
+    
+    #creating challenge data as string
+    challenge_str = '{ "challenge": { '
+    comma_needed = False
+    challenge_str, comma_needed = check_and_concatenate(challenge_str, '"source_code_file_name" : "', params.get('code_name'), comma_needed)
+    challenge_str, comma_needed = check_and_concatenate(challenge_str, '"test_suite_file_name" : "', params.get('test_name'), comma_needed)
+    challenge_str, comma_needed = check_and_concatenate(challenge_str, '"repair_objective" : "', params.get('repair_objective'), comma_needed)
+    challenge_str, comma_needed = check_and_concatenate(challenge_str, '"complexity" : "', params.get('complexity'), comma_needed)
     challenge_str += '} }'
-    #checking if some param has been passed
-    if len(challenge_str) > initial_len + len('} }'):
+
+    if comma_needed: #comma needed, thus at least one parameter was required
         dataChallenge['challenge'] = challenge_str
 
     return dataChallenge     
 # ------- end Section functions ------- #
+
+def check_and_concatenate(base_str, base_addition, addition, comma_needed):
+    if addition is None: return base_str, comma_needed #nothing to be added
+    if comma_needed: base_str += ', '
+    comma_needed = True
+
+    base_str += base_addition + addition + '"'    #concatenate strings
+    return base_str, comma_needed   #return both string and comma_needed
 
 def create_expected_response(best_score, code_name, complexity, repair_objective, test_name):
     code = read_file(examples_path + code_name, 'r')
