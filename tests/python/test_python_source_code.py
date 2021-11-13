@@ -4,7 +4,7 @@ from . import client
 import json
 
 # testing builder 
-def test_pythonsourcecode_builder_if(client): 
+def test_pythonsourcecode_first_builder(client): 
     codeToRead = read_file('tests/python/example_programs_test/valid_code_1.py','rb')
     
     pythonSourceCodeInstance = PythonSourceCode(code = codeToRead ,name='matias');
