@@ -165,15 +165,11 @@ def test_update_all(client):
 
 def test_post_repair_challenge(client):
 
-    #Agrego un challenge al la db
     repair_objectiveParam = "Test repair"
-    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", repair_objectiveParam, 3)
+    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", repair_objectiveParam, '3')
 
-    #Obtengo el id del challenge
     challenge_id = post_info.json['challenge']['id']
 
-    #Mando el repair 
-    #source_code_fileTemp = open('tests/python/example_programs_test/' + code_name, 'rb')
     repair_request = request_creator(code_path = examples_path + "code_repair_2.py")
 
     response = client.post(api_url + '/' + str(challenge_id) + '/repair', data = repair_request)
@@ -182,6 +178,16 @@ def test_post_repair_challenge(client):
     json_response = response.json
     assert json_response['repair']['score'] == 2
 
+def test_post_repair_challenge_invalid(client):
+    
+    repair_request = request_creator(code_path = examples_path + "code_repair_2.py")
+    
+    invalid_id = 1000000000000000
+
+    response = client.post(api_url + '/' + str(invalid_id) + '/repair', data = repair_request)
+    
+    assert response.status_code == 409
+    assert response.json['Error'] == "Challenge not found"
 
 # -------Section functions ------- #
 def request_creator(**params):
