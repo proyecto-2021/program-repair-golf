@@ -55,7 +55,7 @@ class PythonChallenge:
 
   #if content is true the json will contain code, otherwise it will contain the paths of code
   def to_json(self, content = True, best_score = False):
-    challenge_data = {'repair_objective': self.repair_objective, 'complexity': self.complexity}
+    challenge_data = {'repair_objective': self.repair_objective, 'complexity': str(self.complexity)}
     if best_score: challenge_data['best_score'] = self.best_score
 
     if content:

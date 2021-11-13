@@ -124,13 +124,6 @@ def test_pass_all_test(client):
 	assert resp.status_code == 404
 
 def test_get_java(client):
-	resp = client.get('/java/java-challenges')
-	a = resp.json
-	
-	assert resp.status_code == 200
-	assert a['challenges'] == []
-	
-def test_get_java(client):
 	db.session.query(Challenge_java).delete()
 	url = 'http://localhost:5000/java/java-challenges'
 	resp = client.get(url)

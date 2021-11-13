@@ -28,8 +28,12 @@ def View_Challenges(id):
     
 @java.route('/java-challenges/<int:id>', methods=['PUT'])
 def UpdateChallenge(id):
-    return controller.challenge_upd_java(id)
-
+    try:
+        output= controller.challenge_upd_java(id)
+    except Exception as e:
+                return make_response(jsonify(str(e)), 404)
+    return make_response(jsonify({"challenge": output}))
+   
 @java.route('/java-challenges', methods=['POST'])
 def create_challenge():
     try:
