@@ -22,3 +22,7 @@ class CSharpChallengeDAO:
         db.session.add(new_challenge)
         db.session.commit()
         return new_challenge.id
+
+    def update_challenge_data(self, id, data):
+        db.session.query(CSharpChallengeModel).filter_by(id=id).update(data)
+        db.session.commit()
