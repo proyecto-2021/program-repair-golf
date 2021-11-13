@@ -115,8 +115,14 @@ class Controller:
 
         data = {'repair_objective': None, 'complexity': None}
         data.update(json['challenge'])
+
         old_challenge = RubyChallenge(**self.dao.get_challenge(id))
-        new_challenge = RubyChallenge(data['repair_objective'], data['complexity'])
+        new_challenge = RubyChallenge(**self.dao.get_challenge(id))
+        new_challenge.update(data)
+
+        if not new_challenge.data_ok():
+            return make_response(jsonify({'challenge': 'data is incomplete or invalid'}), 400)
+            
         if isdir(self.ruby_tmp):
             rmtree(self.ruby_tmp)
         mkdir(self.ruby_tmp)
