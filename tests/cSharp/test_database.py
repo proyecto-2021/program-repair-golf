@@ -48,10 +48,18 @@ def test_get_challenge_from_db_with_files_contents(client, expected_challenge_w_
     # Cleanup
     db.session.query(CSharpChallengeModel).delete()
 
-def test_exist_false(client):
-    result = exist(1)
-    assert not result
 
-def test_exist_true(client, expected_challenge):
-    # TODO
-    pass
+def test_exist(client, expected_challenge):
+    # Arrange
+    ch_id = expected_challenge['id']
+
+    # Act 
+    result_true = exist(ch_id)
+    result_false = exist(ch_id + 1)
+
+    #Assert
+    assert result_true
+    assert not result_false
+
+    # Cleanup
+    db.session.query(CSharpChallengeModel).delete() 
