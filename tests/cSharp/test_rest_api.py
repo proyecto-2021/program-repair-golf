@@ -254,8 +254,27 @@ def test_update_code_w_sintax_error(client):
 
 
 def test_update_code_passes_all_tests(client, create_test_data):
-    # todo: implement this method
-    pass
+    # Arrange
+    url = 'cSharp/c-sharp-challenges'
+
+    data_put = create_challenge(code_name='Example1', code='ExampleNoFails')
+    expected_response = {'Challenge': 'Must fail at least one test'}
+
+    # Act
+    resp_post = client.post(url, data=create_test_data['data'])
+    ch_id = resp_post.json['challenge']['id']
+    url += '/' + str(ch_id)
+
+    resp_put = client.put(url, data=data_put)
+    resp_json = resp_put.json
+    resp_code = resp_put.status_code
+
+    # Assert
+    assert resp_code == 409
+    assert resp_json == expected_response
+
+    # Cleanup
+    cleanup()
 
 
 def test_get_all_challenges_after_post(client, create_test_data):
