@@ -23,9 +23,10 @@ def upgrade():
     sa.Column('code', sa.String(length=256), nullable=True),
     sa.Column('tests_code', sa.String(length=256), nullable=True),
     sa.Column('repair_objective', sa.String(length=128), nullable=True),
-    sa.Column('complexity', sa.String(length=3), nullable=True),
+    sa.Column('complexity', sa.String(length=1), nullable=True),
     sa.Column('best_score', sa.Integer(), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.CheckConstraint("complexity IN ('1', '2', '3', '4', '5')")
     )
     # ### end Alembic commands ###
 
