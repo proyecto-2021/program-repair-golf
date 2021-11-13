@@ -252,7 +252,7 @@ def test_update_code_w_sintax_error(client,create_test_data):
     #Arrange
     url_post = 'cSharp/c-sharp-challenges'
     data = create_test_data['data']
-    data_put = {'source_code_file': open('tests/cSharp/test-files/Example2.cs', 'rb')}
+    data_put = {'source_code_file': open('tests/cSharp/test-files/ExampleSintaxErrors.cs', 'rb')}
     
     #Act
     resp_post = client.post(url_post, data=data)
