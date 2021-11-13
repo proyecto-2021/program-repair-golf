@@ -7,8 +7,8 @@ import pytest
 
 @pytest.fixture
 def new_challenge():
-    challenge = CSharpChallengeModel(code="./tests/cSharp/test-files/Example1.cs",
-                                     tests_code="./tests/cSharp/test-files/Example1Test.cs",
+    challenge = CSharpChallengeModel(code="./tests/cSharp/test-files/BaseExample.cs",
+                                     tests_code="./tests/cSharp/test-files/BaseTest.cs",
                                      repair_objective="testing the db",
                                      complexity=5,
                                      best_score=0)
@@ -25,9 +25,9 @@ def expected_challenge(new_challenge):
 @pytest.fixture
 def expected_challenge_w_f_contents(new_challenge):
     challenge = new_challenge.__repr__()
-    with open('tests/cSharp/test-files/Example1.cs') as f:
+    with open('tests/cSharp/test-files/BaseExample.cs') as f:
         challenge['code'] = f.read()
-    with open('tests/cSharp/test-files/Example1Test.cs') as f:
+    with open('tests/cSharp/test-files/BaseTest.cs') as f:
         challenge['tests_code'] = f.read()
     return challenge
 
