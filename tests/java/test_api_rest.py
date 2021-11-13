@@ -10,6 +10,9 @@ urlTest = 'example-challenges/java-challenges/MedianTest.java'
 exampleClass = 'tests/java/example_java/Prueba.java'
 exampleTest = 'tests/java/example_java/PruebaTest.java'
 
+def delete_db():
+	db.session.query(Challenge_java).delete()
+
 def createQuery():
 	fileClass = open(urlClass, 'rb')
 	fileTest = open(urlTest, 'rb')
@@ -157,6 +160,16 @@ def test_get_Id_noesxite(client):
 	p2 = client.get(url2)
 	
 	assert p2.status_code == 404
+
+
+#modify repair objective of an existing challenge
+
+#modify complexity of an existing challenge 
+
+#modify a non-existent challenge
+#modify files ok 
+#modify files does not compile 
+
 
 def createChallenge(url_class, url_test, name_class, name_test, objective, complexity):
 	fileClass = open(url_class, 'rb')
