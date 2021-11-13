@@ -125,6 +125,18 @@ def test_update_not_compiling_code(client):
     assert update_response.json['Error'] == 'Syntax error at ' + 'valid_code_1.py'
 
     
+def test_update_repaired_code(client):
+    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", 1)
+
+    challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
+    #send an update request with repaired code
+    update_request = request_creator(code_path=examples_path + "code_repair_2.py")
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+
+    assert update_response.status_code == 409
+    #the filename hasn't changed, its the same we used for post
+    assert update_response.json['Error'] == 'At least one test must fail'
+
 
 # -------Section functions ------- #
 def parseDataTextAJson(result):
