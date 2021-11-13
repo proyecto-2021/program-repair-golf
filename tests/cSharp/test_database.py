@@ -48,7 +48,6 @@ def test_get_challenge_from_db_with_files_contents(client, expected_challenge_w_
     # Cleanup
     db.session.query(CSharpChallengeModel).delete()
 
-
 def test_exist(client, expected_challenge):
     # Arrange
     ch_id = expected_challenge['id']
@@ -63,3 +62,7 @@ def test_exist(client, expected_challenge):
 
     # Cleanup
     db.session.query(CSharpChallengeModel).delete() 
+
+def test_update(client, expected_challenge):
+    # TODO 
+    pass
