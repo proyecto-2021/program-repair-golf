@@ -248,10 +248,28 @@ def test_update_incorrect_complexity(client, create_test_data):
     cleanup()
 
 
-def test_update_code_w_sintax_error(client):
-    #to do: implement this method
-    pass
+def test_update_code_w_sintax_error(client,create_test_data):
+    #Arrange
+    url_post = 'cSharp/c-sharp-challenges'
+    data = create_test_data['data']
+    data_put = {'source_code_file': open('tests/cSharp/test-files/Example2.cs', 'rb')}
+    
+    #Act
+    resp_post = client.post(url_post, data=data)
+    challenge_id = resp_post.json['challenge']['id'] 
 
+    url_put = 'cSharp/c-sharp-challenges/' + str(challenge_id) 
+    resp_put = client.put(url_put, data=data_put)
+    
+    #Assert
+    assert resp_put.status_code == 409
+    assert resp_put.json == {'Source code': 'Sintax errors'}
+    cleanup()
+
+
+def test_update_complexity_and_repair_objective(client):
+    #todo: implement this method
+    pass
 
 def test_update_code_passes_all_tests(client, create_test_data):
     # Arrange
