@@ -1,5 +1,6 @@
 alembic==1.7.3
 attrs==21.2.0
+bcrypt==3.2.0
 cffi==1.15.0
 click==8.0.1
 coverage==6.0
@@ -20,12 +21,14 @@ nltk==3.6.5
 packaging==21.0
 pluggy==1.0.0
 py==1.10.0
+py-bcrypt==0.4
 pycparser==2.21
 PyJWT==1.4.2
 pyparsing==2.4.7
 pytest==6.2.5
 pytest-cov==3.0.0
 regex==2021.10.8
+six==1.16.0
 SQLAlchemy==1.4.25
 toml==0.10.2
 tomli==1.2.1
