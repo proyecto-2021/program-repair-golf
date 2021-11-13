@@ -19,7 +19,7 @@ def test_get_single_pythonChallenge(client):
     repair_objectiveParam = "prueba test"
     post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", repair_objectiveParam, 3)
     
-    challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
+    challenge_id = post_info.json['challenge']['id']
     result = client.get(api_url + '/' + str(challenge_id))
     #---- end post ---#
 
@@ -27,7 +27,7 @@ def test_get_single_pythonChallenge(client):
     post_expected_response = create_expected_response(0, "valid_code_1.py", "3", 'prueba test', "valid_test_1.py")
 
     #data obtained through the get ready for manipulation
-    dataChallenge = parseDataTextAJson(result.json)
+    dataChallenge = result.json
 
     #I get each value within the dictionary
     repair_objective = dataChallenge['challenge']['repair_objective']
@@ -41,7 +41,7 @@ def test_get_single_pythonChallenge(client):
 def test_get_total_pythonChallenge(client):
     #get challenge count before test
     responsive = client.get(api_url)
-    initial_challenge_len = len(parseDataTextAJson(responsive.json)['challenges'])
+    initial_challenge_len = len(responsive.json['challenges'])
     
     #--- start post challenges ---#
     repair_objectiveParamOne = "probando test"
@@ -54,7 +54,7 @@ def test_get_total_pythonChallenge(client):
 
     responsive = client.get(api_url)
     
-    data = parseDataTextAJson(responsive.json)
+    data = responsive.json
     
     assert len(data['challenges']) == initial_challenge_len + 2
 
@@ -63,7 +63,7 @@ def test_post_challenge_invalid_code(client):
 
     assert response.status_code == 409
     #get json with the error
-    json_response = parseDataTextAJson(response.json)
+    json_response = response.json
     assert json_response['Error'] == 'Syntax error at ' + 'code_not_compile.py'
 
 def test_post_challenge_invalid_test(client):
@@ -71,7 +71,7 @@ def test_post_challenge_invalid_test(client):
 
     assert response.status_code == 409
     #get json with the error
-    json_response = parseDataTextAJson(response.json)
+    json_response = response.json
     assert json_response['Error'] == 'Syntax error at ' + 'test_not_compile.py'
 
 #post challenge with no errors in tests (so its repaired)
@@ -80,14 +80,14 @@ def test_post_invalid_repaired_challenge(client):
 
     assert response.status_code == 409
     #get json with the error
-    json_response = parseDataTextAJson(response.json)
+    json_response = response.json
     assert json_response['Error'] == 'At least one test must fail'
 
 
 def test_update_simple_fields(client):
     #make a post and save id
     post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", 1)
-    challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
+    challenge_id = post_info.json['challenge']['id']
     #send an update request
     update_request = request_creator(repair_objective="updated", complexity=3)
     response = client.put(api_url + '/' + str(challenge_id), data=update_request)
@@ -103,7 +103,7 @@ def test_update_simple_fields(client):
 def test_update_valid_code(client):
     post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", 1)
 
-    challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
+    challenge_id = post_info.json['challenge']['id']
     #send an update request
     update_request = request_creator(code_path=examples_path + "valid_code_3.py")
     update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
@@ -115,7 +115,7 @@ def test_update_valid_code(client):
 def test_update_not_compiling_code(client):
     post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", 1)
 
-    challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
+    challenge_id = post_info.json['challenge']['id']
     #send an update request
     update_request = request_creator(code_path=examples_path + "code_not_compile.py")
     update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
@@ -128,7 +128,7 @@ def test_update_not_compiling_code(client):
 def test_update_repaired_code(client):
     post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", 1)
 
-    challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
+    challenge_id = post_info.json['challenge']['id']
     #send an update request with repaired code
     update_request = request_creator(code_path=examples_path + "code_repair_2.py")
     update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
@@ -140,7 +140,7 @@ def test_update_repaired_code(client):
 def test_update_test_invalid_import(client):
     post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", 1)
 
-    challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
+    challenge_id = post_info.json['challenge']['id']
     #send an update request with repaired code
     update_request = request_creator(test_path=examples_path + "import_error_test.py")
     update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
@@ -158,6 +158,7 @@ def parseDataTextAJson(result):
 
     return dataResultJson
 
+# -------Section functions ------- #
 def request_creator(**params):
     dataChallenge = {}
     challenge_str = '{ "challenge": { '
