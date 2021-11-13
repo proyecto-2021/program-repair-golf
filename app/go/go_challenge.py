@@ -95,6 +95,9 @@ class GoChallenge:
     def tests_compiles(self):
         return self.tests_code.test_compiles()
 
+    def tests_fail(self):
+        return self.
+
 
 
 path_code = Go_src(path='example-challenges/go-challenges/median.go')
@@ -109,6 +112,6 @@ print(go_challenge.get_best_score())
 #print(go_challenge.get_code())
 #print(go_challenge.get_tests_code())
 
-print(go_challenge.code_compiles())
+go_challenge.test_run()
 #regex = '/\w+.go'
 #print(re.sub(regex, '', 'example-challenges/go-challenges/median.go'))
