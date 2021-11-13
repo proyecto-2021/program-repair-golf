@@ -149,14 +149,21 @@ def test_update_test_invalid_import(client):
     
     assert update_response.json['Error'] == "Import error, tests can't run"
     
+def test_update_all(client):
+    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", "1")
 
-# -------Section functions ------- #
-def parseDataTextAJson(result):
-    dataResultText = json.dumps(result)
+    challenge_id = post_info.json['challenge']['id']
+    #send an update request with repaired code
+    update_request = request_creator(code_path=examples_path + "code_change_my_name_4.py", 
+    test_path=examples_path + "test_change_my_name_4.py", code_name="unique_code_1.py", test_name="unique_test_1.py")
 
-    dataResultJson = json.loads(dataResultText)
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
 
-    return dataResultJson
+    assert update_response.status_code == 200
+
+    assert read_file("public/challenges/unique_code_1.py", "r") == update_response.json['challenge']['code']
+    assert read_file("public/challenges/unique_test_1.py", "r") == update_response.json['challenge']['tests_code']
+
 
 # -------Section functions ------- #
 def request_creator(**params):
