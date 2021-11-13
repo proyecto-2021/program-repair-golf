@@ -49,12 +49,14 @@ class Go_src:
     def remove_file(self):
         os.remove(self.get_path())
 
-    
-    def rewrite_file(self, path_to_file_to_update):
-        with open(self.get_path()) as file_used_to_update:
-                with open(path_to_file_to_update, 'w') as file_to_update:
-                    for line in file_used_to_update:
-                        file_to_update.write(line)
 
-path_code = Go_src(path='example-challenges/go-challenges/median.go')
+    def rewrite_file(self, update_data):
+        with open(self.get_path(), 'w') as f:
+                with open(update_data, 'r') as g:
+                    for line in g:
+                        f.write(line)
+
+path_code = Go_src(path='example-challenges/go-pruebas/aaa.go')
 path_test = Go_src(path='example-challenges/go-challenges/median_test.go')
+
+path_code.rewrite_file('example-challenges/go-challenges/median.go')
