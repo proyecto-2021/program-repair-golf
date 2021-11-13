@@ -106,11 +106,25 @@ def test_update_valid_code(client):
     challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
     #send an update request
     update_request = request_creator(code_path=examples_path + "valid_code_3.py")
-    response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
 
-    assert response.status_code == 200
+    assert update_response.status_code == 200
     #the file has been saved correctly
-    assert response.json['challenge']['code'] == read_file(examples_path + 'valid_code_3.py', 'r')
+    assert update_response.json['challenge']['code'] == read_file(examples_path + 'valid_code_3.py', 'r')
+
+def test_update_not_compiling_code(client):
+    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", 1)
+
+    challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
+    #send an update request
+    update_request = request_creator(code_path=examples_path + "code_not_compile.py")
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+
+    assert update_response.status_code == 409
+    #the filename hasn't changed, its the same we used for post
+    assert update_response.json['Error'] == 'Syntax error at ' + 'valid_code_1.py'
+
+    
 
 # -------Section functions ------- #
 def parseDataTextAJson(result):
