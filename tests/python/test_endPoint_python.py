@@ -137,6 +137,18 @@ def test_update_repaired_code(client):
     #the filename hasn't changed, its the same we used for post
     assert update_response.json['Error'] == 'At least one test must fail'
 
+def test_update_test_invalid_import(client):
+    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", 1)
+
+    challenge_id = parseDataTextAJson(post_info.json)['challenge']['id']
+    #send an update request with repaired code
+    update_request = request_creator(test_path=examples_path + "import_error_test.py")
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+
+    assert update_response.status_code == 409
+    
+    assert update_response.json['Error'] == "Import error, tests can't run"
+    
 
 # -------Section functions ------- #
 def parseDataTextAJson(result):
