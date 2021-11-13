@@ -64,3 +64,18 @@ def test_pythonsourcecode_update(client):
 
     assert pythonSourceCodeInstance.name == 'nachow'
     assert pythonSourceCodeInstance.content == codeToReadTwo
+
+# testing method move_code
+def test_pythonsourcecode_move_code(client):
+    path = 'tests/python/example_programs_test/valid_test_1.py'
+    
+    name = 'valid_test_1.py'
+
+    pythonSourceCodeInstance = PythonSourceCode(path=path);
+
+    path_two = 'public/temp'
+
+    pythonSourceCodeInstance.move_code(path=path_two)
+
+    assert pythonSourceCodeInstance.path == path_two+name   
+    assert pythonSourceCodeInstance.name == name
