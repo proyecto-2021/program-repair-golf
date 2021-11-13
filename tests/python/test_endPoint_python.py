@@ -148,7 +148,25 @@ def test_update_test_invalid_import(client):
     assert update_response.status_code == 409
     
     assert update_response.json['Error'] == "Import error, tests can't run"
-    
+
+def test_post_repair_challenge(client):
+
+    #Agrego un challenge al la db
+    repair_objectiveParam = "Test repair"
+    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", repair_objectiveParam, 3)
+
+    #Obtengo el id del challenge
+    challenge_id = post_info.json['challenge']['id']
+
+    #Mando el repair 
+    #source_code_fileTemp = open('tests/python/example_programs_test/' + code_name, 'rb')
+    repair_request = request_creator(code_path = examples_path + "code_repair_2.py")
+
+    response = client.post(api_url + '/' + str(challenge_id) + '/repair', data = repair_request)
+
+    assert response.status_code == 200
+    json_response = response.json
+    assert json_response['repair']['score'] == 2
 
 # -------Section functions ------- #
 def parseDataTextAJson(result):
@@ -204,6 +222,6 @@ def send_post(client, code_name, test_name, repair_objective, complexity):
     test_path = examples_path + test_name
     
     dataChallengePost = request_creator(code_path=code_path, test_path=test_path, code_name=code_name,
-     test_name=test_name, repair_objective=repair_objective, complexity=complexity)
+    test_name=test_name, repair_objective=repair_objective, complexity=complexity)
 
     return client.post(api_url, data=dataChallengePost)
