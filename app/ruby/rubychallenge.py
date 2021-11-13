@@ -46,8 +46,7 @@ class RubyChallenge:
 
 	def update(self, data):
 		for key, value in data.items():
-			if value is not None:
-				setattr(self, key, value)
+			setattr(self, key, value)
 
 	def data_ok(self):
 		return self.repair_objective and self.complexity_ok() and self.code.file_name_ok() and self.tests_code.file_name_ok()
