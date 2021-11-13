@@ -96,22 +96,19 @@ class GoChallenge:
         return self.tests_code.test_compiles()
 
     def tests_fail(self):
-        return self.
+        return self.tests_code.tests_fail()
+
+    def remove_dir(self):
+        self.code.remove_dir()
+
+    def remove_file(self, is_code):
+        self.code.remove_file() if is_code else self.tests_code.remove_file()
 
 
-
-path_code = Go_src(path='example-challenges/go-challenges/median.go')
+path_code = Go_src(path='example-challenges/go-challenges/preuba/func.txt')
 path_test = Go_src(path='example-challenges/go-challenges/median_test.go')
 go_challenge = GoChallenge(id=5, path_code=path_code.get_path(), path_tests_code=path_test.get_path(), repair_objective='Make asd pass.', complexity='2')
 
-#go_challenge.set_code('app/go/views.py')
-print(go_challenge.set_best_score(5))
-print(go_challenge.get_best_score())
-
-#go_challenge.set_code('app/go/views.py')
-#print(go_challenge.get_code())
-#print(go_challenge.get_tests_code())
-
-go_challenge.test_run()
-#regex = '/\w+.go'
-#print(re.sub(regex, '', 'example-challenges/go-challenges/median.go'))
+path_c = Go_src(path='example-challenges/go-challenges/median.go')
+path_code.rewrite_file(path_c.get_path())
+print(path_code.get_content())
