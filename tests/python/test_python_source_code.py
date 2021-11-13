@@ -15,7 +15,7 @@ def test_pythonsourcecode_first_builder(client):
     assert pythonSourceCodeInstance.content == codeToRead
 
 # testing builder 
-def test_pythonsourcecode_builder_else(client): 
+def test_pythonsourcecode_second_builder(client): 
     path = 'tests/python/example_programs_test/valid_test_1.py'
     
     pythonSourceCodeInstance = PythonSourceCode(path=path );
@@ -27,7 +27,7 @@ def test_pythonsourcecode_builder_else(client):
     assert pythonSourceCodeInstance.content == pathRead
 
 # testing builder 
-def test_pythonsourcecode_builder_else_invalid(client): 
+def test_pythonsourcecode_second_builder_invalid(client): 
     path = 'tests/rompien2'
     
     import_error = False    
