@@ -1,4 +1,5 @@
 from go_src import Go_src
+import re
 
 class GoChallenge:
 
@@ -59,7 +60,10 @@ path_code = Go_src(path='example-challenges/go-challenges/median.go')
 path_test = Go_src(path='example-challenges/go-challenges/median_test.go')
 go_challenge = GoChallenge(path_code.get_path(), path_test.get_path(), 'Make asd pass.', '2')
 
-go_challenge.set_code('app/go/views.py')
-print(go_challenge.get_code())
-print(go_challenge.get_tests_code())
+#go_challenge.set_code('app/go/views.py')
+#print(go_challenge.get_code())
+#print(go_challenge.get_tests_code())
 
+print(go_challenge.code_compiles())
+#regex = '/\w+.go'
+#print(re.sub(regex, '', 'example-challenges/go-challenges/median.go'))
