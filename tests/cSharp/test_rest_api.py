@@ -122,6 +122,12 @@ def test_repair_code_w_sintax_error(client, create_test_data):
     assert resp_repair.status_code == 409
     assert resp_repair.json == expected_response
     cleanup()
+    
+
+def test_repair_challenge_id_not_exist(client):
+    #todo: implement this method
+    pass
+
 
 def cleanup():
     db.session.query(CSharpChallengeModel).delete()
