@@ -122,11 +122,24 @@ def test_repair_code_w_sintax_error(client, create_test_data):
     assert resp_repair.status_code == 409
     assert resp_repair.json == expected_response
     cleanup()
-    
 
-def test_repair_challenge_id_not_exist(client):
-    #todo: implement this method
-    pass
+
+def test_repair_challenge_id_not_exist(client, create_test_data):
+    url_post = 'cSharp/c-sharp-challenges'
+    data = create_test_data['data']
+    data_repair = {'source_code_file': open('tests/cSharp/test-files/Example2.cs', 'rb')}
+    expected_response = {"challenge": "There is no challenge for this id"}
+    
+    resp_post = client.post(url_post, data=data)
+    challenge_id = resp_post.json['challenge']['id'] + 1 
+
+    url_repair = 'cSharp/c-sharp-challenges/' + str(challenge_id) + '/repair'
+    resp_repair = client.post(url_repair, data=data_repair)
+
+    #Assert
+    assert resp_repair.status_code == 404
+    assert resp_repair.json == expected_response
+    cleanup()
 
 
 def cleanup():
