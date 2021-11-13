@@ -1,7 +1,5 @@
 from . import client
-from app import create_app, db
 from app.cSharp.models import *
-from app.cSharp.views import *
 import pytest
 
 
@@ -51,5 +49,5 @@ def test_get_challenge_from_db_with_files_contents(client, expected_challenge_w_
     db.session.query(CSharpChallengeModel).delete()
 
 def test_exist_false(client):
-    # TODO
-    pass
+    result = exist(1)
+    assert not result
