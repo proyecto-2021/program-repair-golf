@@ -426,7 +426,7 @@ def test_post_without_code(client):
 
 def test_post_without_tests_code(client):
     url = '/ruby/challenge'
-    data = get_data('example21', 'example_test21', 'Testing post without tests code', '4', code='example_challenge')
+    data = get_data('example21', 'example_test21', 'Testing post without tests code', '4', 'example_challenge')
     r = client.post(url, data=data)
 
     assert r.status_code == 400
@@ -434,7 +434,7 @@ def test_post_without_tests_code(client):
 
 def test_post_repair_without_repair_candidate(client):
     url = '/ruby/challenge'
-    data = get_data('example22', 'example_test22', 'Testing post repair without code', '4', code='example_challenge', tests_code='example_test22')
+    data = get_data('example22', 'example_test22', 'Testing post repair without code', '4', 'example_challenge', 'example_test22')
     r = client.post(url, data=data)
     id = r.json['challenge']['id']
 
@@ -445,3 +445,17 @@ def test_post_repair_without_repair_candidate(client):
     assert r.status_code == 200
     assert r2.status_code == 400
     assert r2.json['challenge'] == 'repair_code is necessary'
+
+def test_put_invalid_data(client):
+    url = '/ruby/challenge'
+    data = get_data('example23', 'example_test23', 'Testing put invalid data', '1', 'example_challenge', 'example_test23')
+    r = client.post(url, data=data)
+    id = r.json['challenge']['id']
+
+    data2 = get_data(' ', ' ', ' ', '0')
+    url2 = f'/ruby/challenge/{id}'
+    r2 = client.put(url2, data=data2)
+
+    assert r.status_code == 200
+    assert r2.status_code == 400
+    assert r2.json['challenge'] == 'data is incomplete or invalid'
