@@ -273,7 +273,7 @@ def test_post_repair(client, create_test_data):
     data = create_test_data['data']
     data_repair = {'source_code_file': open('tests/cSharp/test-files/ExampleNoFails.cs', 'rb')}
     
-    expected_response = {'repair': { 'challenge':{
+    expected_response = {'Repair': { 'challenge':{
                                                 'repair_objective': 'Testing',
                                                 'best_score': 2 
                                                 },
@@ -299,7 +299,7 @@ def test_repair_code_w_sintax_error(client, create_test_data):
     url_post = 'cSharp/c-sharp-challenges'
     data = create_test_data['data']
     data_repair = {'source_code_file': open('tests/cSharp/test-files/ExampleSintaxErrors.cs', 'rb')}
-    expected_response = {'repair candidate:': 'Sintax error'}
+    expected_response = {'Repair candidate': 'Sintax error'}
 
     #Act
     resp_post = client.post(url_post, data=data)
@@ -340,7 +340,7 @@ def test_repair_fails_tests(client, create_test_data):
     url_post = 'cSharp/c-sharp-challenges'
     data = create_test_data['data']
     data_repair = {'source_code_file': open('tests/cSharp/test-files/BaseExample.cs', 'rb')}
-    expected_response = {'Repair candidate:': 'Tests not passed'}
+    expected_response = {'Repair candidate': 'Tests not passed'}
 
     #Act
     resp_post = client.post(url_post, data=data)

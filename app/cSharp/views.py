@@ -172,6 +172,8 @@ def repair_Candidate(id):
         challenge_name = os.path.basename(challenge['code'])
         test_name = os.path.basename(challenge['tests_code'])
         file = request.files['source_code_file']
+        if file is None:
+            return make_response(jsonify({'Repair candidate': 'Not found'}), 404)
         repair_path = CHALLENGE_VALIDATION_PATH + challenge_name
         repair = CSharpChallenge(file, open(challenge['tests_code'], "rb"),
                                  challenge_name, test_name, repair_path, 
@@ -180,13 +182,13 @@ def repair_Candidate(id):
         validation_result = repair.validate()
         if validation_result == -1:
             repair.code.rm()
-            return make_response(jsonify({'repair candidate:': 'Sintax error'}), 409)
+            return make_response(jsonify({'Repair candidate': 'Sintax error'}), 409)
 
         elif validation_result == 1:
             repair.code.rm()
             remove_path([repair.code.path.replace('.cs', '.exe'),
                          repair.test.path.replace(".cs", ".dll")])
-            return make_response(jsonify({'Repair candidate:': 'Tests not passed'}), 409)
+            return make_response(jsonify({'Repair candidate': 'Tests not passed'}), 409)
         else:
             score = calculate_score(code.path, repair.code.path)
 
@@ -200,7 +202,7 @@ def repair_Candidate(id):
             repair.code.rm()
             remove_path([repair.code.path.replace('.cs', '.exe'),
                          repair.test.path.replace(".cs", ".dll")])
-            return make_response(jsonify({'repair': {'challenge': challenge_data, 'score': score}}), 200)
+            return make_response(jsonify({'Repair': {'challenge': challenge_data, 'score': score}}), 200)
     else:
         return make_response(jsonify({"challenge": "There is no challenge for this id"}), 404)
 
