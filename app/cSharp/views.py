@@ -171,8 +171,9 @@ def repair_Candidate(id):
         challenge = get_challenge_db(id)
         challenge_name = os.path.basename(challenge['code'])
         test_name = os.path.basename(challenge['tests_code'])
-        file = request.files['source_code_file']
-        if file is None:
+        try: 
+            file = request.files['source_code_file']
+        except Exception:
             return make_response(jsonify({'Repair candidate': 'Not found'}), 404)
         repair_path = CHALLENGE_VALIDATION_PATH + challenge_name
         repair = CSharpChallenge(file, open(challenge['tests_code'], "rb"),
