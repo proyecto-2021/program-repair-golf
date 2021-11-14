@@ -26,7 +26,7 @@ class RubyChallengeDAO(object):
         return challenge.get_dict()['id']
 
     def update_challenge(self, id, changes):
-        result = db.session.query(RubyChallengeModel).filter_by(id=id).update(changes)
+        db.session.query(RubyChallengeModel).filter_by(id=id).update(changes)
         db.session.commit()
 
     def exists(self, id):
