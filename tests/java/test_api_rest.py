@@ -165,7 +165,9 @@ def test_get_Id_noesxite(client):
 #modify a non-existent challenge
 def test_PUT_Id_None(client):
 	delete_db
-	data = createQuery()
+	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
+
+	#data = createQuery()
 	id=5
 	url = f'http://localhost:5000/java/java-challenges/{id}'
 	p1=client.put(url)
@@ -174,7 +176,46 @@ def test_PUT_Id_None(client):
 
 
 #modify complexity of an existing challenge 
-#modify repair objective of an existing challenge
+#modify repair objective of an existing 
+def test_PUT_Objective_repair(client):
+	delete_db
+	
+	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
+	data2 = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'Pasa', '1')
+		
+
+	url = 'http://localhost:5000/java/java-challenges'
+
+	r1 = client.post(url, data=data)
+	id = r1.json['challenge']['id']
+    
+	url2 = f'http://localhost:5000/java/java-challenges/{id}'
+	r2 = client.put(url2, data=data2)
+	json2 = r2.json['challenge']
+	objetivo=json2['repair_objective']
+
+	fileClass = open(urlClass, 'rb')
+	fileTest = open(urlTest, 'rb')
+	
+	assert r1.status_code == 200
+	assert r2.status_code == 200
+	assert objetivo == "Pasa"
+
+	#assert repair_upd=="Pasa"
+	#assert r2.json['challenge'] ==  {
+     #   "code": fileClass,
+      # "tests_code": fileTest,
+       #"repair_objective": "Pasa",
+       #"complexity": 1,
+	   #"best_score":500,
+   # }
+ 
+
+    #assert resp['code'] == code1
+    #assert resp['tests_code'] == test1
+   
+
+   # assert resp['repair_objective'] == "Pasa"
 
 #modify a non-existent challenge
 #modify files ok 
@@ -201,5 +242,30 @@ def createChallenge(url_class, url_test, name_class, name_test, objective, compl
 	challenge['challenge'] = challenge['challenge'].replace('MedianTest', name_test)
 	challenge['challenge'] = challenge['challenge'].replace('algo', objective)
 	challenge['challenge'] = challenge['challenge'].replace('w', complexity)
+	
+	return challenge
+
+def createChallenge1(url_class, url_test, name_class, name_test, objective, complexity,best_score):
+	fileClass = open(url_class, 'rb')
+	fileTest = open(url_test, 'rb')
+	
+	challenge = {
+		'source_code_file': fileClass,
+		'test_suite_file': fileTest,
+		'challenge':'{ \
+            "challenge":{\
+                "source_code_file_name": "Median",\
+                "test_suite_file_name": "MedianTest",\
+                "repair_objective": "algo",\
+                "complexity": "w"\
+				"best_score": "500"\
+            }\
+        }'
+	}
+	challenge['challenge'] = challenge['challenge'].replace('Median', name_class)
+	challenge['challenge'] = challenge['challenge'].replace('MedianTest', name_test)
+	challenge['challenge'] = challenge['challenge'].replace('algo', objective)
+	challenge['challenge'] = challenge['challenge'].replace('w', complexity)
+	challenge['challenge'] = challenge['challenge'].replace('w', best_score)
 	
 	return challenge
