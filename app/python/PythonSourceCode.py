@@ -15,7 +15,7 @@ class PythonSourceCode:
   def move_code(self, path):
     #Save code 
     full_path = path + self.name 
-    save_file(path_code_repair, 'wb', self.content)
+    save_file(full_path, 'wb', self.content)
 
     self.path = full_path
 
