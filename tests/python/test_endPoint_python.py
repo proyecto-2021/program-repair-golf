@@ -139,16 +139,15 @@ def test_update_repaired_code(client):
 
 def test_update_test_invalid_import(client):
     post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", "1")
-
     challenge_id = post_info.json['challenge']['id']
-    #send an update request with repaired code
+
     update_request = request_creator(test_path=examples_path + "import_error_test.py")
     update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
 
     assert update_response.status_code == 409
     
     assert update_response.json['Error'] == "Import error, tests can't run"
-    
+
 def test_update_code_name_fails(client):
     post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", "1")
     challenge_id = post_info.json['challenge']['id']
@@ -188,7 +187,7 @@ def test_update_code_name_fails(client):
 def test_update_all(client):
     post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", "1")
     challenge_id = post_info.json['challenge']['id']
-    #send an update request with repaired code
+
     update_request = request_creator(code_path=examples_path + "code_change_my_name_4.py", 
     test_path=examples_path + "test_change_my_name_4.py", code_name="unique_code_1.py", test_name="unique_test_1.py")
 
@@ -198,6 +197,18 @@ def test_update_all(client):
 
     assert read_file("public/challenges/unique_code_1.py", "r") == update_response.json['challenge']['code']
     assert read_file("public/challenges/unique_test_1.py", "r") == update_response.json['challenge']['tests_code']
+
+def test_update_all_code_name_conflict(client):
+    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", "1")
+    challenge_id = post_info.json['challenge']['id']
+    #code name is not the same as the new test is importing
+    update_request = request_creator(code_path=examples_path + "code_change_my_name_4.py", 
+    test_path=examples_path + "test_change_my_name_4.py", code_name="test_will_not_find_me.py", test_name="unique_test_1.py")
+
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+
+    assert update_response.status_code == 409
+    assert  update_response.json['Error'] == "Import error, tests can't run"
 
 def test_post_repair_challenge(client):
 
