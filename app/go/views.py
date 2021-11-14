@@ -9,7 +9,7 @@ from .go_src import Go_src
 from .go_challenge import GoChallengeC
 
 
-goDAO = goChallengeDAO()
+dao = goChallengeDAO()
 
 
 @go.route('api/v1/go-challenges/<int:id>/repair', methods=['POST'])
@@ -71,44 +71,45 @@ def repair_challenge_go(id):
     return jsonify(request_return)
 
 
+
 @go.route('/api/v1/go-challenges', methods=['GET'])
 def get_all_challenges():
-    #challenges = db.session.query(GoChallenge).all()
-    challenges = goDAO.get_all_challenges()
+    challenges = dao.get_all_challenges()
     if not challenges:
         return make_response(jsonify({'challenges' : 'not found'}), 404)
     
-    challenges_to_show = []
-    i = 0   
-    for challenge in challenges:
-        challenge_dict = challenge.convert_dict()
-        from_file_to_str(challenge_dict, 'code')
-        challenges_to_show.append(challenge_dict)
-        del challenges_to_show[i]['tests_code']
-        i+=1
+    show = []
 
-    return jsonify({"challenges" : challenges_to_show})
+    for c in challenges:
+        challenge = GoChallengeC(path_code=c.code,path_tests_code=c.tests_code,
+            repair_objective=c.repair_objective,complexity=c.complexity)
 
+        show.append(challenge.get_content_all())
+
+    return jsonify({"challenges" : show})
 
 
 @go.route('/api/v1/go-challenges/<id>', methods=['GET'])
-def return_single_challenge(id):
-    #challenge_by_id=GoChallenge.query.filter_by(id=id).first()
-    challenge_by_id = goDAO.get_challenge_by_id(id)
-    if challenge_by_id is None:
-        return "ID Not Found", 404
-    challenge_to_return=challenge_by_id.convert_dict()
-    from_file_to_str(challenge_to_return, "code")
-    from_file_to_str(challenge_to_return, "tests_code")
-    del challenge_to_return["id"]
-    return jsonify({"challenge":challenge_to_return})
+def get_challenge_by_id(id):
+    if not dao.exists(id):
+        return make_response(jsonify({'challenge' : 'not found'}), 404)
+
+    c = dao.get_challenge_by_id(id)
+
+    challenge = GoChallengeC(path_code=c.code,path_tests_code=c.tests_code,
+        repair_objective=c.repair_objective,complexity=c.complexity)
+
+    show = challenge.get_content_by_id_and_put()
+
+    return jsonify({"challenge" : show})
+
 
 
 @go.route('/api/v1/go-challenges/<id>', methods=['PUT'])
 def update_a_go_challenge(id):
 
-    challenge = goDAO.get_challenge_by_id(id)
-    if not goDAO.exists(id):
+    challenge = dao.get_challenge_by_id(id)
+    if not dao.exists(id):
         return make_response(jsonify({'challenge' : 'not found'}), 404)
     
     directory  = 'tmp'
@@ -205,8 +206,8 @@ def update_a_go_challenge(id):
     if 'complexity' in request_data and request_data['complexity'] != challenge.complexity:
        new_challenge.set_complexity(request_data['complexity'])
 
-    #goDAO.update_challenge(id, new_challenge.get_content_post())
-    #challenge_updated = goDAO.get_challenge_by_id(id)
+    #dao.update_challenge(id, new_challenge.get_content_post())
+    #challenge_updated = dao.get_challenge_by_id(id)
 
     db.session.commit()
     challenge_dict = challenge.convert_dict()
@@ -237,7 +238,7 @@ def create_go_challenge():
         best_score=math.inf)
 
     #all_the_challenges = db.session.query(GoChallenge).all()
-    all_the_challenges = goDAO.get_all_challenges()
+    all_the_challenges = dao.get_all_challenges()
     for every_challenge in all_the_challenges:
         if every_challenge.code == new_challenge.code:
             return make_response(jsonify({"challenge": "repeated"}), 409)

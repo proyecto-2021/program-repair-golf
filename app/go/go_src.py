@@ -28,7 +28,7 @@ class Go_src:
         return (subprocess.run(["go test"], cwd=path_tests, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)).returncode != 0
 
     def get_content(self):
-        with open(self.get_path(),'r') as f:
+        with open(str(self.get_path()),'r') as f:
             return f.read()
 
     def save(self):    
