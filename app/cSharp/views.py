@@ -142,7 +142,7 @@ def post_csharp_challenges():
             return make_response(jsonify({'Test': 'At least one has to fail'}), 409)
 
         elif validate_response == 1:
-            remove_path([new_code_exe_path, new_test_dll_path])
+            DAO.remove(new_code_exe_path, new_test_dll_path)
             complexity = int(new_challenge['complexity'])
             if complexity < 1 or complexity > 5:
                 shutil.rmtree(challenge_dir)
@@ -189,8 +189,8 @@ def repair_Candidate(id):
 
         elif validation_result == 1:
             repair.code.rm()
-            remove_path([repair.code.path.replace('.cs', '.exe'),
-                         repair.test.path.replace(".cs", ".dll")])
+            DAO.remove(repair.code.path.replace('.cs', '.exe'),
+                       repair.test.path.replace(".cs", ".dll"))
             return make_response(jsonify({'Repair candidate': 'Tests not passed'}), 409)
         else:
             score = calculate_score(code.path, repair.code.path)
@@ -203,8 +203,8 @@ def repair_Candidate(id):
                 "best_score": challenge['best_score']
             }
             repair.code.rm()
-            remove_path([repair.code.path.replace('.cs', '.exe'),
-                         repair.test.path.replace(".cs", ".dll")])
+            DAO.remove(repair.code.path.replace('.cs', '.exe'),
+                       repair.test.path.replace(".cs", ".dll"))
             return make_response(jsonify({'Repair': {'challenge': challenge_data, 'score': score}}), 200)
     else:
         return make_response(jsonify({"challenge": "There is no challenge for this id"}), 404)
@@ -224,19 +224,12 @@ def get_csharp_challenges():
     show = []
     challenge['challenges'] = db.session.query(CSharpChallengeModel).all()
     for i in challenge['challenges']:
-        show.append(CSharpChallengeModel.__repr__(i))
-        j = show.index(CSharpChallengeModel.__repr__(i))
-        show[j]['code'] = open(show[j]['code'], "r").read()
-        show[j]['tests_code'] = open(show[j]['tests_code'], "r").read()
+        show.append(DAO.get_challenge_db(i.__repr__()['id'],
+                                         show_files_content=True))
     if show != []:
         return jsonify({'challenges': show})
     else:
         return jsonify({'challenges': 'None Loaded'})
-
-
-def remove_path(path_list):
-    for path in path_list:
-        os.remove(path)
 
 
 def calculate_score(challenge_path, repair_candidate_path):
@@ -257,31 +250,31 @@ def handle_put_files(result, src_path=None, test_path=None, prev_src_path=None, 
 
     if result == -1:
         if test_path is not None:
-            remove_path([src_path, test_path])
+            DAO.remove(src_path, test_path)
         else:
-            remove_path([src_path])
+            DAO.remove(src_path)
     elif result == 0:
         if test_path is not None and src_path is not None:
-            remove_path([src_path, test_path, exe_new, dll_new])
+            DAO.remove(src_path, test_path, exe_new, dll_new)
         elif src_path is not None:
-            remove_path([src_path, exe_new, dll_prev])
+            DAO.remove(src_path, exe_new, dll_prev)
         else:
-            remove_path([test_path, exe_prev, dll_new])
+            DAO.remove(test_path, exe_prev, dll_new)
     elif result == 2:
         if src_path is not None:
-            remove_path([src_path, test_path, exe_new])
+            DAO.remove(src_path, test_path, exe_new)
         else:
-            remove_path([test_path, exe_prev])
+            DAO.remove(test_path, exe_prev)
     elif result == 1:
         if test_path is not None and src_path is not None:
-            remove_path([exe_new, dll_new, prev_src_path, prev_test_path])
+            DAO.remove(exe_new, dll_new, prev_src_path, prev_test_path)
             shutil.move(src_path, prev_src_path)
             shutil.move(test_path, prev_test_path)
         elif src_path is not None:
-            remove_path([exe_new, dll_prev, prev_src_path])
+            DAO.remove(exe_new, dll_prev, prev_src_path)
             shutil.move(src_path, prev_src_path)
         else:
-            remove_path([dll_new, exe_prev, prev_test_path])
+            DAO.remove(dll_new, exe_prev, prev_test_path)
             shutil.move(test_path, prev_test_path)
 
 

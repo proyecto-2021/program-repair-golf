@@ -1,5 +1,6 @@
 from app.cSharp.models import CSharpChallengeModel
 from app import db
+import os
 
 
 class CSharpChallengeDAO:
@@ -12,7 +13,7 @@ class CSharpChallengeDAO:
         print(challenge)
         if show_files_content:
             challenge['code'] = open(challenge['code'], "r").read()
-            challenge['tests_code'] = open(challenge['tests_code'], "r").read() 
+            challenge['tests_code'] = open(challenge['tests_code'], "r").read()
         return challenge
 
     def exist(self, id):
@@ -40,3 +41,7 @@ class CSharpChallengeDAO:
             return 0
         else:
             return 1
+
+    def remove(self, *paths):
+        for path in paths:
+            os.remove(path)
