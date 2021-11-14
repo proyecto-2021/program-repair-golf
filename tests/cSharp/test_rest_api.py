@@ -271,7 +271,7 @@ def test_post_repair(client, create_test_data):
     #Arrange
     url_post = 'cSharp/c-sharp-challenges'
     data = create_test_data['data']
-    data_repair = {'source_code_file': open('tests/cSharp/test-files/Example1Repair.cs', 'rb')}
+    data_repair = {'source_code_file': open('tests/cSharp/test-files/ExampleNoFails.cs', 'rb')}
     
     expected_response = {'repair': { 'challenge':{
                                                 'repair_objective': 'Testing',
@@ -298,7 +298,7 @@ def test_repair_code_w_sintax_error(client, create_test_data):
     #Arrange
     url_post = 'cSharp/c-sharp-challenges'
     data = create_test_data['data']
-    data_repair = {'source_code_file': open('tests/cSharp/test-files/Example2.cs', 'rb')}
+    data_repair = {'source_code_file': open('tests/cSharp/test-files/ExampleSintaxErrors.cs', 'rb')}
     expected_response = {'repair candidate:': 'Sintax error'}
 
     #Act
@@ -319,7 +319,7 @@ def test_repair_challenge_id_not_exist(client, create_test_data):
     #Arrange
     url_post = 'cSharp/c-sharp-challenges'
     data = create_test_data['data']
-    data_repair = {'source_code_file': open('tests/cSharp/test-files/Example2.cs', 'rb')}
+    data_repair = {'source_code_file': open('tests/cSharp/test-files/ExampleNoFails.cs', 'rb')}
     expected_response = {"challenge": "There is no challenge for this id"}
     #Act
     resp_post = client.post(url_post, data=data)
