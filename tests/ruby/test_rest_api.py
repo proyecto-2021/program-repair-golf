@@ -401,7 +401,7 @@ def test_put_invalid_challenge(client):
 
 def test_post_invalid_data(client):
     url = '/ruby/challenge'
-    data = get_data('   ', '  ', '', '7', 'example_challenge', 'example_test21')
+    data = get_data(' ', ' ', ' ', '7', 'example_challenge', 'example_test21')
     r = client.post(url, data=data)
 
     assert r.status_code == 400
@@ -426,8 +426,22 @@ def test_post_without_code(client):
 
 def test_post_without_tests_code(client):
     url = '/ruby/challenge'
-    data = get_data('example21', 'example_test21', 'Testing post without code', '4', code='example_challenge')
+    data = get_data('example21', 'example_test21', 'Testing post without tests code', '4', code='example_challenge')
     r = client.post(url, data=data)
 
     assert r.status_code == 400
     assert r.json['challenge'] == 'code, tests_code and json challenge are necessary'
+
+def test_post_repair_without_repair_candidate(client):
+    url = '/ruby/challenge'
+    data = get_data('example22', 'example_test22', 'Testing post repair without code', '4', code='example_challenge', tests_code='example_test22')
+    r = client.post(url, data=data)
+    id = r.json['challenge']['id']
+
+
+    url2 = f'/ruby/challenge/{id}/repair'
+    r2 = client.post(url2)
+
+    assert r.status_code == 200
+    assert r2.status_code == 400
+    assert r2.json['challenge'] == 'repair_code is necessary'
