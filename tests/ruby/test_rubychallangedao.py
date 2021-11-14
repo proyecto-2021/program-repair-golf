@@ -2,7 +2,7 @@ import random
 import string
 import pytest
 from . import client
-from app.ruby.rubychallengedao import RubyChallengeDAO
+from app.ruby.models.rubychallengedao import RubyChallengeDAO
 
 def get_tests_data(n):
     tests_data_list = []

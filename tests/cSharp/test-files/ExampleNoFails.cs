@@ -1,11 +1,11 @@
 // This Example is used to test post response when no test fails
 using System;
 
-public class Example4 {
-    public static string example4() {
+public class Example1 {
+    public static string example1() {
         return "I'm a test";
     }
     public static void Main(string[] args) {
-        Console.WriteLine (example4());
+        Console.WriteLine (example1());
     }
 }
