@@ -13,6 +13,14 @@ def test_post_pythonChallenge(client):
 
     assert response.status_code == 200
 
+def test_get_challenge_not_found(client):
+    
+    invalid_id = 1000000000000000
+    result = client.get(api_url + '/' + str(invalid_id))
+
+    assert result.status_code == 409
+    assert result.json['Error'] == "Challenge not found"
+
 # testing a single challenge 
 def test_get_single_pythonChallenge(client):
     #---- post one challenge to test ---#    
@@ -51,9 +59,7 @@ def test_get_total_pythonChallenge(client):
     send_post(client, "valid_code_1.py", "valid_test_1.py", repair_objectiveParamTwo, "2")
 
     #--- end post challenges ---#
-
     responsive = client.get(api_url)
-    
     data = responsive.json
     
     assert len(data['challenges']) == initial_challenge_len + 2
@@ -82,7 +88,6 @@ def test_post_invalid_repaired_challenge(client):
     #get json with the error
     json_response = response.json
     assert json_response['Error'] == 'At least one test must fail'
-
 
 def test_update_simple_fields(client):
     #make a post and save id
