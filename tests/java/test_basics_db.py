@@ -16,6 +16,51 @@ def create_dict(code, test, repair, complexity):
         }
     return dict
 
+
+def test_put_1(client):
+    code = "code"
+    test = "test"
+    repair = "repair"
+    complexity = "complexity"
+
+    dict = create_dict(code, test, repair, complexity)
+
+    DAO_java_challenge.create_challenge(dict)
+    
+    repair_upd="make all pass"
+    complexity_upd=3
+    code_upd="prueba"
+    test_code_upd="testpasado"
+
+    challenge_old = DAO_java_challenge.challenges_id_java(1)
+    resp = Challenge_java.__repr__(challenge_old)
+
+    challenge_old.repair_objective= repair_upd
+    challenge_old.complexity=complexity_upd
+    challenge_old.code=code_upd
+    challenge_old.tests_code=test_code_upd
+    print(challenge_old.tests_code)
+
+    DAO_java_challenge.updatechallenge(challenge_old)
+    
+    challenge_upd = DAO_java_challenge.challenges_id_java(1)
+    resp1 = Challenge_java.__repr__(challenge_upd)
+
+    db.session.delete(challenge_old)
+    db.session.delete(challenge_upd)
+    db.session.commit()
+
+    assert resp['repair_objective'] == repair
+    assert resp['complexity'] == complexity
+    assert resp['code'] == code 
+    assert resp['tests_code'] == test
+
+    assert resp1['repair_objective'] == repair_upd
+    assert resp1['complexity'] == complexity_upd
+    assert resp1['code'] == code_upd
+    assert resp1['tests_code'] == test_code_upd
+
+
 def test_get_not_exist_id(client):
     code1 = "code1"
     test1 = "test1"
@@ -116,3 +161,4 @@ def test_post_same_name(client):
         DAO_java_challenge.create_challenge(dict2)
     except Exception as e:
         assert str(e) == "Name of the code exist"
+
