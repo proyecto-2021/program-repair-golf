@@ -18,7 +18,11 @@ class Controller:
         if not (code_file and tests_code_file and json_challenge):
             return make_response(jsonify({'challenge': 'code, tests_code and json challenge are necessary'}), 400)
 
-        json = loads(json_challenge)
+        try:
+            json = loads(json_challenge)
+        except:
+            return make_response(jsonify({'challenge': 'the json is not in a valid format'}))
+
         data = json.get('challenge')
 
         if not data:
@@ -111,21 +115,26 @@ class Controller:
         if not self.dao.exists(id):
             return make_response(jsonify({'challenge': 'id doesnt exist'}), 404)
 
-        json = loads(json_challenge)
-
-        data = json['challenge']
-
         old_challenge = RubyChallenge(**self.dao.get_challenge(id))
         new_challenge = RubyChallenge(**self.dao.get_challenge(id))
-        
-        #If files names are in the request, set new_code names to them. If not, take old_challenge name.
-        nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.get_code().get_file_name()
-        nc_test_name = data['test_suite_file_name'] if 'test_suite_file_name' in data else old_challenge.get_tests_code().get_file_name()
-        
-        data.pop('source_code_file_name', None)
-        data.pop('test_suite_file_name', None)
 
-        new_challenge.update(data)
+        if json_challenge is not None:
+            try:
+                json = loads(json_challenge)
+            except:
+                return make_response(jsonify({'challenge': 'the json is not in a valid format'}))
+            data = json['challenge']
+            #If files names are in the request, set new_code names to them. If not, take old_challenge name.
+            nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.get_code().get_file_name()
+            nc_test_name = data['test_suite_file_name'] if 'test_suite_file_name' in data else old_challenge.get_tests_code().get_file_name()
+            data.pop('source_code_file_name', None)
+            data.pop('test_suite_file_name', None)
+            new_challenge.update(data)
+        else:
+            nc_code_name = old_challenge.get_code().get_file_name()
+            nc_test_name = old_challenge.get_tests_code().get_file_name()
+        
+
 
         if not new_challenge.data_ok():
             return make_response(jsonify({'challenge': 'data is incomplete or invalid'}), 400)
