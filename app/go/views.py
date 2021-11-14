@@ -6,6 +6,7 @@ from .models_go import GoChallenge
 import os, subprocess, math, nltk, shutil
 from .go_challenge_dao import goChallengeDAO
 from .go_src import Go_src
+from .go_challenge import GoChallengeC
 
 
 goDAO = goChallengeDAO()
@@ -105,35 +106,40 @@ def return_single_challenge(id):
 
 @go.route('/api/v1/go-challenges/<id>', methods=['PUT'])
 def update_a_go_challenge(id):
-    #challenge = GoChallenge.query.filter_by(id = id).first()
+
     challenge = goDAO.get_challenge_by_id(id)
-    if challenge is None:
+    if not goDAO.exists(id):
         return make_response(jsonify({'challenge' : 'not found'}), 404)
     
     directory  = 'tmp'
     parent_dir = 'example-challenges/go-challenges'
-    path = os.path.join(parent_dir,directory)
-    if request.files and not(os.path.isdir(path)):
-        os.makedirs(path)
+    path_directory = Go_src.create_path(parent_dir, directory)
+    temporary_directory = Go_src(path=path_directory)
+    if request.files and not(temporary_directory.is_dir()):
+        temporary_directory.create_dir()
 
-    old_code_path = challenge.code
-    old_test_path = challenge.tests_code
+    challenge_old = GoChallengeC(challenge.id, challenge.code, challenge.tests_code, challenge.repair_objective, challenge.complexity)
+    old_code_path = Go_src(path=challenge_old.get_code())
+    old_test_path = Go_src(path=challenge_old.get_tests_code())
     request_data = json.loads(request.form.get('challenge'))['challenge']
-    
+    ########
+    ##La info nueva es un challenge?
+    ########
+    new_challenge = GoChallengeC()
+
     new_code = 'source_code_file' in request.files 
     if new_code:
         if not ('source_code_file_name' in request_data):
             return make_response(jsonify({"file name" : "conflict"}), 409)
 
         new_code_name = request_data['source_code_file_name']
-        new_code_path = f'example-challenges/go-challenges/tmp/{new_code_name}'
+        new_code_path = Go_src.create_path(temporary_directory.get_path(), new_code_name)
+        new_code_file = Go_src(path=new_code_path, file=request.files['source_code_file'])
+        new_challenge.set_code(new_code_file.get_path())
+        new_code_file.save()
 
-        f = request.files['source_code_file']
-        f.save(new_code_path)
-
-        code_compile = subprocess.run(["go build"], cwd=os.path.abspath('example-challenges/go-challenges/tmp/'), stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
-        if code_compile.returncode == 2:
-            os.remove(os.path.abspath(new_code_path))
+        if not new_challenge.code_compiles():
+            new_challenge.remove_code_file()
             return make_response(jsonify({"code_file":"code with sintax errors"}),409)           
 
     new_test = 'test_suite_file' in request.files
@@ -142,59 +148,65 @@ def update_a_go_challenge(id):
             return make_response(jsonify({"file name" : "conflict"}),409)
         
         new_test_name = request_data['test_suite_file_name']
-        new_test_path = f'example-challenges/go-challenges/tmp/{new_test_name}'
+        new_test_path = Go_src.create_path(temporary_directory.get_path(), new_test_name)
+        new_test_file = Go_src(path=new_test_path, file=request.files['test_suite_file'])
+        new_challenge.set_tests_code(new_test_file.get_path())
+        new_test_file.save()
 
-        g = request.files['test_suite_file']   
-        g.save(new_test_path)
-
-        test_compile = subprocess.run(["go test -c"],cwd=os.path.abspath('example-challenges/go-challenges/tmp/'),shell=True)        
-        if test_compile.returncode == 1:
-            os.remove(new_test_path)
+        if not new_challenge.tests_compiles():
+            new_challenge.remove_test_file()
             return make_response(jsonify({"test_code_file":"test with sintax errors"}),409)
 
     if new_code and new_test:
-        pass_test_suite = subprocess.run(['go test'], cwd=os.path.abspath('example-challenges/go-challenges/tmp/'), shell=True)
-        if pass_test_suite.returncode == 0:
-            os.remove(new_code_path)
-            os.remove(new_test_path)
+        if not new_challenge.tests_fail():
+            #podria borrar la carpeta?
+            new_challenge.remove_code_file()
+            new_challenge.remove_test_file()
             return make_response(jsonify({'error' : 'test must fails'}), 412)  
 
     elif new_code and not new_test:
+        directory_to_tests = 'temp_test.go'
+        path_to_tests = Go_src.create_path(temporary_directory.get_path(), directory_to_tests)
+        #deberia darle el file??
+        temp_test_file = Go_src(path=path_to_tests)
+        temp_test_file.rewrite_file(old_test_path.get_path())
         
-        path_to_temp_test_file = 'example-challenges/go-challenges/tmp/' + 'temp_test.go'
-        rewrite_file(old_test_path, path_to_temp_test_file)
-        pass_test_suite = subprocess.run(['go test'], cwd='example-challenges/go-challenges/tmp/')
-        
-        if pass_test_suite.returncode == 0:
-            delete_files('example-challenges/go-challenges/tmp/')
+        #no estoy seguro de que sea correcto llamarlo con temp_test_file
+        if not temp_test_file.tests_fail():
+            temporary_directory.delete_files()
             return make_response(jsonify({'error' : 'test must fails'}), 412)
 
     elif not new_code and new_test:
-
-        path_to_temp_code_file = 'example-challenges/go-challenges/tmp/' + 'temp.go'
-        rewrite_file(old_code_path, path_to_temp_code_file)
-        pass_test_suite = subprocess.run(['go test'], cwd='example-challenges/go-challenges/tmp/')
+        directory_to_code = 'temp.go'
+        path_to_temp_code_file = Go_src.create_path(temporary_directory.get_path(), directory_to_code)
+        temp_code_file = Go_src(path=path_to_temp_code_file)
+        temp_code_file.rewrite_file(old_code_path.get_path())
         
-        if pass_test_suite.returncode == 0:
-            delete_files('example-challenges/go-challenges/tmp/')
+        if not temp_code_file.tests_fail():
+            temporary_directory.delete_files()
             return make_response(jsonify({'error' : 'test must fails'}), 412)
 
     if new_code:
-        rewrite_file(new_code_path, old_code_path)  
-        os.remove(new_code_path)
+        old_code_path.rewrite_file(new_code_file.get_path())
+        new_challenge.set_code(old_code_path.get_path) 
+        new_code_file.remove_file()
 
     if new_test:
-        rewrite_file(new_test_path, old_test_path)
-        os.remove(new_test_path)
+        old_test_path.rewrite_file(new_test_file.get_path())
+        new_challenge.set_tests_code(old_test_path.get_path())
+        new_test_file.remove_file()
     
     if request.files:
-        shutil.rmtree(os.path.abspath('example-challenges/go-challenges/tmp/'))
+        temporary_directory.remove_dir()
 
     if 'repair_objective' in request_data and request_data['repair_objective'] != challenge.repair_objective:
-        challenge.repair_objective = request_data['repair_objective']
+        new_challenge.set_repair_objective(request_data['repair_objective'])
 
     if 'complexity' in request_data and request_data['complexity'] != challenge.complexity:
-        challenge.complexity = request_data['complexity']
+       new_challenge.set_complexity(request_data['complexity'])
+
+    #goDAO.update_challenge(id, new_challenge.get_content_post())
+    #challenge_updated = goDAO.get_challenge_by_id(id)
 
     db.session.commit()
     challenge_dict = challenge.convert_dict()
@@ -202,7 +214,7 @@ def update_a_go_challenge(id):
     from_file_to_str(challenge_dict, 'tests_code')
     del challenge_dict['id']
 
-    return jsonify({'challenge': challenge_dict})
+    return jsonify({'challenge':challenge_dict})
     
 
 @go.route('/api/v1/go-challenges', methods=['POST'])
@@ -232,14 +244,14 @@ def create_go_challenge():
 
     test_pass = subprocess.run(["go" "test"], cwd=os.path.abspath("public/challenges"), shell=True)
     test_compilation = subprocess.run(["go" "test" "-c"], cwd=os.path.abspath("public/challenges"),shell=True)
-    #code_compilation = subprocess.run(["go" "build", code_path], stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL,shell=True)
+    code_compilation = subprocess.run(["go" "build", code_path], stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL,shell=True)
 
     codigo = Go_src(path=code_path)
     tests = Go_src(path="public/challenges")
 
-    if codigo.code_compiles().returncode == 2:
+    if code_compilation == 1:
         return make_response(jsonify({"code_file": "The code has syntax errors"}), 412)
-    elif tests.test_compiles().returncode == 1 or test_compilation.returncode == 2:
+    elif test_compilation == 1 or test_compilation.returncode == 2:
         return make_response(jsonify({"test_code_file": "The test code has syntax errors"}), 412)
     elif test_pass.returncode == 0:
         return make_response(jsonify({"ERROR: tests": "There must be at least one test that fails"}), 412)

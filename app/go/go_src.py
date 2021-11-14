@@ -38,16 +38,20 @@ class Go_src:
         os.makedirs(self.get_path())
 
     def is_dir(self):
-        os.path.isdir(self.get_path())
+        return os.path.isdir(self.get_path())
 
-    def create_path(self, path, directory):
-        return os.path.join(path, directory)
+    def create_path(parent_dir, directory):
+        return os.path.join(parent_dir, directory)
 
     def remove_dir(self):
         shutil.rmtree(self.get_path())
     
     def remove_file(self):
         os.remove(self.get_path())
+
+    def delete_files(self):
+        for file in os.listdir(self.get_path()):
+            self.remove_file(self.create_path(self.get_path(), file))
 
     def rewrite_file(self, update_data):
         with open(self.get_path(), 'w') as f:
