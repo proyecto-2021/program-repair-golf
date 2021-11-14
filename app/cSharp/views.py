@@ -195,7 +195,7 @@ def repair_Candidate(id):
         else:
             score = calculate_score(code.path, repair.code.path)
 
-            if save_best_score(score, challenge['best_score'], id) == 0:
+            if DAO.save_best_score(score, challenge['best_score'], id) == 0:
                 challenge['best_score'] = score
 
             challenge_data = {
@@ -243,16 +243,6 @@ def calculate_score(challenge_path, repair_candidate_path):
     challenge_script = open(challenge_path, "r").readlines()
     repair_script = open(repair_candidate_path, "r").readlines()
     return nltk.edit_distance(challenge_script, repair_script)
-
-
-def save_best_score(score, previous_best_score, chall_id):
-    if previous_best_score == 0 or previous_best_score > score:
-        challenge = db.session.query(CSharpChallengeModel).filter_by(id=chall_id)
-        challenge.update(dict(best_score=score))
-        db.session.commit()
-        return 0
-    else:
-        return 1
 
 
 def handle_put_files(result, src_path=None, test_path=None, prev_src_path=None, prev_test_path=None):
