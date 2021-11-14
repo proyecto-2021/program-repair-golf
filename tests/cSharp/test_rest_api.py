@@ -358,8 +358,26 @@ def test_repair_fails_tests(client, create_test_data):
 
 
 def test_repair_no_file_in_request(client, create_test_data):
-    #TODO
-    pass
+    #Arrange
+    url_post = 'cSharp/c-sharp-challenges'
+    data = create_test_data['data']
+    data_repair = {}
+    expected_response = {'Repair candidate': 'Not found'}
+
+    #Act
+    resp_post = client.post(url_post, data=data)
+    challenge_id = resp_post.json['challenge']['id']
+
+    url_repair = 'cSharp/c-sharp-challenges/' + str(challenge_id) + '/repair'
+    resp_repair = client.post(url_repair, data=data_repair)
+
+    #Assert
+    assert resp_repair.status_code == 404
+    assert resp_repair.json == expected_response
+
+    #CleanUp
+    cleanup()
+
 
 
 def cleanup():
