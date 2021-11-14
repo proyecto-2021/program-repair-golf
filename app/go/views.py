@@ -165,23 +165,25 @@ def update_a_go_challenge(id):
             return make_response(jsonify({'error' : 'test must fails'}), 412)  
 
     elif new_code and not new_test:
+        directory_to_tests = 'temp_test.go'
+        path_to_tests = Go_src.create_path(temporary_directory.get_path(), directory_to_tests)
+        #deberia darle el file??
+        temp_test_file = Go_src(path=path_to_tests)
+        temp_test_file.rewrite_file(old_test_path)
         
-        path_to_temp_test_file = 'example-challenges/go-challenges/tmp/' + 'temp_test.go'
-        rewrite_file(old_test_path, path_to_temp_test_file)
-        pass_test_suite = subprocess.run(['go test'], cwd='example-challenges/go-challenges/tmp/')
-        
-        if pass_test_suite.returncode == 0:
-            delete_files('example-challenges/go-challenges/tmp/')
+        #no estoy seguro de que sea correcto llamarlo con temp_test_file
+        if not temp_test_file.tests_fail():
+            delete_files(temporary_directory.get_path())
             return make_response(jsonify({'error' : 'test must fails'}), 412)
 
     elif not new_code and new_test:
-
-        path_to_temp_code_file = 'example-challenges/go-challenges/tmp/' + 'temp.go'
-        rewrite_file(old_code_path, path_to_temp_code_file)
-        pass_test_suite = subprocess.run(['go test'], cwd='example-challenges/go-challenges/tmp/')
+        directory_to_code = 'temp.go'
+        path_to_temp_code_file = Go_src.create_path(temporary_directory.get_path(), directory_to_code)
+        temp_code_file = Go_src(path=path_to_temp_code_file)
+        temp_code_file.rewrite_file(old_code_path)
         
-        if pass_test_suite.returncode == 0:
-            delete_files('example-challenges/go-challenges/tmp/')
+        if not temp_code_file.tests_fail():
+            delete_files(temporary_directory.get_path())
             return make_response(jsonify({'error' : 'test must fails'}), 412)
 
     if new_code:
