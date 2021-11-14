@@ -9,6 +9,7 @@ import subprocess, os
 from subprocess import PIPE
 import nltk
 import shutil
+from .c_sharp_challenge_DAO import CSharpChallengeDAO
 
 NUNIT_PATH = "./app/cSharp/lib/NUnit.3.13.2/lib/net35/"
 NUNIT_LIB = "./app/cSharp/lib/NUnit.3.13.2/lib/net35/nunit.framework.dll"
@@ -16,6 +17,7 @@ NUNIT_CONSOLE_RUNNER = "./app/cSharp/lib/NUnit.ConsoleRunner.3.12.0/tools/nunit3
 CHALLENGE_SAVE_PATH = "example-challenges/c-sharp-challenges/"
 CHALLENGE_VALIDATION_PATH = "./public/challenges/"
 UPLOAD_FOLDER = "./example-challenges/c-sharp-challenges/"
+DAO = CSharpChallengeDAO()
 
 
 @cSharp.route('/login')
@@ -76,14 +78,14 @@ def put_csharp_challenges(id):
             return code_validation_response(val_status)
 
     if update_request['repair_objective'] is not None:
-        update_challenge_data(id, {'repair_objective': update_request['repair_objective']})
+        DAO.update_challenge_data(id, {'repair_objective': update_request['repair_objective']})
 
     if update_request['complexity'] is not None:
         complexity = int(update_request['complexity'])
         if complexity < 1 or complexity > 5 :
             return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
         else:
-            update_challenge_data(id, {'complexity': complexity})
+            DAO.update_challenge_data(id, {'complexity': complexity})
     return make_response(jsonify({'challenge': get_challenge_db(id, show_files_content=True)}), 200)
 
 
@@ -131,9 +133,9 @@ def post_csharp_challenges():
                 shutil.rmtree(challenge_dir)
                 return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
             new_challenge['complexity'] = complexity
-            new_data_id = save_challenge(new_challenge, new_source_code_path,
+            new_data_id = DAO.save_challenge(new_challenge, new_source_code_path,
                                          new_test_suite_path)
-            content = get_challenge_db(new_data_id, show_files_content=True)
+            content = DAO.get_challenge_db(new_data_id, show_files_content=True)
             return make_response(jsonify({'challenge': content}))
 
         elif validate_response == 2:
@@ -151,8 +153,8 @@ def post_csharp_challenges():
 @cSharp.route('c-sharp-challenges/<int:id>/repair', methods=['POST'])
 def repair_Candidate(id):
     # verify challenge's existence
-    if exist(id):
-        challenge = get_challenge_db(id)
+    if DAO.exist(id):
+        challenge = DAO.get_challenge_db(id)
         challenge_name = os.path.basename(challenge['code'])
         file = request.files['source_code_file']
         repair_path = 'public/challenges/' + challenge_name
@@ -184,8 +186,8 @@ def repair_Candidate(id):
 
 @cSharp.route('/c-sharp-challenges/<int:id>', methods=['GET'])
 def get_challenge(id):
-    if exist(id):
-        return jsonify({'Challenge': get_challenge_db(id, show_files_content=True)})
+    if DAO.exist(id):
+        return jsonify({'Challenge': DAO.get_challenge_db(id, show_files_content=True)})
     else:
         return make_response(jsonify({'Challenge': 'Not found'}), 404)
 
