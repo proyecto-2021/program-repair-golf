@@ -52,7 +52,9 @@ class PythonViews(MethodView):
     def repair_challenge(id):
         
         #Repair candidate 
-        code_repair = request.files.get('source_code_file').read()
+        code_repair = request.files.get('source_code_file')
+        if code_repair is not None: code_repair = code_repair.read()
+
         #Result of validated rapair candidate
         repair_result = PythonController.repair_challenge(id, code_repair)
 
