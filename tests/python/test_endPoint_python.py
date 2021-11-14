@@ -189,6 +189,17 @@ def test_post_repair_challenge_invalid(client):
     assert response.status_code == 409
     assert response.json['Error'] == "Challenge not found"
 
+def test_post_repair_code_not_provided(client):
+    
+    repair_objectiveParam = "Test repair"
+    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", repair_objectiveParam, '3')
+    challenge_id = post_info.json['challenge']['id']
+    
+    response = client.post(api_url + '/' + str(challenge_id) + '/repair')
+
+    assert response.status_code == 409
+    assert response.json['Error'] == "No repair provided"
+
 # -------Section functions ------- #
 def request_creator(**params):
     #we check each param's presence and add it to dataChallenge
