@@ -38,10 +38,10 @@ class Go_src:
         os.makedirs(self.get_path())
 
     def is_dir(self):
-        os.path.isdir(self.get_path())
+        return os.path.isdir(self.get_path())
 
-    def create_path(self, path, directory):
-        return os.path.join(path, directory)
+    def create_path(parent_dir, directory):
+        return os.path.join(parent_dir, directory)
 
     def remove_dir(self):
         shutil.rmtree(self.get_path())

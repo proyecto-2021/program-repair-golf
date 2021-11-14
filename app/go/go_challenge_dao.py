@@ -35,4 +35,4 @@ class goChallengeDAO():
 		db.session.commit()
 
 	def exists(self, id):
-		return get_challenge_by_id(id) is not None
+		return self.get_challenge_by_id(id) is not None

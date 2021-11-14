@@ -1,6 +1,6 @@
-from go_src import Go_src
+from .go_src import Go_src
 
-class GoChallenge:
+class GoChallengeC:
 
     def __init__(self, id=None, path_code=None, path_tests_code=None, repair_objective=None, complexity=None):
         self.id = id
@@ -91,7 +91,7 @@ class GoChallenge:
         return self.code.code_compiles()
 
     def tests_compiles(self):
-        return self.tests_code.test_compiles()
+        return self.tests_code.tests_compiles()
 
     def tests_fail(self):
         return self.tests_code.tests_fail()
@@ -101,3 +101,12 @@ class GoChallenge:
 
     def remove_file(self, is_code):
         self.code.remove_file() if is_code else self.tests_code.remove_file()
+
+    ###Los cree para probar. 
+    def remove_code_file(self):
+        self.code = None
+        self.code.remove_file()
+
+    def remove_test_file(self):
+        self.tests_code = None
+        self.tests_code.remove_file()
