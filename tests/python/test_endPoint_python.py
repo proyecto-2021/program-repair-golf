@@ -200,6 +200,25 @@ def test_post_repair_code_not_provided(client):
     assert response.status_code == 409
     assert response.json['Error'] == "No repair provided"
 
+def test_post_repair_update_best_score(client):
+
+    repair_objectiveParam = "Test repair"
+    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", repair_objectiveParam, '3')
+
+    challenge_id = post_info.json['challenge']['id']
+
+    repair_request = request_creator(code_path = examples_path + "code_repair_2.py")
+    repair_request_2 = request_creator(code_path = examples_path + "code_repair_2.py")
+
+    response = client.post(api_url + '/' + str(challenge_id) + '/repair', data = repair_request)
+
+    old_best_score = response.json['repair']['challenge']['best_score']
+
+    response = client.post(api_url + '/' + str(challenge_id) + '/repair', data = repair_request_2)
+
+    assert response.status_code == 200
+    assert response.json['repair']['challenge']['best_score'] >= old_best_score
+
 # -------Section functions ------- #
 def request_creator(**params):
     #we check each param's presence and add it to dataChallenge
