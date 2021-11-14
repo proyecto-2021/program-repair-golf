@@ -119,8 +119,8 @@ def update_a_go_challenge(id):
         temporary_directory.create_dir()
 
     challenge_old = GoChallengeC(challenge.id, challenge.code, challenge.tests_code, challenge.repair_objective, challenge.complexity)
-    old_code_path = challenge_old.get_code()
-    old_test_path = challenge_old.get_tests_code()
+    old_code_path = Go_src(path=challenge_old.get_code())
+    old_test_path = Go_src(path=challenge_old.get_tests_code())
     request_data = json.loads(request.form.get('challenge'))['challenge']
     ########
     ##La info nueva es un challenge?
@@ -169,39 +169,44 @@ def update_a_go_challenge(id):
         path_to_tests = Go_src.create_path(temporary_directory.get_path(), directory_to_tests)
         #deberia darle el file??
         temp_test_file = Go_src(path=path_to_tests)
-        temp_test_file.rewrite_file(old_test_path)
+        temp_test_file.rewrite_file(old_test_path.get_path())
         
         #no estoy seguro de que sea correcto llamarlo con temp_test_file
         if not temp_test_file.tests_fail():
-            delete_files(temporary_directory.get_path())
+            temporary_directory.delete_files()
             return make_response(jsonify({'error' : 'test must fails'}), 412)
 
     elif not new_code and new_test:
         directory_to_code = 'temp.go'
         path_to_temp_code_file = Go_src.create_path(temporary_directory.get_path(), directory_to_code)
         temp_code_file = Go_src(path=path_to_temp_code_file)
-        temp_code_file.rewrite_file(old_code_path)
+        temp_code_file.rewrite_file(old_code_path.get_path())
         
         if not temp_code_file.tests_fail():
-            delete_files(temporary_directory.get_path())
+            temporary_directory.delete_files()
             return make_response(jsonify({'error' : 'test must fails'}), 412)
 
     if new_code:
-        rewrite_file(new_code_path, old_code_path)  
-        os.remove(new_code_path)
+        old_code_path.rewrite_file(new_code_file.get_path())
+        new_challenge.set_code(old_code_path.get_path) 
+        new_code_file.remove_file()
 
     if new_test:
-        rewrite_file(new_test_path, old_test_path)
-        os.remove(new_test_path)
+        old_test_path.rewrite_file(new_test_file.get_path())
+        new_challenge.set_tests_code(old_test_path.get_path())
+        new_test_file.remove_file()
     
     if request.files:
-        shutil.rmtree(os.path.abspath('example-challenges/go-challenges/tmp/'))
+        temporary_directory.remove_dir()
 
     if 'repair_objective' in request_data and request_data['repair_objective'] != challenge.repair_objective:
-        challenge.repair_objective = request_data['repair_objective']
+        new_challenge.set_repair_objective(request_data['repair_objective'])
 
     if 'complexity' in request_data and request_data['complexity'] != challenge.complexity:
-        challenge.complexity = request_data['complexity']
+       new_challenge.set_complexity(request_data['complexity'])
+
+    #goDAO.update_challenge(id, new_challenge.get_content_post())
+    #challenge_updated = goDAO.get_challenge_by_id(id)
 
     db.session.commit()
     challenge_dict = challenge.convert_dict()
@@ -209,7 +214,7 @@ def update_a_go_challenge(id):
     from_file_to_str(challenge_dict, 'tests_code')
     del challenge_dict['id']
 
-    return jsonify({'challenge': challenge_dict})
+    return jsonify({'challenge':challenge_dict})
     
 
 @go.route('/api/v1/go-challenges', methods=['POST'])

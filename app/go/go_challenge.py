@@ -36,8 +36,8 @@ class GoChallengeC:
 
     def get_content_by_id_and_put(self):
         return {
-            'code': self.code.get_content(),
-            'tests_code': self.tests_code.get_content(),
+            'code': self.get_code_content(),
+            'tests_code': self.get_tests_code_content(),
             'repair_objective': self.repair_objective,
             'complexity': self.complexity,
             'best_score': self.best_score
@@ -55,8 +55,8 @@ class GoChallengeC:
     def get_content_post(self):
         return {
             'id': self.id,
-            'code': self.code.get_content(),
-            'tests_code': self.tests_code.get_content(),
+            'code': self.get_code_content(),
+            'tests_code': self.get_tests_code_content(),
             'repair_objective': self.repair_objective,
             'complexity': self.complexity,
             'best_score': self.best_score
