@@ -349,6 +349,7 @@ def test_put_only_codes(client):
 
     url2 = f'/ruby/challenge/{id}'
     data2 = get_data(code='example_challenge_new', tests_code='example_test20new')
+    data2.pop('challenge')
 
     r2 = client.put(url2, data=data2)
 
