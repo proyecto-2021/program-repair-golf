@@ -26,7 +26,7 @@ def get_challenge_db(id, show_files_content=False):
     return challenge
 
 def exist(id):
-    return get_challenge_db(id) is not None
+    return db.session.query(CSharpChallengeModel).filter_by(id=id).first() is not None
 
 def save_challenge(challenge_data, source_code_path, test_path):
     new_challenge = CSharpChallengeModel(code = source_code_path, tests_code = test_path, repair_objective = challenge_data['repair_objective'], complexity = int(challenge_data['complexity']), best_score = 0)

@@ -26,5 +26,11 @@ class DAO_java_challenge():
             db.session.commit()
         else:
            raise Exception("Name of the code exist")
-    
+
+    def updatechallenge(challenge):
+        challenge_n = DAO_java_challenge.challenges_id_java(challenge.id)
+        if challenge_n is not None:
+           db.session.commit()
+        else:
+           raise Exception("Id Challenge Not Found!")
 
