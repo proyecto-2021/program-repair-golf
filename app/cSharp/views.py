@@ -5,6 +5,7 @@ from app import db
 from .models import CSharpChallengeModel
 from .models import *
 from .c_sharp_src import CSharpSrc
+from .c_sharp_challenge import CSharpChallenge
 from flask import jsonify, make_response, json, request
 import subprocess, os
 from subprocess import PIPE
@@ -51,33 +52,41 @@ def put_csharp_challenges(id):
     new_challenge = update_request['source_code_file']
     new_test = update_request['test_suite_file']
 
-    if update_request['source_code_file'] is not None and update_request['test_suite_file'] is not None:
-        code = CSharpSrc(new_challenge, challenge_name, new_challenge_path)
-        test = CSharpSrc(new_test, test_name, new_test_path)
-        code.save()
-        test.save()
-        val_status = validate_code(code, test)
-        handle_put_files(val_status, code.path, test.path,
+    if new_challenge is not None and new_test is not None:
+        new_ch = CSharpChallenge(new_challenge,
+                                 new_test,
+                                 challenge_name,
+                                 test_name,
+                                 new_challenge_path,
+                                 new_test_path)
+        val_status = new_ch.validate()
+        handle_put_files(val_status, new_ch.code.path, new_ch.test.path,
                          old_challenge_path, old_test_path)
         if val_status != 1:
             return code_validation_response(val_status)
-    elif update_request['source_code_file'] is not None:
-        code = CSharpSrc(new_challenge, challenge_name, new_challenge_path)
-        test = CSharpSrc(open(old_test_path, "rb"), test_name, old_test_path)
-        code.save()
-        val_status = validate_code(code, test)
-        handle_put_files(val_status, code.path,
+    elif new_challenge is not None:
+        new_ch = CSharpChallenge(new_challenge,
+                                 open(old_test_path, "rb"),
+                                 challenge_name,
+                                 test_name,
+                                 new_challenge_path,
+                                 old_test_path)
+        val_status = new_ch.validate()
+        handle_put_files(val_status, new_ch.code.path,
                          prev_src_path=old_challenge_path,
-                         prev_test_path=test.path)
+                         prev_test_path=new_ch.test.path)
         if val_status != 1:
             return code_validation_response(val_status)
-    elif update_request['test_suite_file'] is not None:
-        code = CSharpSrc(open(old_challenge_path, "rb"), challenge_name, old_challenge_path)
-        test = CSharpSrc(new_test, test_name, new_test_path)
-        test.save()
-        val_status = validate_code(code, test)
-        handle_put_files(val_status, test_path=test.path,
-                         prev_src_path=code.path,
+    elif new_test is not None:
+        new_ch = CSharpChallenge(open(old_challenge_path, "rb"),
+                                 new_test,
+                                 challenge_name,
+                                 test_name,
+                                 old_challenge_path,
+                                 new_test_path)
+        val_status = new_ch.validate()
+        handle_put_files(val_status, test_path=new_ch.test.path,
+                         prev_src_path=new_ch.code.path,
                          prev_test_path=old_test_path)
         if val_status != 1:
             return code_validation_response(val_status)
@@ -119,17 +128,15 @@ def post_csharp_challenges():
             return make_response(jsonify({'Challenge': 'Already exists'}), 409)
         new_source_code_path = challenge_dir + "/" + new_challenge['source_code_file_name'] + ".cs"
         new_test_suite_path = challenge_dir + "/" + new_challenge['test_suite_file_name'] + ".cs"
-        code = CSharpSrc(new_challenge['source_code_file'],
-                         new_challenge['source_code_file_name'],
-                         new_source_code_path)
-        test = CSharpSrc(new_challenge['test_suite_file'],
-                         new_challenge['test_suite_file_name'],
-                         new_test_suite_path)
-        code.save()
-        test.save()
-        validate_response = validate_code(code, test)
-        new_code_exe_path = code.path.replace('.cs', '.exe')
-        new_test_dll_path = test.path.replace('.cs', '.dll')
+        challenge = CSharpChallenge(new_challenge['source_code_file'],
+                                    new_challenge['test_suite_file'],
+                                    new_challenge['source_code_file_name'],
+                                    new_challenge['test_suite_file_name'],
+                                    new_source_code_path,
+                                    new_test_suite_path)
+        validate_response = challenge.validate()
+        new_code_exe_path = challenge.code.path.replace('.cs', '.exe')
+        new_test_dll_path = challenge.test.path.replace('.cs', '.dll')
         if validate_response == 0:
             shutil.rmtree(challenge_dir)
             return make_response(jsonify({'Test': 'At least one has to fail'}), 409)
@@ -141,8 +148,9 @@ def post_csharp_challenges():
                 shutil.rmtree(challenge_dir)
                 return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
             new_challenge['complexity'] = complexity
-            new_data_id = DAO.save_challenge(new_challenge, new_source_code_path,
-                                             new_test_suite_path)
+            new_data_id = DAO.save_challenge(new_challenge,
+                                             challenge.code.path,
+                                             challenge.test.path)
             content = DAO.get_challenge_db(new_data_id, show_files_content=True)
             return make_response(jsonify({'challenge': content}))
 
@@ -165,24 +173,27 @@ def repair_Candidate(id):
         challenge = DAO.get_challenge_db(id)
         challenge_name = os.path.basename(challenge['code'])
         test_name = os.path.basename(challenge['tests_code'])
-        file = request.files['source_code_file']
+        try:
+            file = request.files['source_code_file']
+        except Exception:
+            return make_response(jsonify({'Repair candidate': 'Not found'}), 404)
         repair_path = CHALLENGE_VALIDATION_PATH + challenge_name
-        repair = CSharpSrc(file, challenge_name, repair_path)
+        repair = CSharpChallenge(file, open(challenge['tests_code'], "rb"),
+                                 challenge_name, test_name, repair_path, 
+                                 challenge['tests_code'])
         code = CSharpSrc(open(challenge['code'], "rb"), challenge_name, challenge['code'])
-        test = CSharpSrc(open(challenge['tests_code'], "rb"), test_name, challenge['tests_code'])
-        repair.save()
-        validation_result = validate_code(repair, test)
+        validation_result = repair.validate()
         if validation_result == -1:
-            repair.rm()
-            return make_response(jsonify({'repair candidate:': 'Sintax error'}), 409)
+            repair.code.rm()
+            return make_response(jsonify({'Repair candidate': 'Sintax error'}), 409)
 
         elif validation_result == 1:
-            repair.rm()
-            remove_path([repair.path.replace('.cs', '.exe'),
-                         test.path.replace(".cs", ".dll")])
-            return make_response(jsonify({'Repair candidate:': 'Tests not passed'}), 409)
+            repair.code.rm()
+            remove_path([repair.code.path.replace('.cs', '.exe'),
+                         repair.test.path.replace(".cs", ".dll")])
+            return make_response(jsonify({'Repair candidate': 'Tests not passed'}), 409)
         else:
-            score = calculate_score(code.path, repair.path)
+            score = calculate_score(code.path, repair.code.path)
 
             if save_best_score(score, challenge['best_score'], id) == 0:
                 challenge['best_score'] = score
@@ -191,10 +202,12 @@ def repair_Candidate(id):
                 "repair_objective": challenge['repair_objective'],
                 "best_score": challenge['best_score']
             }
-            repair.rm()
-            remove_path([repair.path.replace('.cs', '.exe'),
-                         test.path.replace(".cs", ".dll")])
-            return make_response(jsonify({'repair': {'challenge': challenge_data, 'score': score}}), 200)
+            repair.code.rm()
+            remove_path([repair.code.path.replace('.cs', '.exe'),
+                         repair.test.path.replace(".cs", ".dll")])
+            return make_response(jsonify({'Repair': {'challenge': challenge_data, 'score': score}}), 200)
+    else:
+        return make_response(jsonify({"challenge": "There is no challenge for this id"}), 404)
 
 
 @cSharp.route('/c-sharp-challenges/<int:id>', methods=['GET'])
@@ -226,19 +239,6 @@ def remove_path(path_list):
         os.remove(path)
 
 
-def validate_code(code, test):
-    if code.compiles():
-        if code.test_compiles(test):
-            if code.tests_pass(test):
-                return 0
-            else:
-                return 1
-        else:
-            return 2
-    else:
-        return -1
-
-
 def calculate_score(challenge_path, repair_candidate_path):
     challenge_script = open(challenge_path, "r").readlines()
     repair_script = open(repair_candidate_path, "r").readlines()
@@ -253,11 +253,6 @@ def save_best_score(score, previous_best_score, chall_id):
         return 0
     else:
         return 1
-
-
-def save_challenge_files(src, src_path, test, test_path):
-    src.save(src_path)
-    test.save(test_path)
 
 
 def handle_put_files(result, src_path=None, test_path=None, prev_src_path=None, prev_test_path=None):

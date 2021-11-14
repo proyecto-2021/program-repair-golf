@@ -1,6 +1,7 @@
 from app.cSharp.models import CSharpChallengeModel
 from app import db
 
+
 class CSharpChallengeDAO:
 
     def __init__(self):
@@ -12,7 +13,7 @@ class CSharpChallengeDAO:
         if show_files_content:
             challenge['code'] = open(challenge['code'], "r").read()
             challenge['tests_code'] = open(challenge['tests_code'], "r").read() 
-        return challenge 
+        return challenge
 
     def exist(self, id):
         return db.session.query(CSharpChallengeModel).filter_by(id=id).first() is not None
