@@ -149,6 +149,42 @@ def test_update_test_invalid_import(client):
     
     assert update_response.json['Error'] == "Import error, tests can't run"
     
+def test_update_code_name_fails(client):
+    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", "1")
+    challenge_id = post_info.json['challenge']['id']
+    
+    #updating to a name that already exists
+    update_request = request_creator(code_name="valid_code_3.py")
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+
+    assert update_response.status_code == 409   #should get error for name conflict
+    assert update_response.json['Error'] == "Another challenge with that name already exists"
+
+    #updating to a name that doesn't exists
+    update_request = request_creator(code_name="another_unique_name.py")
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+
+    assert update_response.status_code == 409   #test will not find that file to import
+    assert update_response.json['Error'] == "Import error, tests can't run"
+
+def test_update_code_name_fails(client):
+    post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", "1")
+    challenge_id = post_info.json['challenge']['id']
+    
+    #updating to a name that already exists
+    update_request = request_creator(code_name="valid_code_3.py")
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+
+    assert update_response.status_code == 409   #should get error for name conflict
+    assert update_response.json['Error'] == "Another challenge with that name already exists"
+
+    #updating to a name that doesn't exists
+    update_request = request_creator(code_name="another_unique_name.py")
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+
+    assert update_response.status_code == 409   #test will not find that file to import
+    assert update_response.json['Error'] == "Import error, tests can't run"
+
 def test_update_all(client):
     post_info = send_post(client, "valid_code_1.py", "valid_test_1.py", "Make all tests pass.", "1")
     challenge_id = post_info.json['challenge']['id']
