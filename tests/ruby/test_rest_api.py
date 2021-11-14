@@ -405,4 +405,29 @@ def test_post_invalid_data(client):
     r = client.post(url, data=data)
 
     assert r.status_code == 400
-    assert r.json['challenge'] == 'the json information is incomplete/erroneous'
+    assert r.json['challenge'] == 'data is incomplete or invalid'
+
+def test_post_without_data(client):
+    url = '/ruby/challenge'
+    data = get_data(code='example_challenge',tests_code='example_test21')
+    data.pop('challenge')
+    r = client.post(url, data=data)
+
+    assert r.status_code == 400
+    assert r.json['challenge'] == 'code, tests_code and json challenge are necessary'
+
+def test_post_without_code(client):
+    url = '/ruby/challenge'
+    data = get_data('example21', 'example_test21', 'Testing post without code', '4', tests_code='example_test21')
+    r = client.post(url, data=data)
+
+    assert r.status_code == 400
+    assert r.json['challenge'] == 'code, tests_code and json challenge are necessary'
+
+def test_post_without_tests_code(client):
+    url = '/ruby/challenge'
+    data = get_data('example21', 'example_test21', 'Testing post without code', '4', code='example_challenge')
+    r = client.post(url, data=data)
+
+    assert r.status_code == 400
+    assert r.json['challenge'] == 'code, tests_code and json challenge are necessary'
