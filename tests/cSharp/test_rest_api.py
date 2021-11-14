@@ -275,9 +275,9 @@ def test_post_repair(client, create_test_data):
     
     expected_response = {'repair': { 'challenge':{
                                                 'repair_objective': 'Testing',
-                                                'best_score': 3 
+                                                'best_score': 2 
                                                 },
-                                    'score': 3
+                                    'score': 2
                                     }
                         }
     
@@ -333,6 +333,11 @@ def test_repair_challenge_id_not_exist(client, create_test_data):
     assert resp_repair.json == expected_response
     #CleanUp
     cleanup()
+
+
+def test_repair_fails_tests(client, create_test_data):
+   #TODO
+   pass
 
 
 def cleanup():
