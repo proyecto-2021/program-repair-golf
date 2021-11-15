@@ -460,3 +460,19 @@ def test_put_invalid_data(client):
     assert r.status_code == 200
     assert r2.status_code == 400
     assert r2.json['challenge'] == 'data is incomplete or invalid'
+
+def test_put_invalid_data2(client):
+    url = '/ruby/challenge'
+    data = get_data('example24', 'example_test24', 'Testing put invalid data', '1', 'example_challenge', 'example_test24')
+    r = client.post(url, data=data)
+    id = r.json['challenge']['id']
+
+    data2 = get_data('example24', 'example_test25', 'Testing put invalid data', '3')
+    data2['challenge'] = data2['challenge'].replace('challenge', 'challonge')
+
+    url2 = f'/ruby/challenge/{id}'
+    r2 = client.put(url2, data=data2)
+
+    assert r.status_code == 200
+    assert r2.status_code == 400
+    assert r2.json['challenge'] == 'the json hasnt challenge field'
