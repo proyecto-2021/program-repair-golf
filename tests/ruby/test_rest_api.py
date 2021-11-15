@@ -479,9 +479,25 @@ def test_put_invalid_data2(client):
 
 def test_post_invalid_json_format(client):
     url = '/ruby/challenge'
-    data = get_data('example24', 'example_test24', 'Testing put invalid data', '1', 'example_challenge', 'example_test24')
+    data = get_data('example24', 'example_test24', 'Testing post invalid format', '2', 'example_challenge', 'example_test24')
     data['challenge'] = data['challenge'].replace('challenge":', 'challenge')
     r = client.post(url, data=data)
 
     assert r.status_code == 400
     assert r.json['challenge'] == 'the json is not in a valid format'
+
+def test_put_invalid_json_format(client):
+    url = '/ruby/challenge'
+    data = get_data('example25', 'example_test25', 'Testing put invalid format', '1', 'example_challenge', 'example_test25')
+    r = client.post(url, data=data)
+    id = r.json['challenge']['id']
+
+    data2 = get_data('example25', 'example_test26', 'Testing put invalid format', '3')
+    data2['challenge'] = data2['challenge'].replace('challenge":', 'challenge')
+
+    url2 = f'/ruby/challenge/{id}'
+    r2 = client.put(url2, data=data2)
+
+    assert r.status_code == 200
+    assert r2.status_code == 400
+    assert r2.json['challenge'] == 'the json is not in a valid format'
