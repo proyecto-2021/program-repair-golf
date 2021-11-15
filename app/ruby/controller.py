@@ -1,7 +1,7 @@
 from flask import jsonify, make_response
 from os import mkdir
 from os.path import isdir
-from json import loads
+from json import loads, JSONDecodeError
 from tempfile import gettempdir
 from shutil import rmtree
 from .rubychallenge import RubyChallenge
@@ -21,7 +21,7 @@ class Controller:
         try:
             json = loads(json_challenge)
         except JSONDecodeError:
-            return make_response(jsonify({'challenge': 'the json is not in a valid format'}))
+            return make_response(jsonify({'challenge': 'the json is not in a valid format'}), 400)
 
         data = json.get('challenge')
 
@@ -122,7 +122,7 @@ class Controller:
             try:
                 json = loads(json_challenge)
             except JSONDecodeError:
-                return make_response(jsonify({'challenge': 'the json is not in a valid format'}))
+                return make_response(jsonify({'challenge': 'the json is not in a valid format'}), 400)
             data = json.get('challenge')
             if data is None:
                 return make_response(jsonify({'challenge': 'the json hasnt challenge field'}), 400)
