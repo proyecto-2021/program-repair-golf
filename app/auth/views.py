@@ -9,7 +9,6 @@ class UserAPI(MethodView):
 
     def post(self):
         username = request.json['username']
-        # TODO: Should check that password is a valid password
         password = request.json['password']
         try:
             add_user(username, password)
