@@ -33,7 +33,7 @@ def createQuery():
 
 # insert a valid challenge and return a status code equal to 200
 def test_post_java(client):
-	db.session.query(Challenge_java).delete()
+	delete_db()
 	location = '/java/java-challenges'
 	url = 'http://localhost:5000/java/java-challenges'
 
@@ -45,7 +45,7 @@ def test_post_java(client):
 	
 # insert a valid challenge and get challenge
 def test_post_get_all(client):
-	db.session.query(Challenge_java).delete()
+	delete_db()
 	url = 'http://localhost:5000/java/java-challenges'
 
 	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
@@ -62,7 +62,7 @@ def test_post_get_all(client):
 
 # insert two valid challenges and then get them and compare the results
 def test_many_loads(client):
-	db.session.query(Challenge_java).delete()
+	delete_db()
 	url = url = 'http://localhost:5000/java/java-challenges'
 
 	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
@@ -83,7 +83,7 @@ def test_many_loads(client):
 
 # insert two valid challenges equal, first status code equal 200 and second equal 404
 def test_upload_exist(client):
-	db.session.query(Challenge_java).delete()
+	delete_db()
 	url = url = 'http://localhost:5000/java/java-challenges'
 	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
 	datab = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
@@ -95,7 +95,7 @@ def test_upload_exist(client):
 
 # insert java class that does not compile
 def test_file_not_compile_class(client):
-	db.session.query(Challenge_java).delete()
+	delete_db()
 	url = url = 'http://localhost:5000/java/java-challenges'
 	data = createChallenge('tests/java/example_java/Nocompile.java','tests/java/example_java/NocompileTest.java', 'Nocompile', 'NocompileTest', 'nada', '2')
 	try:
@@ -106,7 +106,7 @@ def test_file_not_compile_class(client):
 	
 # insert java test suite that does not compile
 def test_file_not_compile_test(client):
-	db.session.query(Challenge_java).delete()
+	delete_db()
 	url = url = 'http://localhost:5000/java/java-challenges'
 	data = createChallenge('tests/java/example_java/Testfailclass.java','tests/java/example_java/Testfailtest.java', 'Testfailclass', 'Testfailtest', 'cosa', '3')
 	try:
@@ -117,7 +117,7 @@ def test_file_not_compile_test(client):
 
 # insert valid challenge that pass all test
 def test_pass_all_test(client):
-	db.session.query(Challenge_java).delete()
+	delete_db()
 	url = url = 'http://localhost:5000/java/java-challenges'
 	data = createChallenge('tests/java/example_java/Passalltest.java','tests/java/example_java/Passalltesttest.java', 'Passalltest', 'Passalltesttest', 'dale', '5')
 	try:
@@ -127,7 +127,7 @@ def test_pass_all_test(client):
 	assert resp.status_code == 404
 
 def test_get_java(client):
-	db.session.query(Challenge_java).delete()
+	delete_db()
 	url = 'http://localhost:5000/java/java-challenges'
 	resp = client.get(url)
 	a = resp.json
@@ -136,7 +136,7 @@ def test_get_java(client):
 	assert a['challenges'] == []
 	
 def test_get_Id_after_post(client):
-	db.session.query(Challenge_java).delete()
+	delete_db()
 	url = 'http://localhost:5000/java/java-challenges'
 	data = createQuery()
 
@@ -154,7 +154,7 @@ def test_get_Id_after_post(client):
 	assert id == id2
 
 def test_get_Id_noesxite(client):
-	db.session.query(Challenge_java).delete()
+	delete_db()
 	id=1
 	url2 = f'http://localhost:5000/java/java-challenges/{id}'
 	p2 = client.get(url2)
@@ -164,42 +164,41 @@ def test_get_Id_noesxite(client):
 
 #modify a non-existent challenge
 def test_PUT_Id_None(client):
-	delete_db
+	delete_db()
 	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
 
 	#data = createQuery()
 	id=5
 	url = f'http://localhost:5000/java/java-challenges/{id}'
 	p1=client.put(url)
-	
 	assert p1.status_code== 404
 
 
-#modify complexity of an existing challenge 
-#modify repair objective of an existing 
 def test_PUT_Objective_repair(client):
-	delete_db
+	delete_db()
 	
 	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
-	data2 = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'Pasa', '1')
+	data2 = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'Pasa', '5')
 		
-
 	url = 'http://localhost:5000/java/java-challenges'
 
 	r1 = client.post(url, data=data)
 	id = r1.json['challenge']['id']
     
 	url2 = f'http://localhost:5000/java/java-challenges/{id}'
+	
 	r2 = client.put(url2, data=data2)
 	json2 = r2.json['challenge']
-	objetivo=json2['repair_objective']
+	objetive=json2['repair_objective']
+	complexity=json2['complexity']
 
 	fileClass = open(urlClass, 'rb')
 	fileTest = open(urlTest, 'rb')
 	
 	assert r1.status_code == 200
 	assert r2.status_code == 200
-	assert objetivo == "Pasa"
+	assert objetive == "Pasa"
+	assert complexity==5
 
 	#assert repair_upd=="Pasa"
 	#assert r2.json['challenge'] ==  {
@@ -210,16 +209,41 @@ def test_PUT_Objective_repair(client):
 	   #"best_score":500,
    # }
  
-
     #assert resp['code'] == code1
     #assert resp['tests_code'] == test1
-   
-
    # assert resp['repair_objective'] == "Pasa"
 
-#modify a non-existent challenge
-#modify files ok 
-#modify files does not compile 
+def test_PUT_1(client):
+
+	delete_db()
+	db.session.query(Challenge_java).delete()
+	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
+	data2 = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest1', 'pass', '1')
+		
+	url = 'http://localhost:5000/java/java-challenges'
+
+	r1 = client.post(url, data=data)
+	id = r1.json['challenge']['id']
+    
+	url2 = f'http://localhost:5000/java/java-challenges/{id}'
+	
+	try:
+		r2 = client.put(url2, data=data2)
+	except Exception as e:
+		assert str(e) == "FileName orCode not Exist"		
+	
+	assert r1.status_code == 200
+	
+def test_put_pass_all_test(client):
+	delete_db()
+	url = url = 'http://localhost:5000/java/java-challenges'
+	data = createChallenge('tests/java/example_java/Passalltest.java','tests/java/example_java/Passalltesttest.java', 'Passalltest', 'Passalltesttest', 'dale', '5')
+	try:
+		resp = client.put(url, data=data)
+	except Exception as e:
+		assert str(e) == "Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar"
+	assert resp.status_code == 405
+	
 
 
 def createChallenge(url_class, url_test, name_class, name_test, objective, complexity):
