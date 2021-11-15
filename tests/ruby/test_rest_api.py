@@ -476,3 +476,12 @@ def test_put_invalid_data2(client):
     assert r.status_code == 200
     assert r2.status_code == 400
     assert r2.json['challenge'] == 'the json hasnt challenge field'
+
+def test_post_invalid_json_format(client):
+    url = '/ruby/challenge'
+    data = get_data('example24', 'example_test24', 'Testing put invalid data', '1', 'example_challenge', 'example_test24')
+    data['challenge'] = data['challenge'].replace('challenge":', 'challenge')
+    r = client.post(url, data=data)
+
+    assert r.status_code == 400
+    assert r.json['challenge'] == 'the json is not in a valid format'
