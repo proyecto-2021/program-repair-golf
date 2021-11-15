@@ -13,24 +13,6 @@ exampleTest = 'tests/java/example_java/PruebaTest.java'
 def delete_db():
 	db.session.query(Challenge_java).delete()
 
-def createQuery():
-	fileClass = open(urlClass, 'rb')
-	fileTest = open(urlTest, 'rb')
-	
-	challenge = {
-		'source_code_file': fileClass,
-		'test_suite_file': fileTest,
-		'challenge':'{ \
-            "challenge":{\
-                "source_code_file_name": "Median",\
-                "test_suite_file_name": "MedianTest",\
-                "repair_objective": "algo para acomodar",\
-                "complexity": "1"\
-            }\
-        }'
-	}
-	return challenge
-
 # insert a valid challenge and return a status code equal to 200
 def test_post_java(client):
 	delete_db()
@@ -38,7 +20,7 @@ def test_post_java(client):
 	url = 'http://localhost:5000/java/java-challenges'
 
 	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
-	print(data)
+	
 	resp = client.post(url, data=data)
 	
 	assert resp.status_code == 200
@@ -67,7 +49,7 @@ def test_many_loads(client):
 
 	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
 	data2 = createChallenge('tests/java/example_java/Prueba.java','tests/java/example_java/PruebaTest.java','Prueba','PruebaTest','Pasa','3')
-	#data2 = createQuery2(exampleClass, exampleTest)
+	
 	client.post(url, data=data)
 	p = client.post(url, data=data2)
 
@@ -136,9 +118,10 @@ def test_get_java(client):
 	assert a['challenges'] == []
 	
 def test_get_Id_after_post(client):
-	delete_db()
+	db.session.query(Challenge_java).delete()
 	url = 'http://localhost:5000/java/java-challenges'
-	data = createQuery()
+	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
+
 
 	p = client.post(url, data=data)
 	json = p.json['challenge']
@@ -161,7 +144,14 @@ def test_get_Id_noesxite(client):
 	
 	assert p2.status_code == 404
 
-
+def test_get_Id_novalido(client):
+	db.session.query(Challenge_java).delete()
+	id='hola' 
+	url2 = f'http://localhost:5000/java/java-challenges/{id}'
+	p2 = client.get(url2)
+	
+	#assert p2.status_code == 404
+	assert p2.status_code == 404
 #modify a non-existent challenge
 def test_PUT_Id_None(client):
 	delete_db()
