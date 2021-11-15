@@ -318,6 +318,11 @@ def test_update_code_passes_all_tests(client, create_test_data):
     cleanup()
 
 
+def test_put_non_existent_challenge(client):
+    #todo: implement this method
+    pass
+
+
 def test_get_all_challenges_after_post(client, create_test_data):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
