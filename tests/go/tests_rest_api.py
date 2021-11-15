@@ -46,6 +46,82 @@ def test_get_all_working(client):
     assert ret_get.status_code == 200
 
   
+def test_update_code_complexity(client):
+     # arrange
+    challenge = {
+        'source_code_file': open('tests/go/files-for-tests/median.go', 'rb'),
+        'test_suite_file': open('tests/go/files-for-tests/median_test.go', 'rb'),
+        'challenge': '{ \
+                    "challenge": { \
+                        "source_code_file_name" : "codecomplexity.go", \
+                        "test_suite_file_name" : "code7_testcomplexity.go", \
+                        "repair_objective" : "without error", \
+                        "complexity" : "100", \
+                        "best_score" : 100 \
+                    } \
+                }'
+    }
+
+    challengeupdate= {
+        'challenge': '{ \
+                    "challenge": { \
+                        "complexity" : "99" \
+                    } \
+                }'
+    }
+    # act
+    ret_post = client.post("go/api/v1/go-challenges",data=challenge)
+    ret_post_json = ret_post.json["challenge"]
+    postid=ret_post_json["id"]
+    ret_update = client.put(f"go/api/v1/go-challenges/{postid}", data=challengeupdate)
+    ret_update_json=ret_update.json["challenge"]
+    
+    # assert
+    assert ret_update_json["complexity"]=="99"
+    assert ret_post.status_code== 200
+
+    # cleanup
+    clean()
+
+def test_update_code_repair(client):
+     # arrange
+    challenge = {
+        'source_code_file': open('tests/go/files-for-tests/median.go', 'rb'),
+        'test_suite_file': open('tests/go/files-for-tests/median_test.go', 'rb'),
+        'challenge': '{ \
+                    "challenge": { \
+                        "source_code_file_name" : "coderepair.go", \
+                        "test_suite_file_name" : "code7repair_test.go", \
+                        "repair_objective" : "without error", \
+                        "complexity" : "100", \
+                        "best_score" : 100 \
+                    } \
+                }'
+    }
+
+    challengeupdate= {
+        '--form   challenge': '{ \
+                    "challenge": { \
+                        "repair_objective" : "testing" \
+                    } \
+                }'
+    }
+
+     # act
+    ret_post = client.post("go/api/v1/go-challenges",data=challenge)
+    ret_post_json = ret_post.json["challenge"]
+    postid=ret_post_json["id"]
+    ret_update = client.put(f"go/api/v1/go-challenges/{postid}", data=challengeupdate)
+    ret_update_json=ret_update.json["challenge"]
+    
+    # assert
+    assert ret_update_json["repair_objective"]=="testing"
+    assert ret_post.status_code== 200
+
+    # cleanup
+    clean()
+
+'''
 def test_post_code_with_error(client):
     # arrange
     challenge = {
@@ -76,13 +152,13 @@ def test_post_code_with_error(client):
 def test_post_code_without_error(client):
      # arrange
     challenge = {
-        'source_code_file': open('tests/go/files-for-tests/median_compile.go', 'rb'),
+        'source_code_file': open('tests/go/files-for-tests/median.go', 'rb'),
         'test_suite_file': open('tests/go/files-for-tests/median_test.go', 'rb'),
         'challenge': '{ \
                     "challenge": { \
                         "source_code_file_name" : "code7.go", \
                         "test_suite_file_name" : "code7_test.go", \
-                        "repair_objective" : "repair", \
+                        "repair_objective" : "without error", \
                         "complexity" : "100", \
                         "best_score" : 100 \
                     } \
@@ -94,15 +170,15 @@ def test_post_code_without_error(client):
     ret_post_json = ret_post.json["challenge"]
     
     # assert
-    assert ret_post_json["code"]="code7.go"
-    assert ret_post.returncode= 200
+    assert ret_post_json["repair_objective"]=="without error"
+    assert ret_post.status_code== 200
 
     # cleanup
     clean()
 
 
 
-def test_post_testscode_with_error
+def test_post_testscode_with_error(client):
     # arrange
     challenge = {
         'source_code_file': open('tests/go/files-for-tests/median.go', 'rb'),
@@ -122,13 +198,13 @@ def test_post_testscode_with_error
     ret_post = client.post("go/api/v1/go-challenges",data=challenge)
     ret_post_json = ret_post.json["test_code_file"]
     # Assert
-    assert ret_post_json= "The test code has syntax errors"
-    assert ret_post.returncode= 412
+    assert ret_post_json== "The test code has syntax errors"
+    assert ret_post.status_code== 412
 
     # cleanup
     clean()
 
-def test_post_testscode_with_error
+def test_post_testscode_with_error(client):
     # arrange
     challenge = {
         'source_code_file': open('tests/go/files-for-tests/median.go', 'rb'),
@@ -148,16 +224,16 @@ def test_post_testscode_with_error
     ret_post = client.post("go/api/v1/go-challenges",data=challenge)
     ret_post_json = ret_post.json["ERROR: tests"]
     # Assert
-    assert ret_post_json= "There must be at least one test that fails"
-    assert ret_post.returncode= 412
+    assert ret_post_json=="There must be at least one test that fails"
+    assert ret_post.status_code== 412
 
     # cleanup
     clean()
 
 def test_post_repeated(client):
      # arrange
-    challenge = {
-        'source_code_file': open('tests/go/files-for-tests/median_compile.go', 'rb'),
+    challenge1 = {
+        'source_code_file': open('tests/go/files-for-tests/median.go', 'rb') ,
         'test_suite_file': open('tests/go/files-for-tests/median_test.go', 'rb'),
         'challenge': '{ \
                     "challenge": { \
@@ -169,15 +245,29 @@ def test_post_repeated(client):
                     } \
                 }'
     }
+    challenge2 = {
+        'source_code_file': open('tests/go/files-for-tests/median_solution_3point.go', 'rb') ,
+        'test_suite_file': open('tests/go/files-for-tests/median_test2.go', 'rb'),
+        'challenge': '{ \
+                    "challenge": { \
+                        "source_code_file_name" : "code10.go", \
+                        "test_suite_file_name" : "code10_test.go", \
+                        "repair_objective" : "repair", \
+                        "complexity" : "100", \
+                        "best_score" : 100 \
+                    } \
+                }'
+    }
+
 
     # act
-    client.post("go/api/v1/go-challenges",data=challenge)
-    ret_post = client.post("go/api/v1/go-challenges",data=challenge)
+    ret_post = client.post("go/api/v1/go-challenges",data=challenge1)
+    ret_post = client.post("go/api/v1/go-challenges",data=challenge2)
     ret_post_json = ret_post.json["challenge"]
     
     # assert
-    assert ret_post_json["code"]="repeated"
-    assert ret_post.returncode= 409
+    assert ret_post_json=="repeated"
+    assert ret_post.status_code == 409
 
     # cleanup
     clean()
@@ -409,4 +499,4 @@ def test_repair_for_check_id_not_associated(client):
     #cleanup
     clean()
 
-def test_put_
+'''

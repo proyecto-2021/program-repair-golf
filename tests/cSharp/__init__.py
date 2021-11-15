@@ -1,7 +1,7 @@
 from app import create_app, db
 import pytest
-import shutil
 import os
+import shutil
 
 
 @pytest.fixture(scope='module')
@@ -15,9 +15,11 @@ def client():
             db.create_all()
             # Tests will be executed on the test_client object
             yield test_client
+    cleanup()
 
-    # Cleanup
+
+def cleanup():
     path = "./example-challenges/c-sharp-challenges"
     for dirname in os.listdir(path):
-        if dirname != "Median":
+        if os.path.isdir(path + '/' + dirname) and dirname != "Median":
             shutil.rmtree(path + '/' + dirname)

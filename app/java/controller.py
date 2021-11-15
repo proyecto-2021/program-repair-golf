@@ -48,19 +48,13 @@ class controller():
             nombre_code = challengeaux['code']
             path='public/challenges/' + nombre_code + '.java'
             
-            
-            #file = open (path,mode='r',encoding='utf-8')
-            #filemostrar=file.read()
-            #file.close()
             filemostrar=FileManagement.get_code_file_by_path(path)     
             challengeaux['code']=filemostrar
              
             #recupero el codigojava del test
             nombre_test =challengeaux['tests_code']
             path='public/challenges/' + nombre_test + '.java'
-            #file = open (path,mode='r',encoding='utf-8')
-            #filemostrar=file.read()
-            #file.close()
+            
             filemostrar=FileManagement.get_code_file_by_path(path)  
             challengeaux['tests_code']=filemostrar
             #return make_response(jsonify({"challenge":challengeaux}))
@@ -69,11 +63,12 @@ class controller():
     def challenge_upd_java(id):
         challenge= DAO_java_challenge.challenges_id_java(id)
         if challenge is None:
-            return make_response(jsonify({"challenge":"Not Found!"}),404)
+            raise Exception("Challenge not found")
         else:
             challenge_json = loads(request.form.get('challenge'))
             challenge_upd= challenge_json['challenge']
-        
+            code_file_name=challenge.code
+            
             if 'repair_objective' in request.form.get('challenge'):
                 repair_objective_upd=challenge_upd['repair_objective']
                 challenge.repair_objective=repair_objective_upd
@@ -81,36 +76,32 @@ class controller():
             if 'complexity' in request.form.get('challenge'):
                 complexity_upd=challenge_upd['complexity']
                 challenge.complexity=complexity_upd
-
-            if 'source_code_file_name' in request.form:    
-                code_file_upd_name=challenge_upd['source_code_file_name']
-
-            if 'test_suite_file_name' in request.form:
-                test_suite_upd_name=challenge_upd['test_suite_file_name']
-
+    
             if 'source_code_file' in request.files:
-                code_file_upd = request.files['source_code_file']
-                path_file_java = UPLOAD_FOLDER + code_file_upd.filename
-                if Challenge.class_java_compile(path_file_java):
-                    challenge.code=os.path.split(code_file_upd.filename)[-1].split('.')[0]
-                    print(challenge.code)
-                    FileManagement.upload_file(code_file_upd, UPLOAD_FOLDER)
+                if 'test_suite_file' in request.files:
+                    code_file_upd = request.files['source_code_file']
+                    path_file_java = UPLOAD_FOLDER + code_file_upd.filename
+                
+                    test_suite_upd = request.files['test_suite_file']
+                    path_test_java = UPLOAD_FOLDER +  test_suite_upd.filename
+                
+                    if 'source_code_file_name' in request.form.get('challenge') and 'test_suite_file_name' in request.form.get('challenge'):
+                        code_file_upd_name=challenge_upd['source_code_file_name']
+                        test_suite_upd_name=challenge_upd['test_suite_file_name']
+                    
+                        if Challenge.is_Valid(code_file_upd, test_suite_upd, challenge_upd):
+                            challenge.code=code_file_upd_name
+                            challenge.tests_code=test_suite_upd_name
+                            code_file_name=code_file_upd_name
+                        else:
+                            raise Exception("Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar")
+                    else: 
+                        raise Exception("FileName orCode not Exist")
                 else:
-                    return make_response(jsonify("Class java not compile"))
-
-            if 'test_suite_file' in request.files:
-                test_suite_upd = request.files['test_suite_file']
-                path_test_java = UPLOAD_FOLDER +  test_suite_upd.filename
-                if Challenge.file_compile(path_test_java, path_file_java):
-                    if Challenge.execute_test(code_file_upd_name, test_suite_upd_name):
-                        return make_response(jsonify("La test suite debe fallar en almenos un caso de test para poder subirlo"))
-                    else:
-                        challenge.tests_code=os.path.split(test_suite_upd.filename)[-1].split('.')[0]
-                        FileManagement.upload_file(test_suite_upd, UPLOAD_FOLDER)
-
-            db.session.commit()
-            return jsonify({"challenge":Challenge_java.__repr__(challenge)})
-
+                    raise Exception("FileName orCode not Exist")
+            DAO_java_challenge.updatechallenge(challenge)
+            return FileManagement.show_codes(code_file_name)    
+            
     def add_challenge_java():
         to_dict = json.loads(request.form['challenge'])
         dict_final = to_dict['challenge']
@@ -137,7 +128,8 @@ class controller():
             curr = Challenge_java.__repr__(challenge)
             if ChallengeCandidate.isValid(file_repair, curr):
                 code_class = FileManagement.get_code_file_by_id(id)
-                ruta_file_tmp = UPLOAD_TMP + file_repair.filename
+                #ruta_file_tmp = UPLOAD_TMP + file_repair.filename
+                ruta_file_tmp = UPLOAD_TMP + curr['code'] + '.java'
                 code_repair = FileManagement.get_code_file_by_path(ruta_file_tmp)
                 value_dist = nltk.edit_distance(code_class, code_repair)
                 if value_dist < curr['best_score']:

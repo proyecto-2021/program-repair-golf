@@ -7,7 +7,7 @@ def test_one():
     res = median(a, b, c)
     assert res == 2
 
-def test_two():
+            def test_two():
     a = 2
     b = 1
     c = 3
