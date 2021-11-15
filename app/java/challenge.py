@@ -25,7 +25,7 @@ class Challenge():
         if Challenge.class_java_compile(path_file_java):
             # upload test suite java and compile
             FileManagement.upload_file_test(test_suite, UPLOAD_FOLDER, dict)
-            #path_test_java = UPLOAD_FOLDER + test_suite.filename
+            
             path_test_java = UPLOAD_FOLDER + test_suite_file_name + '.java'
             # excute test suite java
             # excute_java_test return true if pass all test
