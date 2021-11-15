@@ -319,8 +319,21 @@ def test_update_code_passes_all_tests(client, create_test_data):
 
 
 def test_put_non_existent_challenge(client):
-    #todo: implement this method
-    pass
+    # Arrange
+    url = 'cSharp/c-sharp-challenges/1'
+    expected_response = {"challenge": "There is no challenge for this id"}
+    data_put={}
+
+    # Act
+    resp = client.put(url, data=data_put)
+    resp_json = resp.json
+
+    # Assert
+    assert resp_json == expected_response
+    assert resp.status_code == 404
+
+    # Cleanup
+    cleanup()
 
 
 def test_get_all_challenges_after_post(client, create_test_data):
