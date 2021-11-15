@@ -38,15 +38,11 @@ def put_csharp_challenges(id):
 
     challenge_name = os.path.basename(challenge['code'])
     test_name = os.path.basename(challenge['tests_code'])
-    challenge_exe = challenge_name.replace('.cs', '.exe')
-    test_dll = test_name.replace('.cs', '.dll')
     challenge_dir = CHALLENGE_SAVE_PATH + challenge_name.replace('.cs', '/')
     old_challenge_path = challenge_dir + challenge_name
     old_test_path = challenge_dir + test_name
     new_challenge_path = CHALLENGE_VALIDATION_PATH + challenge_name
     new_test_path = CHALLENGE_VALIDATION_PATH + test_name
-    new_challenge_exe_path = CHALLENGE_VALIDATION_PATH + challenge_exe
-    new_test_dll_path = CHALLENGE_VALIDATION_PATH + test_dll
     new_challenge = update_request['source_code_file']
     new_test = update_request['test_suite_file']
 
