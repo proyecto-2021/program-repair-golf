@@ -20,7 +20,7 @@ class Controller:
 
         try:
             json = loads(json_challenge)
-        except:
+        except JSONDecodeError:
             return make_response(jsonify({'challenge': 'the json is not in a valid format'}))
 
         data = json.get('challenge')
@@ -121,9 +121,11 @@ class Controller:
         if json_challenge is not None:
             try:
                 json = loads(json_challenge)
-            except:
+            except JSONDecodeError:
                 return make_response(jsonify({'challenge': 'the json is not in a valid format'}))
-            data = json['challenge']
+            data = json.get('challenge')
+            if data is None:
+                return make_response(jsonify({'challenge': 'the json hasnt challenge field'}), 400)
             #If files names are in the request, set new_code names to them. If not, take old_challenge name.
             nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.get_code().get_file_name()
             nc_test_name = data['test_suite_file_name'] if 'test_suite_file_name' in data else old_challenge.get_tests_code().get_file_name()
@@ -133,8 +135,6 @@ class Controller:
         else:
             nc_code_name = old_challenge.get_code().get_file_name()
             nc_test_name = old_challenge.get_tests_code().get_file_name()
-        
-
 
         if not new_challenge.data_ok():
             return make_response(jsonify({'challenge': 'data is incomplete or invalid'}), 400)
