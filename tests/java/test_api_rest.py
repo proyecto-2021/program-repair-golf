@@ -166,8 +166,6 @@ def test_get_Id_noesxite(client):
 def test_PUT_Id_None(client):
 	delete_db()
 	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
-
-	#data = createQuery()
 	id=5
 	url = f'http://localhost:5000/java/java-challenges/{id}'
 	p1=client.put(url)
@@ -200,21 +198,7 @@ def test_PUT_Objective_repair(client):
 	assert objetive == "Pasa"
 	assert complexity==5
 
-	#assert repair_upd=="Pasa"
-	#assert r2.json['challenge'] ==  {
-     #   "code": fileClass,
-      # "tests_code": fileTest,
-       #"repair_objective": "Pasa",
-       #"complexity": 1,
-	   #"best_score":500,
-   # }
- 
-    #assert resp['code'] == code1
-    #assert resp['tests_code'] == test1
-   # assert resp['repair_objective'] == "Pasa"
-
-def test_PUT_1(client):
-
+def test_put_fails_parameters(client):
 	delete_db()
 	db.session.query(Challenge_java).delete()
 	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
@@ -241,7 +225,6 @@ def test_put_pass_all_test(client):
 	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
 	data2 = createChallenge('tests/java/example_java/Passalltest.java','tests/java/example_java/Passalltesttest.java', 'Passalltest', 'Passalltesttest', 'pass', '1')
 	
-	#data2 = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest1', 'pass', '1')
 	r1 = client.post(url, data=data)
 	id = r1.json['challenge']['id']
     
@@ -253,14 +236,35 @@ def test_put_pass_all_test(client):
 	assert resp.status_code == 404
 	assert r1.status_code==200
 
-def test_file_not_compile_class(client):
+def test_file_Put_not_compile_class(client):
 	delete_db()
 	url = url = 'http://localhost:5000/java/java-challenges'
-	data = createChallenge('tests/java/example_java/Nocompile.java','tests/java/example_java/NocompileTest.java', 'Nocompile', 'NocompileTest', 'nada', '2')
+	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
+	data2 = createChallenge('tests/java/example_java/Nocompile.java','tests/java/example_java/NocompileTest.java', 'Nocompile', 'NocompileTest', 'pass', '1')
+	
+	r1 = client.post(url, data=data)
+	id = r1.json['challenge']['id']
+    
+	url2 = f'http://localhost:5000/java/java-challenges/{id}'
 	try:
-		resp = client.post(url, data=data)
+		resp = client.put(url, data=data2)
 	except Exception as e:
 		assert str(e) == "Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar"
+
+# update java test suite that does not compile
+def put_test_file_not_compile_test(client):
+	delete_db()
+	url = url = 'http://localhost:5000/java/java-challenges'
+	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
+	data2 = createChallenge('tests/java/example_java/Testfailclass.java','tests/java/example_java/Testfailtest.java', 'Testfailclass', 'Testfailtest', 'pass', '1')
+	r1 = client.post(url, data=data)
+	id = r1.json['challenge']['id']
+    
+	url2 = f'http://localhost:5000/java/java-challenges/{id}'
+	try:
+		resp = client.put(url, data=data2)
+	except Exception as e:
+		assert str(e) == "Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar"		
 	assert resp.status_code == 404	
 
 # test repair
