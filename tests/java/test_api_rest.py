@@ -244,7 +244,39 @@ def test_put_pass_all_test(client):
 		assert str(e) == "Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar"
 	assert resp.status_code == 405
 	
+# test repair
+# upload an file repair valid
+def test_valid_repair_file(client):
+	#db.session.query(Challenge_java).delete()
+	delete_db()
+	urladd = 'http://localhost:5000/java/java-challenges'
+	id = 1
+	urlrepair = f'http://localhost:5000/java/java-challenges/{id}/repair'
 
+	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
+	resp1= client.post(urladd, data=data)
+	form = file_repair('tests/java/example_java/Median.java')
+	resp2= client.post(urlrepair, data=form)
+
+	assert resp1.status_code == 200
+	assert resp2.status_code == 200
+
+# upload an file repair invalid
+def test_no_valid_repair_file(client):
+	#db.session.query(Challenge_java).delete()
+	delete_db()
+	urladd = 'http://localhost:5000/java/java-challenges'
+	id = 1
+	urlrepair = f'http://localhost:5000/java/java-challenges/{id}/repair'
+
+	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
+	client.post(urladd, data=data)
+	form = file_repair('tests/java/example_java/Prueba.java')
+	try:
+		resp2= client.post(urlrepair, data=form)
+	except Exception as e:
+		assert str(e) == 'Error'
+	assert resp2.status_code == 404
 
 def createChallenge(url_class, url_test, name_class, name_test, objective, complexity):
 	fileClass = open(url_class, 'rb')
@@ -292,4 +324,11 @@ def createChallenge1(url_class, url_test, name_class, name_test, objective, comp
 	challenge['challenge'] = challenge['challenge'].replace('w', complexity)
 	challenge['challenge'] = challenge['challenge'].replace('w', best_score)
 	
+	return challenge
+
+def file_repair(path):
+	repair = open(path, 'rb')
+	challenge = {
+		'source_code_file': repair
+	}
 	return challenge
