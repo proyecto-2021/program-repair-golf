@@ -14,3 +14,7 @@ class cSharpRepairCandidate:
 	def validate():
 		#method to implement
 		pass
+
+	def score():
+		#method to implement
+		pass
