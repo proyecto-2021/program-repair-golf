@@ -80,6 +80,10 @@ def test_post_challenge_invalid_test(client):
     json_response = response.json
     assert json_response['Error'] == 'Syntax error at ' + 'test_not_compile.py'
 
+def test_post_challenge_binarycode_empty(client):
+    response = send_post(client, "", "valid_test_1.py", "Make all tests pass.", "2")
+    assert response == 400
+
 #post challenge with no errors in tests (so its repaired)
 def test_post_invalid_repaired_challenge(client):
     response = send_post(client, "code_repair_2.py", "valid_test_2.py", "Make all tests pass.", "2")
