@@ -128,7 +128,8 @@ class controller():
             curr = Challenge_java.__repr__(challenge)
             if ChallengeCandidate.isValid(file_repair, curr):
                 code_class = FileManagement.get_code_file_by_id(id)
-                ruta_file_tmp = UPLOAD_TMP + file_repair.filename
+                #ruta_file_tmp = UPLOAD_TMP + file_repair.filename
+                ruta_file_tmp = UPLOAD_TMP + curr['code'] + '.java'
                 code_repair = FileManagement.get_code_file_by_path(ruta_file_tmp)
                 value_dist = nltk.edit_distance(code_class, code_repair)
                 if value_dist < curr['best_score']:
