@@ -244,14 +244,33 @@ def test_PUT_1(client):
 	
 def test_put_pass_all_test(client):
 	delete_db()
-	url = url = 'http://localhost:5000/java/java-challenges'
-	data = createChallenge('tests/java/example_java/Passalltest.java','tests/java/example_java/Passalltesttest.java', 'Passalltest', 'Passalltesttest', 'dale', '5')
+	url = 'http://localhost:5000/java/java-challenges'
+
+	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
+	data2 = createChallenge('tests/java/example_java/Passalltest.java','tests/java/example_java/Passalltesttest.java', 'Passalltest', 'Passalltesttest', 'pass', '1')
+	
+	#data2 = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest1', 'pass', '1')
+	r1 = client.post(url, data=data)
+	id = r1.json['challenge']['id']
+    
+	url2 = f'http://localhost:5000/java/java-challenges/{id}'
 	try:
-		resp = client.put(url, data=data)
+		resp = client.put(url2, data=data2)
 	except Exception as e:
 		assert str(e) == "Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar"
-	assert resp.status_code == 405
-	
+	assert resp.status_code == 404
+	assert r1.status_code==200
+
+def test_file_not_compile_class(client):
+	delete_db()
+	url = url = 'http://localhost:5000/java/java-challenges'
+	data = createChallenge('tests/java/example_java/Nocompile.java','tests/java/example_java/NocompileTest.java', 'Nocompile', 'NocompileTest', 'nada', '2')
+	try:
+		resp = client.post(url, data=data)
+	except Exception as e:
+		assert str(e) == "Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar"
+	assert resp.status_code == 404	
+
 # test repair
 # upload an file repair valid
 def test_valid_repair_file(client):
