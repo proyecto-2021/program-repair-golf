@@ -24,8 +24,8 @@ class PythonChallenge:
     challenge_data = new_data.get('challenge_data')
     if challenge_data is None: challenge_data = {}
     #set new values
-    self.code.update(new_data.get('code'), challenge_data.get('code_name'))
-    self.test.update(new_data.get('test'), challenge_data.get('test_name'))
+    self.code.update(new_data.get('code'), challenge_data.get('source_code_file_name'))
+    self.test.update(new_data.get('test'), challenge_data.get('test_suite_file_name'))
     if challenge_data.get('repair_objective') != None: self.repair_objective = challenge_data.get('repair_objective')
     if challenge_data.get('complexity') != None: self.complexity = challenge_data.get('complexity')
 
@@ -40,13 +40,8 @@ class PythonChallenge:
 
   #saves source code at new base path
   def save_at(self, path):
-    new_code_path = path + self.code.name
-    save_file(new_code_path, "wb", self.code.content)
-    self.code.path = new_code_path
-
-    new_test_path = path + self.test.name
-    save_file(new_test_path, "wb", self.test.content)
-    self.test.path = new_test_path
+    self.code.move_code(path)
+    self.test.move_code(path)
 
   #deletes content in paths if saved somewhere
   def delete(self):

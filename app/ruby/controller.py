@@ -1,7 +1,7 @@
 from flask import jsonify, make_response
 from os import mkdir
 from os.path import isdir
-from json import loads
+from json import loads, JSONDecodeError
 from tempfile import gettempdir
 from shutil import rmtree
 from .rubychallenge import RubyChallenge
@@ -18,11 +18,15 @@ class Controller:
         if not (code_file and tests_code_file and json_challenge):
             return make_response(jsonify({'challenge': 'code, tests_code and json challenge are necessary'}), 400)
 
-        json = loads(json_challenge)
+        try:
+            json = loads(json_challenge)
+        except JSONDecodeError:
+            return make_response(jsonify({'challenge': 'the json is not in a valid format'}), 400)
+
         data = json.get('challenge')
 
         if not data:
-            return make_response(jsonify({'challenge': 'the json hasnt challenge field'}), 400)
+            return make_response(jsonify({'challenge': 'the json has no challenge field'}), 400)
 
         fields = ['source_code_file_name','test_suite_file_name','complexity','repair_objective']
         if not all(f in data for f in fields):
@@ -33,7 +37,7 @@ class Controller:
         challenge.set_tests_code(self.files_path, data['test_suite_file_name'], tests_code_file)
 
         if not challenge.data_ok():
-            return make_response(jsonify({'challenge': 'the json information is incomplete/erroneous'}), 400)
+            return make_response(jsonify({'challenge': 'data is incomplete or invalid'}), 400)
 
         if not challenge.get_code().save():
             return make_response(jsonify({'challenge': 'source_code already exists'}), 409)
@@ -111,19 +115,34 @@ class Controller:
         if not self.dao.exists(id):
             return make_response(jsonify({'challenge': 'id doesnt exist'}), 404)
 
-        json = loads(json_challenge)
-
-        data = {'repair_objective': None, 'complexity': None}
-        data.update(json['challenge'])
         old_challenge = RubyChallenge(**self.dao.get_challenge(id))
-        new_challenge = RubyChallenge(data['repair_objective'], data['complexity'])
+        new_challenge = RubyChallenge(**self.dao.get_challenge(id))
+
+        if json_challenge is not None:
+            try:
+                json = loads(json_challenge)
+            except JSONDecodeError:
+                return make_response(jsonify({'challenge': 'the json is not in a valid format'}), 400)
+            data = json.get('challenge')
+            if data is None:
+                return make_response(jsonify({'challenge': 'the json has no challenge field'}), 400)
+            #If files names are in the request, set new_code names to them. If not, take old_challenge name.
+            nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.get_code().get_file_name()
+            nc_test_name = data['test_suite_file_name'] if 'test_suite_file_name' in data else old_challenge.get_tests_code().get_file_name()
+            data.pop('source_code_file_name', None)
+            data.pop('test_suite_file_name', None)
+            new_challenge.update(data)
+        else:
+            nc_code_name = old_challenge.get_code().get_file_name()
+            nc_test_name = old_challenge.get_tests_code().get_file_name()
+
+        if not new_challenge.data_ok():
+            return make_response(jsonify({'challenge': 'data is incomplete or invalid'}), 400)
+            
         if isdir(self.ruby_tmp):
             rmtree(self.ruby_tmp)
         mkdir(self.ruby_tmp)
-        #If files names are in the request, set new_code names to them. If not, take old_challenge name.
-        nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.get_code().get_file_name()
-        nc_test_name = data['test_suite_file_name'] if 'test_suite_file_name' in data else old_challenge.get_tests_code().get_file_name()
-        
+
         if not self.set_new_challenge(nc_code_name, code_file, old_challenge.get_code(), new_challenge.get_code()):
             return make_response(jsonify({'challenge': 'code doesnt compile'}), 400)
         
@@ -148,7 +167,7 @@ class Controller:
         rmtree(self.ruby_tmp)
 
         #From new_challenge, take only values that must be updated.
-        update_data = {key: value for (key, value) in new_challenge.get_content(for_db=True).items() if value is not None}
+        update_data = new_challenge.get_content(for_db=True, exclude=['id'])
         self.dao.update_challenge(id, update_data)
         response = RubyChallenge(**self.dao.get_challenge(id)).get_content(exclude=['id'])
         return jsonify({'challenge': response})
