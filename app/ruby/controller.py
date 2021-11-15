@@ -26,7 +26,7 @@ class Controller:
         data = json.get('challenge')
 
         if not data:
-            return make_response(jsonify({'challenge': 'the json hasnt challenge field'}), 400)
+            return make_response(jsonify({'challenge': 'the json has no challenge field'}), 400)
 
         fields = ['source_code_file_name','test_suite_file_name','complexity','repair_objective']
         if not all(f in data for f in fields):
@@ -125,7 +125,7 @@ class Controller:
                 return make_response(jsonify({'challenge': 'the json is not in a valid format'}), 400)
             data = json.get('challenge')
             if data is None:
-                return make_response(jsonify({'challenge': 'the json hasnt challenge field'}), 400)
+                return make_response(jsonify({'challenge': 'the json has no challenge field'}), 400)
             #If files names are in the request, set new_code names to them. If not, take old_challenge name.
             nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.get_code().get_file_name()
             nc_test_name = data['test_suite_file_name'] if 'test_suite_file_name' in data else old_challenge.get_tests_code().get_file_name()

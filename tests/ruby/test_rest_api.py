@@ -226,15 +226,19 @@ def test_put_only_change_files_names(client):
 
     r = client.post(url, data=data)
     id = r.json['challenge']['id']
+    orig_json = r.json['challenge']
+    orig_json.pop('id')
 
     url2 = f'/ruby/challenge/{id}'
     data2 = get_json('example', 'example_test12', 'Testing put', '3')
 
     r2 = client.put(url2, data=data2)
+    r3 = client.get(url2)
 
     assert r.status_code == 200
     assert r2.status_code == 400
     assert r2.json['challenge'] == 'test_suite dependencies are wrong'
+    assert r3.json['challenge'] == orig_json
 
 def test_put_code_not_compiles1(client):
     url = '/ruby/challenge'
@@ -242,15 +246,19 @@ def test_put_code_not_compiles1(client):
 
     r = client.post(url, data=data)
     id = r.json['challenge']['id']
+    orig_json = r.json['challenge']
+    orig_json.pop('id')
 
     url2 = f'/ruby/challenge/{id}'
     data2 = get_data('example13', 'example_test13', 'Testing put code does not compiles', '3', 'example_not_compile', 'example_test13')
 
     r2 = client.put(url2, data=data2)
+    r3 = client.get(url2)
 
     assert r.status_code == 200
     assert r2.status_code == 400
     assert r2.json['challenge'] == 'code doesnt compile'
+    assert r3.json['challenge'] == orig_json
 
 def test_put_code_not_compiles2(client):
     url = '/ruby/challenge'
@@ -258,15 +266,19 @@ def test_put_code_not_compiles2(client):
 
     r = client.post(url, data=data)
     id = r.json['challenge']['id']
+    orig_json = r.json['challenge']
+    orig_json.pop('id')
 
     url2 = f'/ruby/challenge/{id}'
     data2 = get_data('example14', 'example_test14', 'Testing put code does not compiles', '2', 'example_challenge', 'example_test_no_compiles14')
 
     r2 = client.put(url2, data=data2)
+    r3 = client.get(url2)
 
     assert r.status_code == 200
     assert r2.status_code == 400
     assert r2.json['challenge'] == 'test_suite doesnt compile'
+    assert r3.json['challenge'] == orig_json
 
 def test_put_with_update_info_existent(client):
     url = '/ruby/challenge'
@@ -275,19 +287,22 @@ def test_put_with_update_info_existent(client):
 
     url = '/ruby/challenge'
     data = get_data('example16', 'example_test16', 'Testing', '1','example_challenge', 'example_test16')
-
     r2 = client.post(url, data=data)
     id = r2.json['challenge']['id']
+    orig_json = r2.json['challenge']
+    orig_json.pop('id')
 
     url2 = f'/ruby/challenge/{id}'
     data2 = get_data('example15', 'example_test15', 'Testing put ', '2', 'example_challenge', 'example_test15')
 
     r3 = client.put(url2, data=data2)
+    r4 = client.get(url2)
 
     assert r1.status_code == 200
     assert r2.status_code == 200
     assert r3.status_code == 409
     assert r3.json['challenge'] == 'code_file_name already exists'
+    assert r4.json['challenge'] == orig_json
 
 def test_put_new_tests_and_rename_code(client):
     url = '/ruby/challenge'
@@ -452,30 +467,38 @@ def test_put_invalid_data(client):
     data = get_data('example23', 'example_test23', 'Testing put invalid data', '1', 'example_challenge', 'example_test23')
     r = client.post(url, data=data)
     id = r.json['challenge']['id']
+    orig_json = r.json['challenge']
+    orig_json.pop('id')
 
     data2 = get_data(' ', ' ', ' ', '0')
     url2 = f'/ruby/challenge/{id}'
     r2 = client.put(url2, data=data2)
+    r3 = client.get(url2)
 
     assert r.status_code == 200
     assert r2.status_code == 400
     assert r2.json['challenge'] == 'data is incomplete or invalid'
+    assert r3.json['challenge'] == orig_json
 
 def test_put_invalid_data2(client):
     url = '/ruby/challenge'
     data = get_data('example24', 'example_test24', 'Testing put invalid data', '1', 'example_challenge', 'example_test24')
     r = client.post(url, data=data)
     id = r.json['challenge']['id']
+    orig_json = r.json['challenge']
+    orig_json.pop('id')
 
     data2 = get_data('example24', 'example_test25', 'Testing put invalid data', '3')
     data2['challenge'] = data2['challenge'].replace('challenge', 'challonge')
 
     url2 = f'/ruby/challenge/{id}'
     r2 = client.put(url2, data=data2)
+    r3 = client.get(url2)
 
     assert r.status_code == 200
     assert r2.status_code == 400
-    assert r2.json['challenge'] == 'the json hasnt challenge field'
+    assert r2.json['challenge'] == 'the json has no challenge field'
+    assert r3.json['challenge'] == orig_json
 
 def test_post_invalid_json_format(client):
     url = '/ruby/challenge'
@@ -491,13 +514,17 @@ def test_put_invalid_json_format(client):
     data = get_data('example25', 'example_test25', 'Testing put invalid format', '1', 'example_challenge', 'example_test25')
     r = client.post(url, data=data)
     id = r.json['challenge']['id']
+    orig_json = r.json['challenge']
+    orig_json.pop('id')
 
     data2 = get_data('example25', 'example_test26', 'Testing put invalid format', '3')
     data2['challenge'] = data2['challenge'].replace('challenge":', 'challenge')
 
     url2 = f'/ruby/challenge/{id}'
     r2 = client.put(url2, data=data2)
+    r3 = client.get(url2)
 
     assert r.status_code == 200
     assert r2.status_code == 400
     assert r2.json['challenge'] == 'the json is not in a valid format'
+    assert r3.json['challenge'] == orig_json
