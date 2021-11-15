@@ -134,8 +134,7 @@ class controller():
                 value_dist = nltk.edit_distance(code_class, code_repair)
                 if value_dist < curr['best_score']:
                     challenge.score = value_dist
-                    db.session.add(challenge)
-                    db.session.commit()                    
+                    DAO_java_challenge.update(challenge)                    
                     return {"repair": {"challenge": ChallengeCandidate.create_desafio(challenge),"attempts": 1, "score": value_dist}}
                 else:
                     raise Exception(f'La distancia de edicion es mayor o igual a la existente, tu puntuacion es: {value_dist}')
