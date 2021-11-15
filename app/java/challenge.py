@@ -37,10 +37,10 @@ class Challenge():
                     return True
             else:
                 return False
-                #return make_response(jsonify("Test suite not compile"))
+                
         else:
             return False
-            #return make_response(jsonify("Class java not compile"))
+            
 
     def class_java_compile(path_file_java):
         try:
