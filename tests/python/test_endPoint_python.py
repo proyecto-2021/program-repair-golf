@@ -340,3 +340,10 @@ def send_post(client, code_name, test_name, repair_objective, complexity):
     test_name=test_name, repair_objective=repair_objective, complexity=complexity)
 
     return client.post(api_url, data=dataChallengePost)
+
+def isBlank (myString):
+    if myString and myString.strip():
+        #myString is not None AND myString is not empty or blank
+        return False
+    #myString is None OR myString is empty or blank
+    return True
