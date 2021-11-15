@@ -266,10 +266,33 @@ def test_update_code_w_sintax_error(client,create_test_data):
     assert resp_put.json == {'Source code': 'Sintax errors'}
     cleanup()
 
+def test_update_complexity_and_repair_objective(client, create_test_data):
+    url_post = 'cSharp/c-sharp-challenges'
+    data = create_test_data['data']
+    data_put = create_challenge(code_name=None, tests_name=None, repair_objective='Test this method', complexity='4', code=None, tests_code=None)
+    #data_put = create_challenge(repair_objective='Test this method', complexity=4 )
+    expected_response = {"challenge": { "code": create_test_data['content_code'],
+                                        "tests_code":  create_test_data['content_tests_code'],
+                                        "repair_objective": "Test this method",
+                                        "complexity": 4,
+                                        #"id":1,
+                                        "best_score": 0
+                                       }
+                        }
 
-def test_update_complexity_and_repair_objective(client):
-    #todo: implement this method
-    pass
+    resp_post = client.post(url_post, data=data)
+    challenge_id = resp_post.json['challenge']['id']
+     
+    url_put = 'cSharp/c-sharp-challenges/' + str(challenge_id) 
+    resp_put = client.put(url_put, data=data_put)
+    resp_put_json = resp_put.json
+    resp_put_json['challenge'].pop('id')
+    print(resp_put.json)
+    
+    #Assert
+    assert resp_put.status_code == 200
+    assert resp_put.json == expected_response
+    cleanup()
 
 def test_update_code_passes_all_tests(client, create_test_data):
     # Arrange
