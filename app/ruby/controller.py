@@ -16,7 +16,7 @@ class Controller:
 
     def post_challenge(self, code_file, tests_code_file, json_challenge):
         if not (code_file and tests_code_file and json_challenge):
-            return make_response(jsonify({'challenge': 'code, tests_code and json challenge are necessary'}), 400)
+            return make_response(jsonify({'challenge': 'the code, tests code and json challenge are necessary'}), 400)
 
         try:
             json = loads(json_challenge)
@@ -37,29 +37,29 @@ class Controller:
         challenge.set_tests_code(self.files_path, data['test_suite_file_name'], tests_code_file)
 
         if not challenge.data_ok():
-            return make_response(jsonify({'challenge': 'data is incomplete or invalid'}), 400)
+            return make_response(jsonify({'challenge': 'the data is incomplete or invalid'}), 400)
 
         if not challenge.get_code().save():
-            return make_response(jsonify({'challenge': 'source_code already exists'}), 409)
+            return make_response(jsonify({'challenge': 'the source code already exists'}), 409)
 
         if not challenge.get_tests_code().save():
             challenge.get_code().remove()
-            return make_response(jsonify({'challenge': 'test_suite already exists'}), 409)
+            return make_response(jsonify({'challenge': 'the test suite already exists'}), 409)
 
         if not challenge.get_code().compiles() or not challenge.get_tests_code().compiles():
             challenge.get_code().remove()
             challenge.get_tests_code().remove()
-            return make_response(jsonify({'challenge': 'source_code and/or test_suite doesnt compile'}), 400)
+            return make_response(jsonify({'challenge': 'the source code and/or test suite does not compile'}), 400)
 
         if not challenge.get_tests_code().dependencies_ok(challenge.get_code()):
             challenge.get_code().remove()
             challenge.get_tests_code().remove()
-            return make_response(jsonify({'challenge': 'test_suite dependencies are wrong'}), 400)
+            return make_response(jsonify({'challenge': 'the test suite dependencies are wrong'}), 400)
 
         if not challenge.get_tests_code().run_fails():
             challenge.get_code().remove()
             challenge.get_tests_code().remove()
-            return make_response(jsonify({'challenge': 'test_suite doesnt fail'}),400)
+            return make_response(jsonify({'challenge': 'the challenge has no errors to repair'}),400)
 
         response = challenge.get_content(exclude=['id'])
         response['id'] = self.dao.create_challenge(**challenge.get_content(exclude=['id', 'best_score'], for_db=True))
