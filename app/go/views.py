@@ -137,6 +137,7 @@ def update_a_go_challenge(id):
         code_compile = subprocess.run(["go build"], cwd=os.path.abspath('example-challenges/go-challenges/tmp/'), stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
         if code_compile.returncode == 2:
             os.remove(os.path.abspath(new_code_path))
+
             return make_response(jsonify({"code_file":"code with sintax errors"}),409)           
 
     new_test = 'test_suite_file' in request.files
@@ -145,7 +146,7 @@ def update_a_go_challenge(id):
             return make_response(jsonify({"file name" : "conflict"}),409)
         
         new_test_name = request_data['test_suite_file_name']
-        new_test_path = f'example-challenges/go-challenges/tmp/{new_test_name}'
+        new_test_path = os.path.abspath(f'example-challenges/go-challenges/tmp/{new_test_name}')
 
         g = request.files['test_suite_file']   
         g.save(new_test_path)
@@ -153,30 +154,30 @@ def update_a_go_challenge(id):
         test_compile = subprocess.run(["go test -c"],cwd=os.path.abspath('example-challenges/go-challenges/tmp/'),shell=True)        
         if test_compile.returncode == 1:
             os.remove(new_test_path)
+            os.remove(new_code_path)
             return make_response(jsonify({"test_code_file":"test with sintax errors"}),409)
 
     if new_code and new_test:
         pass_test_suite = subprocess.run(['go test'], cwd=os.path.abspath('example-challenges/go-challenges/tmp/'), shell=True)
         if pass_test_suite.returncode == 0:
-            os.remove(new_code_path)
-            os.remove(new_test_path)
+            delete_files('example-challenges/go-challenges/tmp/')
             return make_response(jsonify({'error' : 'test must fails'}), 412)  
 
     elif new_code and not new_test:
         
         path_to_temp_test_file = 'example-challenges/go-challenges/tmp/' + 'temp_test.go'
         rewrite_file(old_test_path, path_to_temp_test_file)
-        pass_test_suite = subprocess.run(['go test'], cwd='example-challenges/go-challenges/tmp/')
+        pass_test_suite = subprocess.run(['go test'], cwd='example-challenges/go-challenges/tmp/', shell=True)
         
         if pass_test_suite.returncode == 0:
             delete_files('example-challenges/go-challenges/tmp/')
-            return make_response(jsonify({'error' : 'test must fails'}), 412)
+            return make_response(jsonify({'error': 'test must fails'}), 412)
 
     elif not new_code and new_test:
 
         path_to_temp_code_file = 'example-challenges/go-challenges/tmp/' + 'temp.go'
         rewrite_file(old_code_path, path_to_temp_code_file)
-        pass_test_suite = subprocess.run(['go test'], cwd='example-challenges/go-challenges/tmp/')
+        pass_test_suite = subprocess.run(['go test'], cwd='example-challenges/go-challenges/tmp/', shell=True)
         
         if pass_test_suite.returncode == 0:
             delete_files('example-challenges/go-challenges/tmp/')
