@@ -121,6 +121,7 @@ def update_a_go_challenge(id):
         temporary_directory.create_dir()
 
     challenge_old = GoChallengeC(challenge.id, challenge.code, challenge.tests_code, challenge.repair_objective, challenge.complexity)
+
     path_to_old_code_file = Go_src(path=challenge_old.get_code())
     path_to_old_test_file = Go_src(path=challenge_old.get_tests_code())
     request_data = json.loads(request.form.get('challenge'))['challenge']
@@ -154,7 +155,8 @@ def update_a_go_challenge(id):
         new_test_file.save()
 
         if not new_challenge.tests_compiles():
-            new_challenge.remove_test_file()
+            new_test_file.remove_file()
+            new_code_file.remove_file()
             return make_response(jsonify({"test_suite_file" : "tests with sintax errors"}),409)
 
     if new_code and new_test:
@@ -201,8 +203,8 @@ def update_a_go_challenge(id):
 
     if 'complexity' in request_data and request_data['complexity'] != challenge_old.get_complexity():
        new_challenge.set_complexity(request_data['complexity'])
-
-    dao.update_challenge(new_challenge.get_id(), new_challenge.get_content_post())
+    
+    dao.update_challenge(new_challenge.get_id(), new_challenge.get_content())
 
     return jsonify({'challenge' : new_challenge.get_content_by_id_and_put()})
     

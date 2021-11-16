@@ -62,6 +62,17 @@ class GoChallengeC:
             'best_score': self.best_score
         }
 
+    ####Lo cree porque se rompia con los otros, podriamos ahcer uno generico
+    def get_content(self):
+        return {
+            'id': self.id,
+            'code': self.code.get_path(),
+            'tests_code': self.tests_code.get_path(),
+            'repair_objective': self.repair_objective,
+            'complexity': self.complexity,
+            'best_score': self.best_score
+        }
+
     def get_content_repair(self):
         return {
             'repair_objective': self.repair_objective,
