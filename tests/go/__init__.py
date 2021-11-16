@@ -1,11 +1,13 @@
+from _pytest.config import filename_arg
 from app import create_app, db
 import pytest
 import os
+import glob
 
 @pytest.fixture(scope='module')
 def client():
     # Arrange
-    filename='////tmp'
+    path='public/challenges'
     app = create_app('testing')
     # Create a test client using the Flask application configured for testing
     with app.test_client() as test_client:
@@ -15,6 +17,12 @@ def client():
             # Tests will be executed on the test_client object
             yield test_client
             
+    #Cleanup
+    for file in os.listdir(path):
+        if (file.endswith(".go")):
+            os.remove(os.path.join(path, file))
+   
+       
 @pytest.fixture(scope='module')
 def auth(client):
     user = {'username': 'user', 'password': 'root'}
@@ -25,6 +33,3 @@ def auth(client):
     acces_token = ret_post_auth.json["access_token"]
     
     return acces_token
-
-
-    
