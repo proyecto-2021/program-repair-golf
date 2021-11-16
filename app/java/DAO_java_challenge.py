@@ -1,4 +1,3 @@
-#from app.java import challenge
 from app.java.models_java import Challenge_java
 from . import java
 from app import db
@@ -34,3 +33,6 @@ class DAO_java_challenge():
         else:
            raise Exception("Id Challenge Not Found!")
 
+    def update(challenge):
+        db.session.add(challenge)
+        db.session.commit()

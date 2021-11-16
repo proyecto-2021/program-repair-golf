@@ -18,14 +18,12 @@ class FileManagement():
     # given an id it gets the code of the file
     def get_code_file_by_id(id):
         challenge_id= DAO_java_challenge.challenges_id_java(id)
-        #challenge_id = Challenge_java.query.filter_by(id = id).first()
         if challenge_id is not None:
             new_id = Challenge_java.__repr__(challenge_id)
             path = 'public/challenges/' + new_id['code'] + '.java'
             return FileManagement.get_code_file_by_path(path)
         raise Exception("Id not exits")
-        #return make_response(jsonify({"ERROR": "id not exits"}))
-    
+       
     # given an path file gets the code of the file
     def get_code_file_by_path(file):
         f = open(file, mode='r', encoding='utf-8')
@@ -44,8 +42,7 @@ class FileManagement():
             new_var['tests_code'] = FileManagement.get_code_file_by_path(path_test)
             return new_var
         raise Exception("name of file no exist")
-        #return make_response(jsonify({"ERROR": "name of file no exist"}))
-
+       
     # remove the of file in directory
     def delete_path(file_rm):
         if path.exists(file_rm):
@@ -54,10 +51,8 @@ class FileManagement():
     def upload_file_test(file, path, dict):
         if file is None:
             raise Exception("One of the provided files has syntax errors.")
-            #return make_response(jsonify({"error_message": "One of the provided files has syntax errors."}))
         if file.filename == '' :
             raise Exception("No name of file")
-            #return make_response(jsonify("No name of file"), 404)
         if file and FileManagement.allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 name_archivo_test = dict['test_suite_file_name'] + '.java'
@@ -66,10 +61,8 @@ class FileManagement():
     def upload_file_class(file, path, dict):
         if file is None:
             raise Exception("One of the provided files has syntax errors.")
-            #return make_response(jsonify({"error_message": "One of the provided files has syntax errors."}))
         if file.filename == '' :
             raise Exception("No name of file")
-            #return make_response(jsonify("No name of file"), 404)
         if file and FileManagement.allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 name_archivo = dict['source_code_file_name'] + '.java'
@@ -78,10 +71,8 @@ class FileManagement():
     def upload_file_repair(file, path, dict):
         if file is None:
             raise Exception("One of the provided files has syntax errors.")
-            #return make_response(jsonify({"error_message": "One of the provided files has syntax errors."}))
         if file.filename == '' :
             raise Exception("No name of file")
-            #return make_response(jsonify("No name of file"), 404)
         if file and FileManagement.allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 name_archivo = dict['code'] + '.java'
