@@ -18,7 +18,7 @@ def client():
             yield test_client
     #Cleanup
     for file in os.listdir(path):
-        if not(file.endswith(".md")):
+        if (file.endswith(".go")):
             os.remove(os.path.join(path, file))
             
     
