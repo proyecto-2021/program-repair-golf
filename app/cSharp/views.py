@@ -33,8 +33,8 @@ def put_csharp_challenges(id):
     update_request['repair_objective'] = request.form.get('repair_objective')
     update_request['complexity'] = request.form.get('complexity')
 
-    challenge = get_challenge_db(id)
-    if not exist(id):
+    challenge = DAO.get_challenge_db(id)
+    if not DAO.exist(id):
         return make_response(jsonify({"challenge": "There is no challenge for this id"}), 404)
     files_keys = ("source_code_file", "test_suite_file")
 
@@ -60,8 +60,9 @@ def put_csharp_challenges(id):
                                  new_challenge_path,
                                  new_test_path)
         val_status = new_ch.validate()
-        handle_put_files(val_status, new_ch.code.path, new_ch.test.path,
-                         old_challenge_path, old_test_path)
+        DAO.handle_put_files(val_status, old_challenge_path,
+                             old_test_path, new_ch.code.path,
+                             new_ch.test.path)
         if val_status != 1:
             return code_validation_response(val_status)
     elif new_challenge is not None:
@@ -72,9 +73,8 @@ def put_csharp_challenges(id):
                                  new_challenge_path,
                                  old_test_path)
         val_status = new_ch.validate()
-        handle_put_files(val_status, new_ch.code.path,
-                         prev_src_path=old_challenge_path,
-                         prev_test_path=new_ch.test.path)
+        DAO.handle_put_files(val_status, old_challenge_path, new_ch.test.path,
+                             new_ch.code.path)
         if val_status != 1:
             return code_validation_response(val_status)
     elif new_test is not None:
@@ -85,9 +85,8 @@ def put_csharp_challenges(id):
                                  old_challenge_path,
                                  new_test_path)
         val_status = new_ch.validate()
-        handle_put_files(val_status, test_path=new_ch.test.path,
-                         prev_src_path=new_ch.code.path,
-                         prev_test_path=old_test_path)
+        DAO.handle_put_files(val_status, new_ch.code.path, old_test_path,
+                             test_path=new_ch.test.path)
         if val_status != 1:
             return code_validation_response(val_status)
 
@@ -100,7 +99,7 @@ def put_csharp_challenges(id):
             return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
         else:
             DAO.update_challenge_data(id, {'complexity': complexity})
-    return make_response(jsonify({'challenge': get_challenge_db(id, show_files_content=True)}), 200)
+    return make_response(jsonify({'challenge': DAO.get_challenge_db(id, show_files_content=True)}), 200)
 
 
 @cSharp.route('/c-sharp-challenges', methods=['POST'])
@@ -236,46 +235,6 @@ def calculate_score(challenge_path, repair_candidate_path):
     challenge_script = open(challenge_path, "r").readlines()
     repair_script = open(repair_candidate_path, "r").readlines()
     return nltk.edit_distance(challenge_script, repair_script)
-
-
-def handle_put_files(result, src_path=None, test_path=None, prev_src_path=None, prev_test_path=None):
-    if src_path is not None:
-        exe_new = src_path.replace('.cs', '.exe')
-    if test_path is not None:
-        dll_new = test_path.replace('.cs', '.dll')
-    if prev_src_path is not None:
-        exe_prev = prev_src_path.replace('.cs', '.exe')
-    if prev_test_path is not None:
-        dll_prev = prev_test_path.replace('.cs', '.dll')
-
-    if result == -1:
-        if test_path is not None:
-            DAO.remove(src_path, test_path)
-        else:
-            DAO.remove(src_path)
-    elif result == 0:
-        if test_path is not None and src_path is not None:
-            DAO.remove(src_path, test_path, exe_new, dll_new)
-        elif src_path is not None:
-            DAO.remove(src_path, exe_new, dll_prev)
-        else:
-            DAO.remove(test_path, exe_prev, dll_new)
-    elif result == 2:
-        if src_path is not None:
-            DAO.remove(src_path, test_path, exe_new)
-        else:
-            DAO.remove(test_path, exe_prev)
-    elif result == 1:
-        if test_path is not None and src_path is not None:
-            DAO.remove(exe_new, dll_new, prev_src_path, prev_test_path)
-            shutil.move(src_path, prev_src_path)
-            shutil.move(test_path, prev_test_path)
-        elif src_path is not None:
-            DAO.remove(exe_new, dll_prev, prev_src_path)
-            shutil.move(src_path, prev_src_path)
-        else:
-            DAO.remove(dll_new, exe_prev, prev_test_path)
-            shutil.move(test_path, prev_test_path)
 
 
 def code_validation_response(val_status):

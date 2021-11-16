@@ -45,3 +45,33 @@ class CSharpChallengeDAO:
     def remove(self, *paths):
         for path in paths:
             os.remove(path)
+
+    def handle_put_files(self, result, prev_src_path, prev_test_path, src_path=None, test_path=None):
+        if src_path is not None:
+            exe_new = src_path.replace('.cs', '.exe')
+        if test_path is not None:
+            dll_new = test_path.replace('.cs', '.dll')
+        exe_prev = prev_src_path.replace('.cs', '.exe')
+        dll_prev = prev_test_path.replace('.cs', '.dll')
+
+        if result == -1:
+            self.remove(src_path)
+            if test_path is not None:
+                self.remove(test_path)
+        elif result == 0:
+            if src_path is not None:
+                self.remove(src_path, exe_new, dll_prev)
+            if test_path is not None:
+                self.remove(test_path, exe_prev, dll_new)
+        elif result == 2:
+            if src_path is not None:
+                self.remove(src_path, exe_new)
+            if test_path is not None:
+                self.remove(test_path, exe_prev)
+        else:
+            if src_path is not None:
+                self.remove(exe_new, dll_prev, prev_src_path)
+                shutil.move(src_path, prev_src_path)
+            if test_path is not None:
+                self.remove(dll_new, exe_prev, prev_test_path)
+                shutil.move(test_path, prev_test_path)
