@@ -1,24 +1,24 @@
 from .c_sharp_src import CSharpSrc
-from .c_sharp_challenge import cSharpChallenge
+from .c_sharp_challenge import CSharpChallenge
+import nltk
 
-class cSharpRepairCandidate:
+class CSharpRepairCandidate:
 
- 	def __init__(self,challenge,code_file,file_name,path):
- 		if isinstance(cSharpChallenge,challenge):
- 			self.challenge = challenge
- 			self.code = CSharpSrc(code_file,file_name,path) 
- 	
- 	pass
-
-	def get_code(self):
-		return self.code
-
-	def validate(self):
-		return validate(self.code)
-		
-
-	def score(self):
-		challenge_script = open(self.challenge.code,"r").readlines()
-		repair_script = open(self.code.path,"r").readlines()
-		return nltk.edit_distance(challenge_script,repair_script)
-		
+    def __init__(self,challenge,code_file,file_name,path):
+        self.challenge = challenge
+        self.code = CSharpSrc(code_file,file_name,path) 
+        self.code.save()
+    
+    def validate(self):
+        if self.code.compiles():
+            if self.code.test_compiles(self.challenge.test):
+                if self.code.tests_pass(self.challenge.test):
+                    return 0
+                return 1
+        return -1
+        
+    def score(self):
+        challenge_script = open(self.challenge.code.path,"r").readlines()
+        repair_script = open(self.code.path,"r").readlines()
+        return nltk.edit_distance(challenge_script,repair_script)
+        
