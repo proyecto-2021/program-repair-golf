@@ -1,16 +1,19 @@
 from app.cSharp.models import CSharpChallengeModel
 from app import db
 import os
+import shutil
 
 
 class CSharpChallengeDAO:
+
+    CHALLENGE_SAVE_PATH = "./example-challenges/c-sharp-challenges/"
+    CHALLENGE_VALIDATION_PATH = "./public/challenges/"
 
     def __init__(self):
         pass
 
     def get_challenge_db(self, id, show_files_content=False):
         challenge = db.session.query(CSharpChallengeModel).filter_by(id=id).first().__repr__()
-        print(challenge)
         if show_files_content:
             challenge['code'] = open(challenge['code'], "r").read()
             challenge['tests_code'] = open(challenge['tests_code'], "r").read()
@@ -19,11 +22,15 @@ class CSharpChallengeDAO:
     def exist(self, id):
         return db.session.query(CSharpChallengeModel).filter_by(id=id).first() is not None
 
-    def save_challenge(self, challenge_data, source_code_path, test_path):
-        new_challenge = CSharpChallengeModel(code=source_code_path,
+    def save_to_db(self, repair_objective, complexity, code_name, test_name):
+        code_name = os.path.splitext(code_name)[0]
+        test_name = os.path.splitext(test_name)[0]
+        code_path = self.CHALLENGE_SAVE_PATH + code_name + '/' + code_name + '.cs'
+        test_path = self.CHALLENGE_SAVE_PATH + code_name + '/' + test_name + '.cs'
+        new_challenge = CSharpChallengeModel(code=code_path,
                                              tests_code=test_path,
-                                             repair_objective=challenge_data['repair_objective'],
-                                             complexity=int(challenge_data['complexity']),
+                                             repair_objective=repair_objective,
+                                             complexity=int(complexity),
                                              best_score=0)
         db.session.add(new_challenge)
         db.session.commit()

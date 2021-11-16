@@ -10,13 +10,10 @@ from flask import jsonify, make_response, json, request
 import subprocess, os
 from subprocess import PIPE
 import nltk
-import shutil
 from .c_sharp_challenge_DAO import CSharpChallengeDAO
+import shutil
 
 
-CHALLENGE_SAVE_PATH = "example-challenges/c-sharp-challenges/"
-CHALLENGE_VALIDATION_PATH = "./public/challenges/"
-UPLOAD_FOLDER = "./example-challenges/c-sharp-challenges/"
 DAO = CSharpChallengeDAO()
 
 
@@ -42,13 +39,13 @@ def put_csharp_challenges(id):
     test_name = os.path.basename(challenge['tests_code'])
     challenge_exe = challenge_name.replace('.cs', '.exe')
     test_dll = test_name.replace('.cs', '.dll')
-    challenge_dir = CHALLENGE_SAVE_PATH + challenge_name.replace('.cs', '/')
+    challenge_dir = DAO.CHALLENGE_SAVE_PATH + challenge_name.replace('.cs', '/')
     old_challenge_path = challenge_dir + challenge_name
     old_test_path = challenge_dir + test_name
-    new_challenge_path = CHALLENGE_VALIDATION_PATH + challenge_name
-    new_test_path = CHALLENGE_VALIDATION_PATH + test_name
-    new_challenge_exe_path = CHALLENGE_VALIDATION_PATH + challenge_exe
-    new_test_dll_path = CHALLENGE_VALIDATION_PATH + test_dll
+    new_challenge_path = DAO.CHALLENGE_VALIDATION_PATH + challenge_name
+    new_test_path = DAO.CHALLENGE_VALIDATION_PATH + test_name
+    new_challenge_exe_path = DAO.CHALLENGE_VALIDATION_PATH + challenge_exe
+    new_test_dll_path = DAO.CHALLENGE_VALIDATION_PATH + test_dll
     new_challenge = update_request['source_code_file']
     new_test = update_request['test_suite_file']
 
@@ -120,7 +117,7 @@ def post_csharp_challenges():
                      'source_code_file', 'test_suite_file',
                      'repair_objective', 'complexity')
     if all(key in new_challenge for key in required_keys):
-        challenge_dir = CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name']
+        challenge_dir = DAO.CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name']
         try:
             os.mkdir(challenge_dir)
         except FileExistsError:
@@ -146,10 +143,10 @@ def post_csharp_challenges():
             if complexity < 1 or complexity > 5:
                 shutil.rmtree(challenge_dir)
                 return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
-            new_challenge['complexity'] = complexity
-            new_data_id = DAO.save_challenge(new_challenge,
-                                             challenge.code.path,
-                                             challenge.test.path)
+            new_data_id = DAO.save_to_db(new_challenge['repair_objective'],
+                                         complexity,
+                                         challenge.code.file_name,
+                                         challenge.test.file_name)
             content = DAO.get_challenge_db(new_data_id, show_files_content=True)
             return make_response(jsonify({'challenge': content}))
 
@@ -176,7 +173,7 @@ def repair_Candidate(id):
             file = request.files['source_code_file']
         except Exception:
             return make_response(jsonify({'Repair candidate': 'Not found'}), 404)
-        repair_path = CHALLENGE_VALIDATION_PATH + challenge_name
+        repair_path = DAO.CHALLENGE_VALIDATION_PATH + challenge_name
         repair = CSharpChallenge(file, open(challenge['tests_code'], "rb"),
                                  challenge_name, test_name, repair_path, 
                                  challenge['tests_code'])
