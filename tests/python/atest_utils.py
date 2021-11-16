@@ -49,25 +49,10 @@ def create_expected_response(best_score, code_name, complexity, repair_objective
     return expected_response
 
 def send_post(client, code_name, test_name, repair_objective, complexity):
-    
-    if isBlank(code_name):
-        return 400
-    else:
-        code_path = examples_path + code_name
-    
-    if isBlank(test_name):
-        return 400
-    else:
-        test_path = examples_path + test_name
+    code_path = examples_path + code_name
+    test_path = examples_path + test_name
     
     dataChallengePost = request_creator(code_path=code_path, test_path=test_path, code_name=code_name,
     test_name=test_name, repair_objective=repair_objective, complexity=complexity)
 
     return client.post(api_url, data=dataChallengePost)
-
-def isBlank (myString):
-    if myString and myString.strip():
-        #myString is not None AND myString is not empty or blank
-        return False
-    #myString is None OR myString is empty or blank
-    return True
