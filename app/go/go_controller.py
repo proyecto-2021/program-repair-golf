@@ -36,3 +36,20 @@ class Controller():
     	show = challenge.get_content_by_id_and_put()
 
     	return jsonify({"challenge" : show})
+
+
+    def post_challenge(self):
+        challenge_data = json.loads(request.form.get('challenge'))['challenge']
+        
+        code_file = request.files["source_code_file"]
+        code_path = 'public/challenges/' + challenge_data['source_code_file_name']
+        code_file.save_code(code_path)
+
+        test_suite_file = request.files["test_suite_file"]
+        test_suite_path = 'public/challenges/' + challenge_data['test_suite_file_name']
+        test_suite_file.save_code(test_suite_path)
+
+        repair_obj = challenge_data['repair_objective']
+        comp = challenge_data['complexity']
+
+        new_challenge = GoChallengeC(path_code=code_path, path_tests_code=test_suite_path, repair_objective=repair_obj, complexity=comp)
