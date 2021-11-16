@@ -38,26 +38,22 @@ class controller():
     def challenges_id_java(id):
         challenge=DAO_java_challenge.challenges_id_java(id)
         if challenge is None:
-            #return make_response(jsonify({"challenge": "Not exist this id"}))
             raise Exception('ERROR NOT EXIST THIS ID')
         challengeaux=Challenge_java.__repr__(challenge)
         if (challengeaux is None):
             return make_response(jsonify({"challenge":"Not found prueba"}),404)   
         else: 
-            #recupero el codigojava del challenge
             nombre_code = challengeaux['code']
             path='public/challenges/' + nombre_code + '.java'
             
             filemostrar=FileManagement.get_code_file_by_path(path)     
             challengeaux['code']=filemostrar
              
-            #recupero el codigojava del test
             nombre_test =challengeaux['tests_code']
             path='public/challenges/' + nombre_test + '.java'
             
             filemostrar=FileManagement.get_code_file_by_path(path)  
             challengeaux['tests_code']=filemostrar
-            #return make_response(jsonify({"challenge":challengeaux}))
             return challengeaux
 
     def challenge_upd_java(id):
@@ -109,7 +105,6 @@ class controller():
             code_file_name = dict_final['source_code_file_name']
             challenge = DAO_java_challenge.get_challenge_by_code(code_file_name)
             if challenge is None:
-            # check if the post request has the file part
                 file = request.files['source_code_file']
                 test_suite = request.files['test_suite_file']
                 if Challenge.isValid(file, test_suite, dict_final):
@@ -128,14 +123,12 @@ class controller():
             curr = Challenge_java.__repr__(challenge)
             if ChallengeCandidate.isValid(file_repair, curr):
                 code_class = FileManagement.get_code_file_by_id(id)
-                #ruta_file_tmp = UPLOAD_TMP + file_repair.filename
                 ruta_file_tmp = UPLOAD_TMP + curr['code'] + '.java'
                 code_repair = FileManagement.get_code_file_by_path(ruta_file_tmp)
                 value_dist = nltk.edit_distance(code_class, code_repair)
                 if value_dist < curr['best_score']:
                     challenge.score = value_dist
-                    db.session.add(challenge)
-                    db.session.commit()                    
+                    DAO_java_challenge.update(challenge)                    
                     return {"repair": {"challenge": ChallengeCandidate.create_desafio(challenge),"attempts": 1, "score": value_dist}}
                 else:
                     raise Exception(f'La distancia de edicion es mayor o igual a la existente, tu puntuacion es: {value_dist}')

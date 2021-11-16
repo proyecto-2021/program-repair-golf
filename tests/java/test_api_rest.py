@@ -13,24 +13,6 @@ exampleTest = 'tests/java/example_java/PruebaTest.java'
 def delete_db():
 	db.session.query(Challenge_java).delete()
 
-def createQuery():
-	fileClass = open(urlClass, 'rb')
-	fileTest = open(urlTest, 'rb')
-	
-	challenge = {
-		'source_code_file': fileClass,
-		'test_suite_file': fileTest,
-		'challenge':'{ \
-            "challenge":{\
-                "source_code_file_name": "Median",\
-                "test_suite_file_name": "MedianTest",\
-                "repair_objective": "algo para acomodar",\
-                "complexity": "1"\
-            }\
-        }'
-	}
-	return challenge
-
 # insert a valid challenge and return a status code equal to 200
 def test_post_java(client):
 	delete_db()
@@ -38,7 +20,7 @@ def test_post_java(client):
 	url = 'http://localhost:5000/java/java-challenges'
 
 	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
-	print(data)
+	
 	resp = client.post(url, data=data)
 	
 	assert resp.status_code == 200
@@ -67,7 +49,7 @@ def test_many_loads(client):
 
 	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
 	data2 = createChallenge('tests/java/example_java/Prueba.java','tests/java/example_java/PruebaTest.java','Prueba','PruebaTest','Pasa','3')
-	#data2 = createQuery2(exampleClass, exampleTest)
+	
 	client.post(url, data=data)
 	p = client.post(url, data=data2)
 
@@ -136,9 +118,10 @@ def test_get_java(client):
 	assert a['challenges'] == []
 	
 def test_get_Id_after_post(client):
-	delete_db()
+	db.session.query(Challenge_java).delete()
 	url = 'http://localhost:5000/java/java-challenges'
-	data = createQuery()
+	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
+
 
 	p = client.post(url, data=data)
 	json = p.json['challenge']
@@ -161,13 +144,18 @@ def test_get_Id_noesxite(client):
 	
 	assert p2.status_code == 404
 
-
+def test_get_Id_novalido(client):
+	db.session.query(Challenge_java).delete()
+	id='hola' 
+	url2 = f'http://localhost:5000/java/java-challenges/{id}'
+	p2 = client.get(url2)
+	
+	#assert p2.status_code == 404
+	assert p2.status_code == 404
 #modify a non-existent challenge
 def test_PUT_Id_None(client):
 	delete_db()
 	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
-
-	#data = createQuery()
 	id=5
 	url = f'http://localhost:5000/java/java-challenges/{id}'
 	p1=client.put(url)
@@ -200,21 +188,7 @@ def test_PUT_Objective_repair(client):
 	assert objetive == "Pasa"
 	assert complexity==5
 
-	#assert repair_upd=="Pasa"
-	#assert r2.json['challenge'] ==  {
-     #   "code": fileClass,
-      # "tests_code": fileTest,
-       #"repair_objective": "Pasa",
-       #"complexity": 1,
-	   #"best_score":500,
-   # }
- 
-    #assert resp['code'] == code1
-    #assert resp['tests_code'] == test1
-   # assert resp['repair_objective'] == "Pasa"
-
-def test_PUT_1(client):
-
+def test_put_fails_parameters(client):
 	delete_db()
 	db.session.query(Challenge_java).delete()
 	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
@@ -236,14 +210,53 @@ def test_PUT_1(client):
 	
 def test_put_pass_all_test(client):
 	delete_db()
-	url = url = 'http://localhost:5000/java/java-challenges'
-	data = createChallenge('tests/java/example_java/Passalltest.java','tests/java/example_java/Passalltesttest.java', 'Passalltest', 'Passalltesttest', 'dale', '5')
+	url = 'http://localhost:5000/java/java-challenges'
+
+	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
+	data2 = createChallenge('tests/java/example_java/Passalltest.java','tests/java/example_java/Passalltesttest.java', 'Passalltest', 'Passalltesttest', 'pass', '1')
+	
+	r1 = client.post(url, data=data)
+	id = r1.json['challenge']['id']
+    
+	url2 = f'http://localhost:5000/java/java-challenges/{id}'
 	try:
-		resp = client.put(url, data=data)
+		resp = client.put(url2, data=data2)
 	except Exception as e:
 		assert str(e) == "Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar"
-	assert resp.status_code == 405
+	assert resp.status_code == 404
+	assert r1.status_code==200
+
+def test_file_Put_not_compile_class(client):
+	delete_db()
+	url = url = 'http://localhost:5000/java/java-challenges'
+	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
+	data2 = createChallenge('tests/java/example_java/Nocompile.java','tests/java/example_java/NocompileTest.java', 'Nocompile', 'NocompileTest', 'pass', '1')
 	
+	r1 = client.post(url, data=data)
+	id = r1.json['challenge']['id']
+    
+	url2 = f'http://localhost:5000/java/java-challenges/{id}'
+	try:
+		resp = client.put(url, data=data2)
+	except Exception as e:
+		assert str(e) == "Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar"
+
+# update java test suite that does not compile
+def put_test_file_not_compile_test(client):
+	delete_db()
+	url = url = 'http://localhost:5000/java/java-challenges'
+	data = createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
+	data2 = createChallenge('tests/java/example_java/Testfailclass.java','tests/java/example_java/Testfailtest.java', 'Testfailclass', 'Testfailtest', 'pass', '1')
+	r1 = client.post(url, data=data)
+	id = r1.json['challenge']['id']
+    
+	url2 = f'http://localhost:5000/java/java-challenges/{id}'
+	try:
+		resp = client.put(url, data=data2)
+	except Exception as e:
+		assert str(e) == "Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar"		
+	assert resp.status_code == 404	
+
 # test repair
 # upload an file repair valid
 def test_valid_repair_file(client):

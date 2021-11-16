@@ -6,10 +6,10 @@ from .models import CSharpChallengeModel
 from .models import *
 from .c_sharp_src import CSharpSrc
 from .c_sharp_challenge import CSharpChallenge 
+from .c_sharp_repair_candidate import CSharpRepairCandidate
 from flask import jsonify, make_response, json, request
 import subprocess, os
 from subprocess import PIPE
-import nltk
 import shutil
 
 
@@ -172,10 +172,10 @@ def repair_Candidate(id):
         except Exception:
             return make_response(jsonify({'Repair candidate': 'Not found'}), 404)
         repair_path = CHALLENGE_VALIDATION_PATH + challenge_name
-        repair = CSharpChallenge(file, open(challenge['tests_code'], "rb"),
-                                 challenge_name, test_name, repair_path, 
-                                 challenge['tests_code'])
-        code = CSharpSrc(open(challenge['code'], "rb"), challenge_name, challenge['code'])
+        challenge_to_repair = CSharpChallenge(open(challenge['code'], "rb"), open(challenge['tests_code'], "rb"),
+                                              challenge_name, test_name, challenge['code'], 
+                                              challenge['tests_code'])
+        repair = CSharpRepairCandidate(challenge_to_repair,file,challenge_name,repair_path)
         validation_result = repair.validate()
         if validation_result == -1:
             repair.code.rm()
@@ -184,10 +184,10 @@ def repair_Candidate(id):
         elif validation_result == 1:
             repair.code.rm()
             remove_path([repair.code.path.replace('.cs', '.exe'),
-                         repair.test.path.replace(".cs", ".dll")])
+                         repair.challenge.test.path.replace(".cs", ".dll")])
             return make_response(jsonify({'Repair candidate': 'Tests not passed'}), 409)
         else:
-            score = calculate_score(code.path, repair.code.path)
+            score = repair.score()
 
             if save_best_score(score, challenge['best_score'], id) == 0:
                 challenge['best_score'] = score
@@ -198,7 +198,7 @@ def repair_Candidate(id):
             }
             repair.code.rm()
             remove_path([repair.code.path.replace('.cs', '.exe'),
-                         repair.test.path.replace(".cs", ".dll")])
+                         repair.challenge.test.path.replace(".cs", ".dll")])
             return make_response(jsonify({'Repair': {'challenge': challenge_data, 'score': score}}), 200)
     else:
         return make_response(jsonify({"challenge": "There is no challenge for this id"}), 404)
@@ -231,11 +231,6 @@ def remove_path(path_list):
     for path in path_list:
         os.remove(path)
 
-
-def calculate_score(challenge_path, repair_candidate_path):
-    challenge_script = open(challenge_path, "r").readlines()
-    repair_script = open(repair_candidate_path, "r").readlines()
-    return nltk.edit_distance(challenge_script, repair_script)
 
 
 def save_best_score(score, previous_best_score, chall_id):
