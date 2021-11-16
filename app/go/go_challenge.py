@@ -34,19 +34,20 @@ class GoChallengeC:
     def get_best_score(self):
         return self.best_score
 
-    def get_content_by_id_and_put(self):
+
+    def get_content_get_all(self):
         return {
-            'code': self.get_code_content(),
-            'tests_code': self.get_tests_code_content(),
+            'id': self.id,
+            'code': self.code.get_content(),
             'repair_objective': self.repair_objective,
             'complexity': self.complexity,
             'best_score': self.best_score
         }
 
-    def get_content_all(self):
+    def get_content_get_by_id(self):
         return {
-            'id': self.id,
             'code': self.code.get_content(),
+            'tests_code': self.tests_code.get_content(),
             'repair_objective': self.repair_objective,
             'complexity': self.complexity,
             'best_score': self.best_score
@@ -73,9 +74,12 @@ class GoChallengeC:
             'best_score': self.best_score
         }
 
-    def get_content_repair(self):
+    def get_content_put(self):
         return {
+            'code': self.code.get_content(),
+            'tests_code': self.tests_code.get_content(),
             'repair_objective': self.repair_objective,
+            'complexity': self.complexity,
             'best_score': self.best_score
         }
 
