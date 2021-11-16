@@ -48,8 +48,12 @@ def create_expected_response(best_score, code_name, complexity, repair_objective
     }
     return expected_response
 
-def send_post(client, code_name, test_name, repair_objective, complexity):
-    code_path = examples_path + code_name
+def send_post(client, code_name, test_name, repair_objective, complexity, default_code_content = True):
+    if default_code_content:
+        code_path = examples_path + "valid_code_1.py"
+    else:
+        code_path = examples_path + code_name
+
     test_path = examples_path + test_name
     
     dataChallengePost = request_creator(code_path=code_path, test_path=test_path, code_name=code_name,
