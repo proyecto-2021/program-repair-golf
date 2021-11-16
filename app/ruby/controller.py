@@ -68,7 +68,7 @@ class Controller:
 
     def get_challenge(self, id):
         if not self.dao.exists(id):
-                return make_response(jsonify({'challenge': 'id doesnt exist'}), 404)
+                return make_response(jsonify({'challenge': 'the id does not exist'}), 404)
         challenge = RubyChallenge(**self.dao.get_challenge(id)).get_content(exclude=['id'])
         return jsonify({'challenge': challenge})
 
