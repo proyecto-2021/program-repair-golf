@@ -34,9 +34,15 @@ class PythonChallenge:
   
   def code_path(self):
     return self.code.path
+  
+  def code_name(self):
+    return self.code.name
 
   def test_path(self):
     return self.test.path
+  
+  def test_name(self):
+    return self.test.name
 
   #saves source code at new base path
   def save_at(self, path):
