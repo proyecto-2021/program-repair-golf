@@ -77,7 +77,7 @@ def test_update_code_name_fails(client):
     update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
 
     assert update_response.status_code == 409   #should get error for name conflict
-    assert update_response.json['Error'] == "Another challenge with that name already exists"
+    assert update_response.json['Error'] == "Another code with that name already exists"
 
     #updating to a name that doesn't exists
     update_request = request_creator(code_name="another_unique_name.py")
@@ -105,7 +105,7 @@ def test_update_all_code_name_conflict(client):
     challenge_id = post_info.json['challenge']['id']
     #code name is not the same as the new test is importing
     update_request = request_creator(code_path=examples_path + "code_change_my_name_4.py", 
-    test_path=examples_path + "atest_change_my_name_4.py", code_name="test_will_not_find_me.py", test_name="unique_atest_1.py")
+    test_path=examples_path + "atest_change_my_name_4.py", code_name="test_will_not_find_me.py", test_name="unique_atest_2.py")
 
     update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
 

@@ -5,7 +5,7 @@ import json
 # testing of one post challenge
 def test_post_pythonChallenge(client):
     repair_objective = "make to pass"
-    response = send_post(client, "valid_code_3.py", "valid_atest_3.py", repair_objective, "2")
+    response = send_post(client, "valid_code_3.py", "valid_atest_3.py", repair_objective, "2", default_code_content=False)
 
     assert response.status_code == 200
 
@@ -18,7 +18,7 @@ def test_repeated_post_challenge(client):
     assert response_two.json['Error'] == "Another code with that name already exists"
 
 def test_post_challenge_invalid_code(client):
-    response = send_post(client, "code_not_compile.py", "valid_atest_4.py", "Make all tests pass.", "2")
+    response = send_post(client, "code_not_compile.py", "valid_atest_4.py", "Make all tests pass.", "2", default_code_content=False)
 
     assert response.status_code == 409
     #get json with the error
@@ -53,7 +53,7 @@ def test_post_challenge_binarycodetest_empty(client):
     
 #post challenge with no errors in tests (so its repaired)
 def test_post_invalid_repaired_challenge(client):
-    response = send_post(client, "code_repair_2.py", "valid_atest_2.py", "Make all tests pass.", "2")
+    response = send_post(client, "code_repair_2.py", "valid_atest_2.py", "Make all tests pass.", "2", default_code_content=False)
 
     assert response.status_code == 409
     #get json with the error
