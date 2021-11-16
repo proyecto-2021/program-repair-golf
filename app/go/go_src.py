@@ -21,7 +21,7 @@ class Go_src:
 
     def tests_compiles(self):
         path_test = os.path.abspath(re.sub('/\w+_\w+.go', '/', self.get_path()))
-        return (subprocess.run(["go test -c"], cwd=path_test, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)).returncode == 0   
+        return (subprocess.run(["go test -c"], cwd=path_test, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)).returncode != 1   
 
     def tests_fail(self):
         path_tests = os.path.abspath(re.sub('/\w+_\w+.go', '/', self.get_path()))
@@ -29,7 +29,7 @@ class Go_src:
 
     def get_content(self):
         with open(str(self.get_path()),'r') as f:
-            return f.read()
+            return f.readlines()
 
     def save(self):    
         self.file.save(self.get_path())
