@@ -1,7 +1,7 @@
+import math
 from app import db
 from . import go
 from .models_go import GoChallenge
-
 class goChallengeDAO():
 	def __init__(self):
 		pass 
@@ -12,13 +12,13 @@ class goChallengeDAO():
 	def get_challenge_by_id(self, id):
 		return db.session.query(GoChallenge).filter_by(id=id).first()
 
-	def create_challenge(self, challenge):
+	def create_challenge(self, code, tests, repair_objective, complexity):
 		new_challenge = GoChallenge(
-			code = challenge.code,
-			tests_code = challenge.tests_code,
-			repair_objective = challenge.repair_objective,
-			complexity = challenge.complexity,
-			best_score = 0
+			code = code,
+			tests_code = tests,
+			repair_objective = repair_objective,
+			complexity = complexity,
+			best_score = math.inf
 			)
 
 		db.session.add(new_challenge)
