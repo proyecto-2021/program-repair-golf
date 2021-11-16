@@ -81,10 +81,10 @@ class Controller:
 
     def post_repair(self, id, repair_code):
         if not repair_code:
-            return make_response(jsonify({'challenge': 'repair_code is necessary'}), 400)
+            return make_response(jsonify({'challenge': 'a repair candidate is necessary'}), 400)
 
         if not self.dao.exists(id):
-            return make_response(jsonify({'challenge': 'id doesnt exist'}),404)
+            return make_response(jsonify({'challenge': 'the id does not exist'}),404)
 
         challenge = RubyChallenge(**self.dao.get_challenge(id))
 
@@ -97,11 +97,11 @@ class Controller:
 
         if not rep_candidate.compiles():
             rmtree(self.ruby_tmp)
-            return make_response(jsonify({'challenge': {'repair_code': 'is erroneous'}}),400)
+            return make_response(jsonify({'challenge': 'the repair candidate has syntax errors'}),400)
 
         if not rep_candidate.test_ok():
             rmtree(self.ruby_tmp)
-            return make_response(jsonify({'challenge': {'tests_code': 'fails'}}),200)
+            return make_response(jsonify({'challenge': 'the repair candidate does not solve the problem'}),200)
 
         new_score = rep_candidate.compute_score()
         if new_score < challenge.get_best_score() or challenge.get_best_score() == 0:
