@@ -74,7 +74,7 @@ class Controller:
 
     def get_all_challenges(self):
         all_challenges = []
-        for challenge in [challenge.get_dict() for challenge in self.dao.get_challenges()]:
+        for challenge in self.dao.get_challenges():
             challenge_content = RubyChallenge(**challenge).get_content(exclude=['tests_code'])
             all_challenges.append(challenge_content)
         return jsonify({'challenges': all_challenges})

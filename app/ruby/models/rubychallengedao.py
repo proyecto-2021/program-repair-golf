@@ -11,7 +11,7 @@ class RubyChallengeDAO(object):
         return challenge
 
     def get_challenges(self):
-        return db.session.query(RubyChallengeModel).all()
+        return [challenge.get_dict() for challenge in db.session.query(RubyChallengeModel).all()]
 
     def create_challenge(self, code, tests_code, repair_objective, complexity):
         challenge = RubyChallengeModel(
