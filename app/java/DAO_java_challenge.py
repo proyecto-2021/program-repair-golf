@@ -14,12 +14,25 @@ class DAO_java_challenge():
         return Challenge_java.query.filter_by(code=code_file_name).first()
 
     def create_challenge(dict):
-        new_chan = Challenge_java(code = dict['source_code_file_name'],
-            tests_code = dict['test_suite_file_name'],
-            repair_objective = dict['repair_objective'],
-            complexity = dict['complexity'],
-            score = 500)
-        db.session.add(new_chan)
-        db.session.commit()
-    
+        challenge = DAO_java_challenge.get_challenge_by_code(dict['source_code_file_name'])
+        if challenge is None:
+            new_chan = Challenge_java(code = dict['source_code_file_name'],
+                tests_code = dict['test_suite_file_name'],
+                repair_objective = dict['repair_objective'],
+                complexity = dict['complexity'],
+                score = 500)
+            db.session.add(new_chan)
+            db.session.commit()
+        else:
+           raise Exception("Name of the code exist")
 
+    def updatechallenge(challenge):
+        challenge_n = DAO_java_challenge.challenges_id_java(challenge.id)
+        if challenge_n is not None:
+           db.session.commit()
+        else:
+           raise Exception("Id Challenge Not Found!")
+
+    def update(challenge):
+        db.session.add(challenge)
+        db.session.commit()

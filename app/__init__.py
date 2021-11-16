@@ -2,9 +2,12 @@ from flask import Flask
 from config import config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_jwt import JWT, jwt_required, current_identity
+
 
 db = SQLAlchemy()
 migrate = Migrate()
+
 
 def create_app(config_name='development'):
     app = Flask(__name__)
@@ -12,19 +15,24 @@ def create_app(config_name='development'):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     config[config_name].init_app(app)
 
-    from .models import User, Role
+    from .auth.usermodel import User
+    from .models import Role
     from .javascript.models_js import JavascriptChallenge 
-    from .ruby.models import RubyChallenge
+    from .ruby.models.rubychallengemodel import RubyChallengeModel
     from .java.models_java import Challenge_java
-    from .cSharp.models import CSharp_Challenge
+    from .cSharp.models import CSharpChallengeModel
     from .go.models_go import GoChallenge
     from .python.models import PythonChallengeModel
 
     db.init_app(app)
     migrate.init_app(app, db)
 
-    from .auth import auth as auth_blueprint
-    app.register_blueprint(auth_blueprint, url_prefix='/auth')
+    from .auth import authenticate, identity
+    jwt = JWT(app, authenticate, identity)
+    #jwt.init_app(app)
+
+    from .auth import users as users_blueprint
+    app.register_blueprint(users_blueprint, url_prefix='/')
 
     from .javascript import javascript as javascript_blueprint
     app.register_blueprint(javascript_blueprint, url_prefix='/javascript')  
