@@ -113,7 +113,7 @@ class Controller:
 
     def modify_challenge(self, id, code_file, tests_code_file, json_challenge):
         if not self.dao.exists(id):
-            return make_response(jsonify({'challenge': 'id doesnt exist'}), 404)
+            return make_response(jsonify({'challenge': 'the id does not exist'}), 404)
 
         old_challenge = RubyChallenge(**self.dao.get_challenge(id))
         new_challenge = RubyChallenge(**self.dao.get_challenge(id))
@@ -137,32 +137,32 @@ class Controller:
             nc_test_name = old_challenge.get_tests_code().get_file_name()
 
         if not new_challenge.data_ok():
-            return make_response(jsonify({'challenge': 'data is incomplete or invalid'}), 400)
+            return make_response(jsonify({'challenge': 'the data is incomplete or invalid'}), 400)
             
         if isdir(self.ruby_tmp):
             rmtree(self.ruby_tmp)
         mkdir(self.ruby_tmp)
 
         if not self.set_new_challenge(nc_code_name, code_file, old_challenge.get_code(), new_challenge.get_code()):
-            return make_response(jsonify({'challenge': 'code doesnt compile'}), 400)
+            return make_response(jsonify({'challenge': 'the source code does not compile'}), 400)
         
         if not self.set_new_challenge(nc_test_name, tests_code_file, old_challenge.get_tests_code(), new_challenge.get_tests_code()):
-            return make_response(jsonify({'challenge': 'test_suite doesnt compile'}), 400)
+            return make_response(jsonify({'challenge': 'the test suite does not compile'}), 400)
 
         if not new_challenge.get_tests_code().dependencies_ok(new_challenge.get_code()):
             rmtree(self.ruby_tmp)
-            return make_response(jsonify({'challenge': 'test_suite dependencies are wrong'}), 400)
+            return make_response(jsonify({'challenge': 'the test suite dependencies are wrong'}), 400)
 
         if not new_challenge.get_tests_code().run_fails():
             rmtree(self.ruby_tmp)
-            return make_response(jsonify({'challenge': 'test_suite doesnt fail'}),400)
+            return make_response(jsonify({'challenge': 'the challenge has no errors to repair'}),400)
 
         # Files are ok, copy it to respective directory
         if not self.copy_files(old_challenge.get_code(), new_challenge.get_code()):
-            return make_response(jsonify({'challenge': 'code_file_name already exists'}), 409)
+            return make_response(jsonify({'challenge': 'the code file name already exists'}), 409)
 
         if not self.copy_files(old_challenge.get_tests_code(), new_challenge.get_tests_code()):
-            return make_response(jsonify({'challenge': 'tests_file name already exists'}), 409)
+            return make_response(jsonify({'challenge': 'the tests file name already exists'}), 409)
 
         rmtree(self.ruby_tmp)
 
