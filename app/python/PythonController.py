@@ -1,6 +1,7 @@
 from .PythonChallengeDAO import PythonChallengeDAO
 from .PythonChallenge import PythonChallenge
 from .PythonChallengeRepair import PythonChallengeRepair
+from .file_utils import file_exists
 
 class PythonController:
   
@@ -26,6 +27,9 @@ class PythonController:
 
   def post_challenge(challenge_data, src_code, test_src_code):
     save_to = "public/challenges/"  #general path were code will be saved
+    #check names are not in use
+    names_check_result = PythonController.names_already_used(challenge_data)
+    if 'Error' in names_check_result: return names_check_result
 
     challenge = PythonChallenge(challenge_data=challenge_data, code=src_code, test=test_src_code)
     validation_result = PythonController.perform_validation(challenge)
@@ -46,12 +50,15 @@ class PythonController:
     req_challenge = PythonChallengeDAO.get_challenge(id)
     if req_challenge is None:
       return {"Error": "Challenge not found"}
+    #check names are not in use    
+    names_check_result = PythonController.names_already_used(challenge_data)
+    if 'Error' in names_check_result: return names_check_result
     
     #get as Challenge object
     original_challenge = challenge_update = PythonChallenge(challenge_data=req_challenge)
     #create a challenge with the requested updates
     challenge_update.update(code=new_code, test=new_test, challenge_data=challenge_data)
-    
+
     validation_result = PythonController.perform_validation(challenge_update)
     if 'Error' in validation_result:
       return validation_result
@@ -115,3 +122,18 @@ class PythonController:
     challenge.delete()  #just deletes files in paths
 
     return validation_result
+
+  @staticmethod
+  def names_already_used(names):  #takes a dictionary with the same keys as challenge_data
+    if names is None: return {'Result' : 'Ok'}
+
+    code_name = names.get('source_code_file_name')
+    #param passed and file already exists
+    if code_name is not None and file_exists("public/challenges/" + code_name):
+      return {'Error' : 'Another code with that name already exists'}
+
+    test_name = names.get('test_suite_file_name')
+    if test_name is not None and file_exists("public/challenges/" + test_name):
+      return {'Error' : 'Another test with that name already exists'}
+
+    return {'Result' : 'Ok'}
