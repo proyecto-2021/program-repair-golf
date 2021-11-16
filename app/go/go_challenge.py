@@ -99,9 +99,6 @@ class GoChallengeC:
     def set_best_score(self, best_score):
         self.best_score = best_score
 
-    def codes_compiles(self):
-        return self.code.code_compiles() and self.tests_code.test_compiles()
-
     def code_compiles(self):
         return self.code.code_compiles()
 
@@ -114,14 +111,5 @@ class GoChallengeC:
     def remove_dir(self):
         self.code.remove_dir()
 
-    def remove_file(self, is_code):
-        self.code.remove_file() if is_code else self.tests_code.remove_file()
-
-    ###Los cree para probar. 
-    def remove_code_file(self):
-        self.code = None
-        self.code.remove_file()
-
-    def remove_test_file(self):
-        self.tests_code = None
-        self.tests_code.remove_file()
+    def delete_file(self, is_code=True):
+        self.code.delete_files() if is_code else self.tests_code.delete_files()

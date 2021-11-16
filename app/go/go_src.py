@@ -51,7 +51,7 @@ class Go_src:
 
     def delete_files(self):
         for file in os.listdir(self.get_path()):
-            self.remove_file()
+            os.remove(os.path.join(self.get_path(), file))
 
     def rewrite_file(self, update_data):
         with open(self.get_path(), 'w') as f:
