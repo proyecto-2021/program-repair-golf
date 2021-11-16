@@ -22,7 +22,7 @@ ALLOWED_EXTENSIONS = {'java'}
 EJECUTARFILE= 'app/java/lib/hamcrest-all-1.3.jar:app/java/lib/junit-4.13.2.jar:public/challenges/'
 
 class controller():
-
+    
     def list_challenges_java():
         challenge = {"challenges":[]}
         challenge ['challenges'] = DAO_java_challenge.all_challenges_java()
@@ -35,6 +35,7 @@ class controller():
             all_challenges.append(aux_challenge)
         return all_challenges
 
+    
     def challenges_id_java(id):
         challenge=DAO_java_challenge.challenges_id_java(id)
         if challenge is None:
@@ -55,7 +56,7 @@ class controller():
             filemostrar=FileManagement.get_code_file_by_path(path)  
             challengeaux['tests_code']=filemostrar
             return challengeaux
-
+    
     def challenge_upd_java(id):
         challenge= DAO_java_challenge.challenges_id_java(id)
         if challenge is None:
@@ -98,6 +99,7 @@ class controller():
             DAO_java_challenge.updatechallenge(challenge)
             return FileManagement.show_codes(code_file_name)    
             
+   
     def add_challenge_java():
         to_dict = json.loads(request.form['challenge'])
         dict_final = to_dict['challenge']
