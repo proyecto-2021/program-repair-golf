@@ -142,5 +142,22 @@ def test_post_better_repair(client, create_test_data):
 
 
 def test_diferent_code_repair_to_test(client, create_test_data):
-    #todo: implement
-    pass
+     #Arrange
+    url_post = 'cSharp/c-sharp-challenges'
+    data = create_test_data['data']
+    data_repair = {'source_code_file': open('tests/cSharp/test-files/ExampleNoFails2.cs', 'rb')}
+    expected_response = {'Repair candidate': 'Sintax error'}
+
+    #Act
+    resp_post = client.post(url_post, data=data)
+    challenge_id = resp_post.json['challenge']['id']
+
+    url_repair = 'cSharp/c-sharp-challenges/' + str(challenge_id) + '/repair'
+    resp_repair = client.post(url_repair, data=data_repair)
+
+    #Assert
+    assert resp_repair.status_code == 409
+    assert resp_repair.json == expected_response
+
+    #CleanUp
+    cleanup()
