@@ -5,7 +5,7 @@ import json
 def test_post_repair_challenge(client):
 
     repair_objectiveParam = "Test repair"
-    post_info = send_post(client, "valid_code_1.py", "valid_atest_1.py", repair_objectiveParam, '3')
+    post_info = send_post(client, "valid_code_15.py", "valid_atest_15.py", repair_objectiveParam, '3')
 
     challenge_id = post_info.json['challenge']['id']
 
@@ -31,7 +31,7 @@ def test_post_repair_challenge_invalid(client):
 def test_post_repair_code_not_provided(client):
     
     repair_objectiveParam = "Test repair"
-    post_info = send_post(client, "valid_code_1.py", "valid_atest_1.py", repair_objectiveParam, '3')
+    post_info = send_post(client, "valid_code_16.py", "valid_atest_16.py", repair_objectiveParam, '3')
     challenge_id = post_info.json['challenge']['id']
     
     response = client.post(api_url + '/' + str(challenge_id) + '/repair')
@@ -42,7 +42,7 @@ def test_post_repair_code_not_provided(client):
 def test_post_repair_update_best_score(client):
 
     repair_objectiveParam = "Test repair"
-    post_info = send_post(client, "valid_code_1.py", "valid_atest_1.py", repair_objectiveParam, '3')
+    post_info = send_post(client, "valid_code_17.py", "valid_atest_17.py", repair_objectiveParam, '3')
 
     challenge_id = post_info.json['challenge']['id']
 
@@ -61,7 +61,7 @@ def test_post_repair_update_best_score(client):
 def test_post_repair_not_past_tests(client):
     
     repair_objectiveParam = "Test repair"
-    post_info = send_post(client, "valid_code_1.py", "valid_atest_1.py", repair_objectiveParam, '3')
+    post_info = send_post(client, "valid_code_18.py", "valid_atest_18.py", repair_objectiveParam, '3')
 
     challenge_id = post_info.json['challenge']['id']
 

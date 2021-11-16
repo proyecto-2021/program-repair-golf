@@ -15,14 +15,14 @@ def test_get_challenge_not_found(client):
 def test_get_single_pythonChallenge(client):
     #---- post one challenge to test ---#    
     repair_objectiveParam = "prueba test"
-    post_info = send_post(client, "valid_code_1.py", "valid_atest_1.py", repair_objectiveParam, "3")
+    post_info = send_post(client, "valid_code_5.py", "valid_atest_5.py", repair_objectiveParam, "3")
     
     challenge_id = post_info.json['challenge']['id']
     result = client.get(api_url + '/' + str(challenge_id))
     #---- end post ---#
 
     #data to be entered in the post test
-    post_expected_response = create_expected_response(0, "valid_code_1.py", "3", 'prueba test', "valid_atest_1.py")
+    get_expected_response = create_expected_response(0, "valid_code_1.py", "3", 'prueba test', "valid_atest_5.py")
 
     #data obtained through the get ready for manipulation
     dataChallenge = result.json
@@ -33,7 +33,7 @@ def test_get_single_pythonChallenge(client):
 
     assert len(repair_objective) > 0
     assert len(code) > 0
-    assert result.json == post_expected_response
+    assert result.json == get_expected_response
 
 # testing multiple challenges
 def test_get_total_pythonChallenge(client):
@@ -43,10 +43,10 @@ def test_get_total_pythonChallenge(client):
     
     #--- start post challenges ---#
     repair_objectiveParamOne = "probando test"
-    send_post(client, "valid_code_1.py", "valid_atest_1.py", repair_objectiveParamOne, "1")
+    send_post(client, "valid_code_6.py", "valid_atest_6.py", repair_objectiveParamOne, "1")
     
     repair_objectiveParamTwo = "pruebita test"
-    send_post(client, "valid_code_1.py", "valid_atest_1.py", repair_objectiveParamTwo, "2")
+    send_post(client, "valid_code_7.py", "valid_atest_7.py", repair_objectiveParamTwo, "2")
 
     #--- end post challenges ---#
     responsive = client.get(api_url)
