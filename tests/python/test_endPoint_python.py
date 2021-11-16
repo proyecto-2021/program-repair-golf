@@ -13,6 +13,14 @@ def test_post_pythonChallenge(client):
 
     assert response.status_code == 200
 
+# testing of post challenge repeated
+def test_repeated_post_challenge(client):
+    response_one = send_post(client, "valid_code_1.py", "valid_atest_1.py", "make to pass", "2")
+    response_two = send_post(client, "valid_code_1.py", "valid_atest_3.py", "make to pass", "2")
+
+    assert response_two == 409
+    assert response_two.json['Error'] == "Another code with that name already exists"
+
 def test_get_challenge_not_found(client):
     
     invalid_id = 1000000000000000
