@@ -43,11 +43,11 @@ class Controller():
         
         code_file = request.files["source_code_file"]
         code_path = 'public/challenges/' + challenge_data['source_code_file_name']
-        code_file.save_code(code_path)
+        code_file.save(code_path)
 
         test_suite_file = request.files["test_suite_file"]
         test_suite_path = 'public/challenges/' + challenge_data['test_suite_file_name']
-        test_suite_file.save_code(test_suite_path)
+        test_suite_file.save(test_suite_path)
 
         repair_obj = challenge_data['repair_objective']
         comp = challenge_data['complexity']
@@ -63,5 +63,10 @@ class Controller():
             return make_response(jsonify({"code_file": "The code has syntax errors"}), 412)
         elif new_challenge.tests_compiles() == False:
             return make_response(jsonify({"test_code_file": "The test code has syntax errors"}), 412)
-        elif new_challenge.tests_fail() == True:
+        elif new_challenge.tests_fail() == False:
             return make_response(jsonify({"ERROR: tests": "There must be at least one test that fails"}), 412)
+
+        challenge_dao = dao.create_challenge(new_challenge.get_code(), new_challenge.get_tests_code(), new_challenge.get_repair_objective(), new_challenge.get_complexity())
+
+        new_challenge_to_dicc = new_challenge.get_content_post()
+        return jsonify({"challenge": new_challenge_to_dicc})
