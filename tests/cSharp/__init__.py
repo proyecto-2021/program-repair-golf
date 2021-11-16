@@ -62,10 +62,7 @@ def create_challenge(code_name=None, tests_name=None, repair_objective=None, com
 
 def cleanup():
     db.session.query(CSharpChallengeModel).delete()
-    path = "./example-challenges/c-sharp-challenges"
-    for dirname in os.listdir(path):
-        if os.path.isdir(path + '/' + dirname) and dirname != "Median":
-            shutil.rmtree(path + '/' + dirname)
+    cleanup_dirs()
 
 def cleanup_dirs():
     path = "./example-challenges/c-sharp-challenges"
