@@ -1,8 +1,6 @@
-from app.python.models import *
 from . import client
 from .atest_utils import *
 import json
-
 
 def test_post_repair_challenge(client):
 
