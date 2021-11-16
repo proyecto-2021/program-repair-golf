@@ -23,9 +23,12 @@ class PythonViews(MethodView):
 
     def post(self):
         #gather data for post
-        challenge_data = loads(request.form.get('challenge'))['challenge']
-        challenge_source_code = request.files.get('source_code_file').read()
-        tests_source_code = request.files.get('test_suite_file').read()
+        try:
+            challenge_data = loads(request.form.get('challenge'))['challenge']
+            challenge_source_code = request.files.get('source_code_file').read()
+            tests_source_code = request.files.get('test_suite_file').read()
+        except:
+            return make_response(jsonify({'Error' : 'Source code, test code or general data were not provided'}), 409)
 
         post_result = PythonController.post_challenge(challenge_data, challenge_source_code, tests_source_code)
         if 'Error' in post_result:
