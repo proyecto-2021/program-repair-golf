@@ -53,3 +53,15 @@ class Controller():
         comp = challenge_data['complexity']
 
         new_challenge = GoChallengeC(path_code=code_path, path_tests_code=test_suite_path, repair_objective=repair_obj, complexity=comp)
+
+        all_the_challenges = dao.get_all_challenges()
+        for every_challenge in all_the_challenges:
+            if every_challenge.code == new_challenge.get_code():
+                return make_response(jsonify({"challenge": "repeated"}), 409)
+
+        if new_challenge.code_compiles() == False:
+            return make_response(jsonify({"code_file": "The code has syntax errors"}), 412)
+        elif new_challenge.tests_compiles() == False:
+            return make_response(jsonify({"test_code_file": "The test code has syntax errors"}), 412)
+        elif new_challenge.tests_fail() == True:
+            return make_response(jsonify({"ERROR: tests": "There must be at least one test that fails"}), 412)
