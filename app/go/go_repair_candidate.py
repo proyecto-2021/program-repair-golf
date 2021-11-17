@@ -1,14 +1,15 @@
 from nltk import edit_distance
 from .go_src import Go_src
-from .go_challenge import GoChallenge
+from .go_challenge import GoChallengeC
 import os
 
 class GoRepairCandidate:
-	def __init__(self, challenge=None, repair_code=None):
+	def __init__(self, challenge=None, path=None):
 		self.challenge = challenge
-		self.repair_code = Go_src()
+		self.path = path
+		self.repair_code = Go_src(path=self.path)
 
-	def get_content_repair(self, score):
+	def get_content(self, score):
 		return {
 			'repair_objective': self.challenge.get_repair_objective(),
 			'best_score': self.challenge.get_best_score(),
