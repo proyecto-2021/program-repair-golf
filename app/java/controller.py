@@ -3,6 +3,7 @@ from app.java.DAO_java_challenge import DAO_java_challenge
 from app.java.models_java import Challenge_java
 from app.java.file_management import FileManagement
 from app.java.challenge import Challenge
+from app.auth.usermodel import User
 from app.java.challenge_candidate import UPLOAD_TMP, ChallengeCandidate
 from . import java
 from app import db
@@ -14,6 +15,7 @@ import os.path
 from subprocess import STDOUT, PIPE
 import pathlib
 import nltk
+from flask_jwt import jwt_required, current_identity
 
 UPLOAD_FOLDER = './public/challenges/'
 PATHLIBRERIA = 'app/java/lib/junit-4.13.2.jar:public/challenges'
@@ -131,7 +133,7 @@ class controller():
                 if value_dist < curr['best_score']:
                     challenge.score = value_dist
                     DAO_java_challenge.update(challenge)                    
-                    return {"repair": {"challenge": ChallengeCandidate.create_desafio(challenge),"attempts": 1, "score": value_dist}}
+                    return {"repair": {"challenge": ChallengeCandidate.create_desafio(challenge),"player":{"username": User.to_dict(current_identity)['username']} ,"attempts": 1, "score": value_dist}}
                 else:
                     raise Exception(f'La distancia de edicion es mayor o igual a la existente, tu puntuacion es: {value_dist}')
             else:
