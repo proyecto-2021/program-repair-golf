@@ -1,8 +1,8 @@
 from . import client
-import json
 from app.java.views import *
 from tests.auth import *
 from tests.java import data_for_tests
+import json
 
 # insert a valid challenge and return a status code equal to 200
 def test_post_java(client):
