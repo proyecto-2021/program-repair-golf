@@ -18,6 +18,7 @@ def test_post_repair(client, auth):
     assert r2.status_code == 200
     assert r2.json['repair']['score'] != 0
     assert r2.json['repair']['player']['username'] == 'ruby'
+    assert r2.json['repair']['attempts'] == '1'
 
 def test_post_repair_invalid_challenge(client, auth):
     #arrange
