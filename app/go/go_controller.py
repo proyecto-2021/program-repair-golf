@@ -79,18 +79,18 @@ class Controller():
         c = dao.get_challenge_by_id(id)
         challenge = GoChallengeC(path_code=c.code,path_tests_code=c.tests_code,
             repair_objective=c.repair_objective,complexity=c.complexity)
+        
         repair_code = request.files['source_code_file']
-
-        dir = 'public/challenges/solution/'
+        dir = GoDirectoryManagement(path='public/challenges/solution/')
         file = Go_src(path='public/challenges/solution/code_test.go')
 
-        os.makedirs(dir)
+        dir.create_dir()
         file.create_file()
         file.write_file(str(repair_code.read()))
 
         repair_candidate = GoRepairCandidate(challenge=challenge, path=file.get_path())
 
-        if not repair_candidate.code_compiles():
+        if not repair_candidate.compiles():
             return make_response(jsonify({"source_code_file" : "with sintax errors"}), 409)
 
         if not repair_candidate.tests_fail():
@@ -98,7 +98,7 @@ class Controller():
 
         score = repair_candidate.score()
 
-        shutil.rmtree('public/challenges/solution/')
+        dir.remove_dir()
     
         show = repair_candidate.get_content(score)
 

@@ -8,6 +8,7 @@ from .go_challenge_dao import goChallengeDAO
 from .go_src import Go_src
 from .go_challenge import GoChallengeC
 from .go_repair_candidate import GoRepairCandidate
+from .go_directory_management import GoDirectoryManagement
 
 
 dao = goChallengeDAO()
@@ -76,19 +77,18 @@ def repair_challenge_go(id):
     c = dao.get_challenge_by_id(id)
     challenge = GoChallengeC(path_code=c.code,path_tests_code=c.tests_code,
         repair_objective=c.repair_objective,complexity=c.complexity)
-    repair_code = request.files['source_code_file']
 
-    dir = 'public/challenges/solution/'
-    #file = 'public/challenges/solution/code_test.go'
+    repair_code = request.files['source_code_file']
+    dir = GoDirectoryManagement(path='public/challenges/solution/')
     file = Go_src(path='public/challenges/solution/code_test.go')
 
-    os.makedirs(dir)
+    dir.create_dir()
     file.create_file()
     file.write_file(str(repair_code.read()))
 
     repair_candidate = GoRepairCandidate(challenge=challenge, path=file.get_path())
 
-    #if not repair_candidate.code_compiles():
+    #if not repair_candidate.compiles():
     #    return make_response(jsonify({"source_code_file" : "with sintax errors"}), 409)
 
     #if not repair.candidate.tests_fail():
@@ -96,10 +96,12 @@ def repair_challenge_go(id):
 
     score = repair_candidate.score()
 
-    #os.remove('public/challenges/solution/code_test.go')      
-    shutil.rmtree(dir)
+    # Falta actualizar el best_score, se debe actualizar ?
+
+    dir.remove_dir()
 
     show = repair_candidate.get_content(score)
+    
     return jsonify({"repair" : show})
 
 
