@@ -96,6 +96,8 @@ class Controller:
         rep_candidate = RepairCandidate(challenge, repair_code, self.ruby_tmp)
         rep_candidate.save_candidate()
 
+        self.dao.add_attempt(id, user.id)
+
         if not rep_candidate.compiles():
             rmtree(self.ruby_tmp)
             return make_response(jsonify({'challenge': 'the repair candidate has syntax errors'}),400)
@@ -110,7 +112,7 @@ class Controller:
             self.dao.update_challenge(id,{'best_score': score})
         
         rmtree(self.ruby_tmp)
-        return jsonify(rep_candidate.get_content(user.username, score))
+        return jsonify(rep_candidate.get_content(user.username, self.dao.get_attempts_count(id, user.id), score))
 
     def modify_challenge(self, id, code_file, tests_code_file, json_challenge):
         if not self.dao.exists(id):
