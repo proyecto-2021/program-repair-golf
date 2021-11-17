@@ -49,15 +49,40 @@ def put_csharp_challenges(id):
     new_test = update_request['test_suite_file']
 
     if new_challenge is not None and new_test is not None:
-        val_status = DAO.create_and_validate_challenge(new_challenge, new_test, challenge_name, test_name, new_challenge_path, new_test_path)
+        new_ch = CSharpChallenge(new_challenge,
+                                 new_test,
+                                 challenge_name,
+                                 test_name,
+                                 new_challenge_path,
+                                 new_test_path)
+        val_status = new_ch.validate()
+        DAO.handle_put_files(val_status, old_challenge_path,
+                             old_test_path, new_ch.code.path,
+                             new_ch.test.path)
         if val_status != 1:
             return code_validation_response(val_status)
     elif new_challenge is not None:
-        val_status = DAO.create_and_validate_challenge(new_challenge, new_test, challenge_name, test_name, new_challenge_path)
+        new_ch = CSharpChallenge(new_challenge,
+                                 open(old_test_path, "rb"),
+                                 challenge_name,
+                                 test_name,
+                                 new_challenge_path,
+                                 old_test_path)
+        val_status = new_ch.validate()
+        DAO.handle_put_files(val_status, old_challenge_path, new_ch.test.path,
+                             new_ch.code.path)
         if val_status != 1:
             return code_validation_response(val_status)
     elif new_test is not None:
-        val_status = DAO.create_and_validate_challenge(new_challenge, new_test, challenge_name, test_name, test_path=new_test_path)
+        new_ch = CSharpChallenge(open(old_challenge_path, "rb"),
+                                 new_test,
+                                 challenge_name,
+                                 test_name,
+                                 old_challenge_path,
+                                 new_test_path)
+        val_status = new_ch.validate()
+        DAO.handle_put_files(val_status, new_ch.code.path, old_test_path,
+                             test_path=new_ch.test.path)
         if val_status != 1:
             return code_validation_response(val_status)
 

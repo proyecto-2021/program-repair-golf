@@ -82,25 +82,3 @@ class CSharpChallengeDAO:
             if test_path is not None:
                 self.remove(dll_new, exe_prev, prev_test_path)
                 shutil.move(test_path, prev_test_path)
-
-    def create_and_validate_challenge(self, code_file, tests_file, code_name, test_name, code_path=None, test_path=None):
-        code_name = os.path.splitext(code_name)[0] 
-        test_name = os.path.splitext(test_name)[0]
-        old_code_path = CHALLENGE_SAVE_PATH + code_name + '/' + code_name + '.cs'
-        old_test_path = CHALLENGE_SAVE_PATH + code_name + '/' + test_name + '.cs' 
-        if code_path is not None and test_path is not None:
-            new_ch = CSharpChallenge(code_file, tests_file, code_name, test_name, code_path, test_path)
-            val_status = new_ch.validate()
-            self.handle_put_files(val_status, old_code_path, old_test_path, new_ch.code.path, new_ch.test.path)
-            return val_status
-        elif code_path is not None:
-            new_ch = CSharpChallenge(code_file, tests_file, code_name, test_name, code_path, old_test_path)
-            val_status = new_ch.validate()
-            self.handle_put_files(val_status, old_code_path, old_test_path, new_ch.code.path)
-            return val_status
-        elif test_path is not None:
-            new_ch = CSharpChallenge(code_file, tests_file, code_name, test_name, old_code_path, test_path)
-            val_status = new_ch.validate()
-            self.handle_put_files(val_status, old_code_path, old_test_path, test_path=new_ch.test.path)
-            return val_status
-
