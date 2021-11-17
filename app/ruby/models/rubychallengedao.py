@@ -1,5 +1,5 @@
 from .rubychallengemodel import RubyChallengeModel, ruby_attempts
-from app.auth.usermodel import User
+from app.auth.userdao import get_user_by_id
 from app import db
 
 class RubyChallengeDAO(object):
@@ -37,12 +37,12 @@ class RubyChallengeDAO(object):
         challenge_attempts = self.get_attempts(challenge_id, user_id)
         if challenge_attempts is None:
             challenge = db.session.query(RubyChallengeModel).filter_by(id=challenge_id).first()
-            user = db.session.query(User).filter_by(id=user_id).first()
-            challenge.users_attempts.append(user)
+            user = get_user_by_id(user_id)
+            challenge.users_attempts.append(user) 
             db.session.commit()
-        challenge_attempts = db.session.query(ruby_attempts).filter_by(challenge_id=challenge_id, user_id=user_id)
-        prev_attempts = self.get_attempts_count(challenge_id, user_id)
-        challenge_attempts.update({'count': prev_attempts+1})
+        attempts = self.get_attempts_count(challenge_id, user_id)
+        db.session.query(ruby_attempts).filter_by(challenge_id=challenge_id, user_id=user_id) \
+            .update({'count': attempts+1})
         db.session.commit()
 
     def get_attempts(self, challenge_id, user_id):
