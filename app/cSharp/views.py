@@ -92,7 +92,6 @@ def put_csharp_challenges(id):
             return code_validation_response(val_status)
 
     if update_request['challenge'] is not None:
-        print(update_request)
         if 'repair_objective' in update_request['challenge']:
             update_challenge_data(id, {'repair_objective': update_request['challenge']['repair_objective']})
 
