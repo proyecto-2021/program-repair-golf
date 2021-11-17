@@ -7,6 +7,7 @@ import os, subprocess, math, nltk, shutil
 from .go_challenge_dao import goChallengeDAO
 from .go_src import Go_src
 from .go_challenge import GoChallengeC
+from .go_repair_candidate import GoRepairCandidate
 
 
 dao = goChallengeDAO()
@@ -14,6 +15,7 @@ dao = goChallengeDAO()
 
 @go.route('api/v1/go-challenges/<int:id>/repair', methods=['POST'])
 def repair_challenge_go(id):
+    '''
     code_solution_file = request.files['source_code_file']
     subprocess.run(["mkdir","solution"],cwd="public/challenges",stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
     code_solution_path = os.path.abspath('public/challenges/solution/code_solution.go')
@@ -67,8 +69,38 @@ def repair_challenge_go(id):
     }
 
     subprocess.run(["rm" "-r" "solution"],cwd=os.path.abspath("public/challenges"),stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
-    
-    return jsonify(request_return)
+    '''
+    if not dao.exists(id):
+        return make_response(jsonify({'challenge' : 'challenge does not exist'}), 404)
+
+    c = dao.get_challenge_by_id(id)
+    challenge = GoChallengeC(path_code=c.code,path_tests_code=c.tests_code,
+        repair_objective=c.repair_objective,complexity=c.complexity)
+    repair_code = request.files['source_code_file']
+
+    dir = 'public/challenges/solution/'
+    #file = 'public/challenges/solution/code_test.go'
+    file = Go_src(path='public/challenges/solution/code_test.go')
+
+    os.makedirs(dir)
+    file.create_file()
+    file.write_file(str(repair_code.read()))
+
+    repair_candidate = GoRepairCandidate(challenge=challenge, path=file.get_path())
+
+    #if not repair_candidate.code_compiles():
+    #    return make_response(jsonify({"source_code_file" : "with sintax errors"}), 409)
+
+    #if not repair.candidate.tests_fail():
+    #    return make_response(jsonify({"challenge" : "not solved"}), 409) 
+
+    score = repair_candidate.score()
+
+    #os.remove('public/challenges/solution/code_test.go')      
+    shutil.rmtree(dir)
+
+    show = repair_candidate.get_content(score)
+    return jsonify({"repair" : show})
 
 
 
@@ -114,7 +146,7 @@ def update_a_go_challenge(id):
     challenge = dao.get_challenge_by_id(id)
     
     directory  = 'tmp'
-    parent_dir = 'example-challenges/go-challenges'
+    parent_dir = 'example-challenges/go-challenges/'
     path_directory = Go_src.create_path(parent_dir, directory)
     temporary_directory = Go_src(path=path_directory)
     if request.files and not(temporary_directory.is_dir()):
