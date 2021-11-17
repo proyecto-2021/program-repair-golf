@@ -40,3 +40,10 @@ def get_token(client):
 	r = client.post('/auth', json=json)
 	token = r.json['access_token']
 	return token
+
+def file_repair(path):
+	repair = open(path, 'rb')
+	challenge = {
+		'source_code_file': repair
+	}
+	return challenge
