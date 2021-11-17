@@ -4,10 +4,11 @@ from .go_challenge import GoChallengeC
 import os
 
 class GoRepairCandidate:
-	def __init__(self, challenge=None, path=None):
+	def __init__(self, challenge=None, dir_path=None, file_path=None):
 		self.challenge = challenge
-		self.path = path
-		self.repair_code = Go_src(path=self.path)
+		self.dir_path = dir_path
+		self.file_path = file_path
+		self.repair_code = Go_src(path=self.file_path)
 
 	def get_content(self, score):
 		return {
@@ -22,10 +23,10 @@ class GoRepairCandidate:
 		return edit_distance(self.repair_code.get_content(), self.challenge.get_code_content())
 
 	def compiles(self):
-		return self.repair_code.code_compiles()
+		return self.repair_code.compiles(is_code=True)
 
 	def tests_fail(self):
-		tests = Go_src(path=self.challenge.get_tests_code())
+		tests = Go_src(path=self.dir_path)
 		return tests.tests_fail()
 
 	def save(self):

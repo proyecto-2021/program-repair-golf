@@ -47,6 +47,9 @@ class Go_src:
         with open(self.get_path(),'r') as f:
             return f.readlines()
 
+    def move(self, path):
+        shutil.copy(path, self.path)
+
 
     def save(self, file): 
         file.save()

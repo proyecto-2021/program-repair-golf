@@ -100,10 +100,10 @@ class GoChallengeC:
         self.best_score = best_score
 
     def code_compiles(self):
-        return self.code.compiles(True)
+        return self.code.compiles(is_code=True)
 
     def tests_compiles(self):
-        return self.tests_code.compiles(False)
+        return self.tests_code.compiles(is_code=False)
 
     def tests_fail(self):
         return self.tests_code.tests_fail()

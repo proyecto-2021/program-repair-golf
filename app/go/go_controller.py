@@ -3,6 +3,7 @@ from .go_challenge_dao import goChallengeDAO
 from .go_src import Go_src
 from .go_challenge import GoChallengeC
 from .go_repair_candidate import GoRepairCandidate
+from .go_directory_management import GoDirectoryManagement
 
 class Controller():
 	def __init__(self):
@@ -79,28 +80,32 @@ class Controller():
         c = dao.get_challenge_by_id(id)
         challenge = GoChallengeC(path_code=c.code,path_tests_code=c.tests_code,
             repair_objective=c.repair_objective,complexity=c.complexity)
-        
+
         repair_code = request.files['source_code_file']
         dir = GoDirectoryManagement(path='public/challenges/solution/')
-        file = Go_src(path='public/challenges/solution/code_test.go')
+        code = Go_src(path='public/challenges/solution/code.go')
+        tests = Go_src(path='public/challenges/solution/code_test.go')
 
         dir.create_dir()
-        file.create_file()
-        file.write_file(str(repair_code.read()))
+        code.create_file()
+        repair_code.save(code.get_path())
+        tests.move(challenge.get_tests_code())
 
-        repair_candidate = GoRepairCandidate(challenge=challenge, path=file.get_path())
+        repair_candidate = GoRepairCandidate(challenge=challenge, dir_path=dir.get_path(), file_path=code.get_path())
 
         if not repair_candidate.compiles():
+            dir.remove_dir()
             return make_response(jsonify({"source_code_file" : "with sintax errors"}), 409)
 
         if not repair_candidate.tests_fail():
-            return make_response(jsonify({"challenge" : "not solved"}), 409)
+            dir.remove_dir()
+            return make_response(jsonify({"challenge" : "not solved"}), 409) 
 
         score = repair_candidate.score()
 
         dir.remove_dir()
-    
-        show = repair_candidate.get_content(score)
 
+        show = repair_candidate.get_content(score)
+    
         return jsonify({"repair" : show})
 
