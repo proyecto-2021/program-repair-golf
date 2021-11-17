@@ -234,7 +234,7 @@ def test_update_incorrect_complexity(client, create_test_data):
     url_post = 'cSharp/c-sharp-challenges'
     data = create_test_data['data']
 
-    data_put = { 'complexity': 8}
+    data_put = create_challenge(complexity=8)
     #Act
     resp_post = client.post(url_post, data=data)
     challenge_id = resp_post.json['challenge']['id']
@@ -269,13 +269,11 @@ def test_update_code_w_sintax_error(client,create_test_data):
 def test_update_complexity_and_repair_objective(client, create_test_data):
     url_post = 'cSharp/c-sharp-challenges'
     data = create_test_data['data']
-    data_put = create_challenge(code_name=None, tests_name=None, repair_objective='Test this method', complexity='4', code=None, tests_code=None)
-    #data_put = create_challenge(repair_objective='Test this method', complexity=4 )
+    data_put = create_challenge(repair_objective='Test this method', complexity='4')
     expected_response = {"challenge": { "code": create_test_data['content_code'],
                                         "tests_code":  create_test_data['content_tests_code'],
                                         "repair_objective": "Test this method",
                                         "complexity": 4,
-                                        #"id":1,
                                         "best_score": 0
                                        }
                         }
@@ -286,12 +284,12 @@ def test_update_complexity_and_repair_objective(client, create_test_data):
     url_put = 'cSharp/c-sharp-challenges/' + str(challenge_id) 
     resp_put = client.put(url_put, data=data_put)
     resp_put_json = resp_put.json
-    resp_put_json['challenge'].pop('id')
+    del resp_put_json['challenge']['id']
     print(resp_put.json)
     
     #Assert
     assert resp_put.status_code == 200
-    assert resp_put.json == expected_response
+    assert resp_put_json == expected_response
     cleanup()
 
 def test_update_code_passes_all_tests(client, create_test_data):
@@ -517,12 +515,12 @@ def create_challenge(code_name=None, tests_name=None, repair_objective=None, com
 
 def challenge_json(dic_data):
     json_dic = '{ "challenge": { '
-    if dic_data[next(iter(dic_data))] is not None:
-        first_key = list(dic_data)[0]
+    first_key = True
     for key in dic_data:
         if dic_data[key] is not None:
-            if key == first_key:
+            if first_key:
                 json_dic += f'"{key}" : "{dic_data[key]}"'
+                first_key = False
             else:
                 json_dic += f', "{key}" : "{dic_data[key]}"'
 
