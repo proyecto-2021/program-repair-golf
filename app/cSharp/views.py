@@ -15,7 +15,6 @@ import shutil
 
 CHALLENGE_SAVE_PATH = "example-challenges/c-sharp-challenges/"
 CHALLENGE_VALIDATION_PATH = "./public/challenges/"
-UPLOAD_FOLDER = "./example-challenges/c-sharp-challenges/"
 
 
 @cSharp.route('/login')
@@ -28,9 +27,12 @@ def put_csharp_challenges(id):
     update_request = {}
     update_request['source_code_file'] = request.files.get('source_code_file')
     update_request['test_suite_file'] = request.files.get('test_suite_file')
-    update_request['repair_objective'] = request.form.get('repair_objective')
-    update_request['complexity'] = request.form.get('complexity')
+    update_request['challenge'] = request.form.get('challenge')
+    if update_request['challenge'] is not None:
+        update_request['challenge'] = json.loads(update_request['challenge'])
+        update_request['challenge'] = update_request['challenge']['challenge']
 
+    
     challenge = get_challenge_db(id)
     if not exist(id):
         return make_response(jsonify({"challenge": "There is no challenge for this id"}), 404)
@@ -38,11 +40,15 @@ def put_csharp_challenges(id):
 
     challenge_name = os.path.basename(challenge['code'])
     test_name = os.path.basename(challenge['tests_code'])
+    challenge_exe = challenge_name.replace('.cs', '.exe')
+    test_dll = test_name.replace('.cs', '.dll')
     challenge_dir = CHALLENGE_SAVE_PATH + challenge_name.replace('.cs', '/')
     old_challenge_path = challenge_dir + challenge_name
     old_test_path = challenge_dir + test_name
     new_challenge_path = CHALLENGE_VALIDATION_PATH + challenge_name
     new_test_path = CHALLENGE_VALIDATION_PATH + test_name
+    new_challenge_exe_path = CHALLENGE_VALIDATION_PATH + challenge_exe
+    new_test_dll_path = CHALLENGE_VALIDATION_PATH + test_dll
     new_challenge = update_request['source_code_file']
     new_test = update_request['test_suite_file']
 
@@ -85,15 +91,17 @@ def put_csharp_challenges(id):
         if val_status != 1:
             return code_validation_response(val_status)
 
-    if update_request['repair_objective'] is not None:
-        update_challenge_data(id, {'repair_objective': update_request['repair_objective']})
+    if update_request['challenge'] is not None:
+        print(update_request)
+        if 'repair_objective' in update_request['challenge']:
+            update_challenge_data(id, {'repair_objective': update_request['challenge']['repair_objective']})
 
-    if update_request['complexity'] is not None:
-        complexity = int(update_request['complexity'])
-        if complexity < 1 or complexity > 5 :
-            return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
-        else:
-            update_challenge_data(id, {'complexity': complexity})
+        if 'complexity' in update_request['challenge']:
+            complexity = int(update_request['challenge']['complexity'])
+            if complexity < 1 or complexity > 5 :
+                return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
+            else:
+                update_challenge_data(id, {'complexity': complexity})
     return make_response(jsonify({'challenge': get_challenge_db(id, show_files_content=True)}), 200)
 
 
