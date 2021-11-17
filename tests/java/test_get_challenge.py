@@ -50,3 +50,24 @@ def test_get_Id_noesxite(client):
 	#assert
     assert p2.status_code == 404
 
+def test_get_java(client):
+	data_for_tests.delete_db()
+	url = 'http://localhost:5000/java/java-challenges'
+	token = data_for_tests.get_token(client)
+	resp = client.get(url, headers={'Authorization': f'JWT {token}'})
+	a = resp.json
+	
+	assert resp.status_code == 200
+	assert a['challenges'] == []
+'''
+def test_get_java_not_token(client):
+	data_for_tests.delete_db()
+	url = 'http://localhost:5000/java/java-challenges'
+	token = "ghghghhgg"
+	resp = client.get(url, headers={'Authorization': f'JWT {token}'})
+	a = resp.json
+	
+	assert resp.status_code == 401
+'''	
+
+

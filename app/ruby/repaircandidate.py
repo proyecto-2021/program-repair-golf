@@ -1,5 +1,5 @@
 from nltk import edit_distance
-from .rubycode import RubyCode, RubyTestCode
+from .rubycode import RubyCode, RubyTestsCode
 
 class RepairCandidate(object):
     def __init__(self, challenge, repair_code, path):
@@ -15,18 +15,18 @@ class RepairCandidate(object):
         return self.repair_code.compiles()
 
     def test_ok(self):
-        test_suite = RubyTestCode(full_name=self.challenge.tests_code.copy(self.path))
+        test_suite = RubyTestsCode(full_name=self.challenge.tests_code.copy(self.path))
         return not test_suite.run_fails()
     
     def compute_score(self):
         return edit_distance(self.repair_code.get_content(), self.challenge.code.get_content())
 
-    def get_content(self, score):
+    def get_content(self, username, attempts, score):
         return {'repair' :
             {
                 'challenge': self.challenge.get_content(exclude=['id','code','tests_code','complexity']),
-                'player': {'username': 'Agustin'},
-                'attemps': '1',
+                'player': {'username': username},
+                'attempts': str(attempts),
                 'score': score
             }
         }
