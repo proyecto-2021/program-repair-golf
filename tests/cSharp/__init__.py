@@ -33,12 +33,12 @@ def create_test_data():
 
 def challenge_json(dic_data):
     json_dic = '{ "challenge": { '
-    if dic_data[next(iter(dic_data))] is not None:
-        first_key = list(dic_data)[0]
+    first_key = True
     for key in dic_data:
         if dic_data[key] is not None:
-            if key == first_key:
+            if first_key:
                 json_dic += f'"{key}" : "{dic_data[key]}"'
+                first_key = False
             else:
                 json_dic += f', "{key}" : "{dic_data[key]}"'
 
