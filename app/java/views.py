@@ -8,7 +8,7 @@ from json import loads
 from flask_jwt import jwt_required, current_identity
 
 @java.route('/java-challenges',methods=['GET'])
-#@jwt_required()
+@jwt_required()
 def ViewAllChallenges():
     try:
         output = controller.list_challenges_java()
