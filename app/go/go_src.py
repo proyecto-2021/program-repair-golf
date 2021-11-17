@@ -2,15 +2,11 @@ import subprocess, os, re, shutil
 
 class Go_src:
 
-    def __init__(self, path=None, file=None):
+    def __init__(self, path=None):
         self.path = path
-        self.file = file
 
     def get_path(self):
         return self.path
-
-    def get_file(self):
-        return self.file
 
     def set_path(self, path):
         self.path = path
@@ -27,12 +23,21 @@ class Go_src:
         path_tests = os.path.abspath(re.sub('/\w+_\w+.go', '/', self.get_path()))
         return (subprocess.run(["go test"], cwd=path_tests, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)).returncode != 0
 
+    def create_file(self):
+        f = open(self.get_path(), 'x')
+        f.close()
+
+    def write_file(self, string):
+        with open(self.get_path(), 'w') as f:
+            f.write(string)
+            f.close()
+
     def get_content(self):
         with open(str(self.get_path()),'r') as f:
             return f.readlines()
 
-    def save(self):    
-        self.file.save(self.get_path())
+    def save(self, file): 
+        file.save()
 
     def create_dir(self):
         os.makedirs(self.get_path())
