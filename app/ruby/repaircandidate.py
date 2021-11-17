@@ -21,12 +21,12 @@ class RepairCandidate(object):
     def compute_score(self):
         return edit_distance(self.repair_code.get_content(), self.challenge.code.get_content())
 
-    def get_content(self, score):
+    def get_content(self, username, score):
         return {'repair' :
             {
                 'challenge': self.challenge.get_content(exclude=['id','code','tests_code','complexity']),
-                'player': {'username': 'Agustin'},
-                'attemps': '1',
+                'player': {'username': username},
+                'attempts': '1',
                 'score': score
             }
         }

@@ -38,7 +38,7 @@ class RubyChallengeRepairAPI(MethodView):
     @jwt_required()
     def post(self, id):
         repair_candidate = request.files.get('source_code_file')
-        return self.controller.post_repair(id, repair_candidate)
+        return self.controller.post_repair(id, current_identity, repair_candidate)
 
 ruby_challenge_view = RubyChallengeAPI.as_view('ruby_challenge_api')
 ruby_challenge_repair_view = RubyChallengeRepairAPI.as_view('ruby_challenge_repair_api')

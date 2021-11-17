@@ -79,7 +79,8 @@ class Controller:
             all_challenges.append(challenge_content)
         return jsonify({'challenges': all_challenges})
 
-    def post_repair(self, id, repair_code):
+    def post_repair(self, id, user, repair_code):
+
         if not repair_code:
             return make_response(jsonify({'challenge': 'a repair candidate is necessary'}), 400)
 
@@ -103,13 +104,13 @@ class Controller:
             rmtree(self.ruby_tmp)
             return make_response(jsonify({'challenge': 'the repair candidate does not solve the problem'}),200)
 
-        new_score = rep_candidate.compute_score()
-        if new_score < challenge.get_best_score() or challenge.get_best_score() == 0:
-            challenge.set_best_score(new_score)
-            self.dao.update_challenge(id,{'best_score':new_score})
+        score = rep_candidate.compute_score()
+        if score < challenge.get_best_score() or challenge.get_best_score() == 0:
+            challenge.set_best_score(score)
+            self.dao.update_challenge(id,{'best_score': score})
         
         rmtree(self.ruby_tmp)
-        return jsonify(rep_candidate.get_content(new_score))
+        return jsonify(rep_candidate.get_content(user.username, score))
 
     def modify_challenge(self, id, code_file, tests_code_file, json_challenge):
         if not self.dao.exists(id):
