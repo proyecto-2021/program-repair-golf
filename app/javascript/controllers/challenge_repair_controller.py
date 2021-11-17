@@ -4,10 +4,12 @@ from .files_controller import open_file, exist_file, to_temp_file, replace_file,
 from ..modules.source_code_module import compile_js, test_run
 from ..exceptions.ChallengeRepairException import ChallengeRepairException
 from ..dao.challenge_dao import ChallengeDAO
+from flask_jwt import jwt_required, current_identity
 
 class ChallengeRepairController():
 
-    def repair(id,code_files_new):
+    @jwt_required()
+    def repair(id,code_files_new): #Hay que pasarle current_identity
         challenge = ChallengeDAO.get_challenge(id)
         if not exist_file(challenge.code):
             raise ChallengeRepairException(f'The file does not exists{challenge.code}', ChallengeRepairException.HTTP_NOT_FOUND)
@@ -29,6 +31,7 @@ class ChallengeRepairController():
         for k in ['id','code','complexity','tests_code']:
              del challenge_dict[k]
 
+        #debemos guardar el intento de este usuario en la base
         return {'repair' :{
                             'challenge': challenge_dict,
                             'player': {'username': 'user'},

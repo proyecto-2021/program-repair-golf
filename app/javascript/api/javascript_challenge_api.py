@@ -12,7 +12,9 @@ from ..exceptions.FileReplaceException import FileReplaceException
 from ..exceptions.challenge_dao_exception import challenge_dao_exception
 from flask import jsonify, make_response,request
 
+
 class JavascriptChallengeAPI(MethodView):
+    @jwt_required()
     def get(self, id):
         try: 
             if not id: 
@@ -29,7 +31,8 @@ class JavascriptChallengeAPI(MethodView):
             return make_response(jsonify({'Error sqlite3': e.msg}), e.HTTP_code)
         except Exception as e:
             return make_response(jsonify({'Error App': str(traceback.format_exc())}), 404)
-       
+
+    @jwt_required()
     def post(self,id):
         try:
             if not id: 
@@ -49,7 +52,9 @@ class JavascriptChallengeAPI(MethodView):
                 return make_response(jsonify({'Challenge': challenge}), 200) 
             else: 
                 code_files_new = request.files['source_code_file']
+                #debemos pasarle current_identity
                 challenge_rep = ChallengeRepairController.repair(id, code_files_new)
+                #debemos guardar el intento de este usuario en la base
                 return make_response(jsonify({'Challenge': challenge_rep}), 200) 
         except CommandRunException as e: 
             return make_response(jsonify({'Error': e.msg }), e.HTTP_code)
@@ -62,6 +67,7 @@ class JavascriptChallengeAPI(MethodView):
         except Exception as e:
             return make_response(jsonify({'Error App': str(traceback.format_exc())}), 404)
         
+    @jwt_required()
     def put(self, id):
         try:
             challenge_json = json.loads(request.form.get('challenge'))['challenge']
