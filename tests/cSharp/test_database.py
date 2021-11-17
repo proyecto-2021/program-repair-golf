@@ -64,5 +64,17 @@ def test_exist(client, expected_challenge):
     db.session.query(CSharpChallengeModel).delete() 
 
 def test_update(client, expected_challenge):
-    # TODO 
-    pass
+    # Arrange
+    ch_id = expected_challenge['id']
+    data = {"complexity":2}
+    
+    #Act
+    update_challenge_data(ch_id, data)
+    ch_updated = db.session.query(CSharpChallengeModel).filter_by(id=ch_id).first().__repr__()
+
+    #Assert
+    assert ch_updated["complexity"] == data["complexity"]
+
+    # Cleanup
+    db.session.query(CSharpChallengeModel).delete()   
+
