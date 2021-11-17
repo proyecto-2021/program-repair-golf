@@ -21,7 +21,7 @@ class GoRepairCandidate:
 	def score(self):
 		return edit_distance(self.repair_code.get_content(), self.challenge.get_code_content())
 
-	def code_compiles(self):
+	def compiles(self):
 		return self.repair_code.code_compiles()
 
 	def tests_fail(self):

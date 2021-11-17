@@ -10,18 +10,29 @@ class Go_src:
 
     def set_path(self, path):
         self.path = path
-
+    '''
     def code_compiles(self):
         path_code = os.path.abspath(re.sub('/\w+.go', '/', self.get_path()))
         return (subprocess.run(["go build"], cwd=path_code, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)).returncode == 0
 
     def tests_compiles(self):
         path_test = os.path.abspath(re.sub('/\w+_\w+.go', '/', self.get_path()))
-        return (subprocess.run(["go test -c"], cwd=path_test, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)).returncode != 1   
+        return (subprocess.run(["go test -c"], cwd=path_test, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)).returncode != 1  
+    '''
+    def compiles(self, is_code):
+        if is_code:
+            path = os.path.abspath(re.sub('/\w+.go', '/', self.get_path()))
+            command = "go build"
+        else:
+            path = path_test = os.path.abspath(re.sub('/\w+_\w+.go', '/', self.get_path()))
+            command = "go test -c"
+        # Si no anda pa los tests, hacer (!= 1)
+        return (subprocess.run(command, cwd=path, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)).returncode == 0
 
     def tests_fail(self):
         path_tests = os.path.abspath(re.sub('/\w+_\w+.go', '/', self.get_path()))
         return (subprocess.run(["go test"], cwd=path_tests, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)).returncode != 0
+
 
     def create_file(self):
         f = open(self.get_path(), 'x')
@@ -33,23 +44,15 @@ class Go_src:
             f.close()
 
     def get_content(self):
-        with open(str(self.get_path()),'r') as f:
+        with open(self.get_path(),'r') as f:
             return f.readlines()
+
 
     def save(self, file): 
         file.save()
 
-    def create_dir(self):
-        os.makedirs(self.get_path())
-
-    def is_dir(self):
-        return os.path.isdir(self.get_path())
-
     def create_path(parent_dir, directory):
         return os.path.join(parent_dir, directory)
-
-    def remove_dir(self):
-        shutil.rmtree(self.get_path())
     
     def remove_file(self):
         os.remove(self.get_path())
