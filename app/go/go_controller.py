@@ -86,15 +86,14 @@ class Controller():
 
         repair_code = request.files['source_code_file']
         dir = DirectoryManagement(path='public/challenges/solution/')
-        code = SourceCode(path='public/challenges/solution/code.go')
-        tests = SourceCode(path='public/challenges/solution/code_test.go')
+        repair = Challenge(path_code='public/challenges/solution/code.go', path_tests_code='public/challenges/solution/code_test.go')
 
         dir.create_dir()
-        code.create_file()
-        repair_code.save(code.get_path())
-        tests.move(challenge.get_tests_code())
+        repair.code.create_file()
+        repair_code.save(repair.code.get_path())
+        repair.tests_code.move(challenge.get_tests_code())
 
-        repair_candidate = RepairCandidate(challenge=challenge, dir_path=dir.get_path(), file_path=code.get_path())
+        repair_candidate = RepairCandidate(challenge=challenge, dir_path=dir.get_path(), file_path=repair.code.get_path())
 
         if not repair_candidate.compiles():
             dir.remove_dir()
