@@ -111,11 +111,11 @@ def post_csharp_challenges():
                      'repair_objective', 'complexity')
     if all(key in new_challenge for key in required_keys):
         try:
-            ch_dir = DAO.CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name']
+            ch_dir = DAO.create_challenge_dir(new_challenge['source_code_file_name'])
         except FileExistsError:
             return make_response(jsonify({'Challenge': 'Already exists'}), 409)
-        new_source_code_path = ch_dir + "/" + new_challenge['source_code_file_name'] + ".cs"
-        new_test_suite_path = ch_dir + "/" + new_challenge['test_suite_file_name'] + ".cs"
+        new_source_code_path = ch_dir + new_challenge['source_code_file_name'] + ".cs"
+        new_test_suite_path = ch_dir + new_challenge['test_suite_file_name'] + ".cs"
         challenge = CSharpChallenge(new_challenge['source_code_file'],
                                     new_challenge['test_suite_file'],
                                     new_challenge['source_code_file_name'],
@@ -126,14 +126,14 @@ def post_csharp_challenges():
         new_code_exe_path = challenge.code.path.replace('.cs', '.exe')
         new_test_dll_path = challenge.test.path.replace('.cs', '.dll')
         if validate_response == 0:
-            challenge_dir = self.CHALLENGE_SAVE_PATH + os.path.splitext(challenge_name)[0]
+            DAO.remove_challenge_dir(new_challenge['source_code_file_name'])
             return make_response(jsonify({'Test': 'At least one has to fail'}), 409)
 
         elif validate_response == 1:
             DAO.remove(new_code_exe_path, new_test_dll_path)
             complexity = int(new_challenge['complexity'])
             if complexity < 1 or complexity > 5:
-                challenge_dir = self.CHALLENGE_SAVE_PATH + os.path.splitext(challenge_name)[0]
+                DAO.remove_challenge_dir(new_challenge['source_code_file_name'])
                 return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
             new_data_id = DAO.save_to_db(new_challenge['repair_objective'],
                                          complexity,
@@ -143,11 +143,11 @@ def post_csharp_challenges():
             return make_response(jsonify({'challenge': content}))
 
         elif validate_response == 2:
-            challenge_dir = self.CHALLENGE_SAVE_PATH + os.path.splitext(challenge_name)[0]
+            DAO.remove_challenge_dir(new_challenge['source_code_file_name'])
             return make_response(jsonify({'Test': 'Sintax errors'}), 409)
 
         else:
-            challenge_dir = self.CHALLENGE_SAVE_PATH + os.path.splitext(challenge_name)[0]
+            DAO.remove_challenge_dir(new_challenge['source_code_file_name'])
             return make_response(jsonify({'Challenge': 'Sintax errors'}), 409)
 
     else:
