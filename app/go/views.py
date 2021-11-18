@@ -225,9 +225,9 @@ def update_a_go_challenge(id):
     if 'complexity' in data and data['complexity'] != challenge.get_complexity():
        challenge.set_complexity(data['complexity'])
     
-    dao.update_challenge(challenge.get_id(), challenge.get_content())
+    dao.update_challenge(challenge.get_id(), challenge.get_content(id=False, tests_code=False))
 
-    return jsonify({'challenge' : challenge.get_content_get_by_id()})
+    return jsonify({'challenge' : challenge.get_content(id=False)})
     
 
 @go.route('/api/v1/go-challenges', methods=['POST'])

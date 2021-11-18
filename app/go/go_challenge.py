@@ -34,7 +34,7 @@ class GoChallengeC:
     def get_best_score(self):
         return self.best_score
 
-
+    #get_all
     def get_content_get_all(self):
         return {
             'id': self.id,
@@ -43,7 +43,7 @@ class GoChallengeC:
             'complexity': self.complexity,
             'best_score': self.best_score
         }
-
+    #get, put, 
     def get_content_get_by_id(self):
         return {
             'code': self.code.get_content(),
@@ -52,7 +52,7 @@ class GoChallengeC:
             'complexity': self.complexity,
             'best_score': self.best_score
         }
-
+    #post
     def get_content_post(self):
         return {
             'id': self.id,
@@ -63,26 +63,29 @@ class GoChallengeC:
             'best_score': self.best_score
         }
 
-    ####Lo cree porque se rompia con los otros, podriamos ahcer uno generico
-    def get_content(self):
-        return {
+    def get_content(self, id=True, tests_code=True):
+
+        challenge = {
             'id': self.id,
-            'code': self.code.get_path(),
-            'tests_code': self.tests_code.get_path(),
+            'code': self.get_code_content(),
+            'tests_code': self.get_tests_code_content(), 
             'repair_objective': self.repair_objective,
             'complexity': self.complexity,
             'best_score': self.best_score
         }
 
-    def get_content_put(self):
-        return {
-            'code': self.code.get_content(),
-            'tests_code': self.tests_code.get_content(),
-            'repair_objective': self.repair_objective,
-            'complexity': self.complexity,
-            'best_score': self.best_score
-        }
-
+        if id and tests_code: 
+            return challenge
+        elif id and not tests_code:
+            del challenge['tests_code']
+            return challenge
+        elif not id and tests_code:
+            del challenge['id']
+            return challenge
+        
+        challenge['code'] = self.code.get_path()
+        challenge['tests_code'] = self.tests_code.get_path()
+        return challenge
 
     def set_code(self, path_code):
         self.code.set_path(path_code)
