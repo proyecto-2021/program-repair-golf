@@ -70,9 +70,9 @@ class Controller():
         elif not new_challenge.tests_fail():
             return make_response(jsonify({"ERROR: tests": "There must be at least one test that fails"}), 412)
 
-        challenge_dao = dao.create_challenge(new_challenge.get_code(), new_challenge.get_tests_code(), new_challenge.get_repair_objective(), new_challenge.get_complexity())
+        dao.create_challenge(new_challenge.get_code(), new_challenge.get_tests_code(), new_challenge.get_repair_objective(), new_challenge.get_complexity())
 
-        new_challenge_to_dicc = new_challenge.get_content_post()
+        new_challenge_to_dicc = new_challenge.get_content()
         return jsonify({"challenge": new_challenge_to_dicc})
 
 

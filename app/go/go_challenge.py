@@ -34,35 +34,6 @@ class GoChallengeC:
     def get_best_score(self):
         return self.best_score
 
-    #get_all
-    def get_content_get_all(self):
-        return {
-            'id': self.id,
-            'code': self.code.get_content(),
-            'repair_objective': self.repair_objective,
-            'complexity': self.complexity,
-            'best_score': self.best_score
-        }
-    #get, put, 
-    def get_content_get_by_id(self):
-        return {
-            'code': self.code.get_content(),
-            'tests_code': self.tests_code.get_content(),
-            'repair_objective': self.repair_objective,
-            'complexity': self.complexity,
-            'best_score': self.best_score
-        }
-    #post
-    def get_content_post(self):
-        return {
-            'id': self.id,
-            'code': self.get_code_content(),
-            'tests_code': self.get_tests_code_content(),
-            'repair_objective': self.repair_objective,
-            'complexity': self.complexity,
-            'best_score': self.best_score
-        }
-
     def get_content(self, id=True, tests_code=True):
 
         challenge = {

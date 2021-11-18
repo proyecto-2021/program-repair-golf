@@ -25,7 +25,8 @@ class Go_src:
         return (subprocess.run([command], cwd = path, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)).returncode == 0
 
     def tests_compiles(self, path, command):
-        return (subprocess.run([command], cwd = path, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)).returncode != 1 and (subprocess.run([command], cwd = path, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)).returncode != 2 
+        return ((subprocess.run([command], cwd = path, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)).returncode != 1 and
+        (subprocess.run([command], cwd = path, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)).returncode != 2 )
 
     def tests_fail(self):
         path_tests = os.path.abspath(re.sub('/\w+_\w+.go', '/', self.get_path()))
@@ -45,17 +46,13 @@ class Go_src:
             return f.readlines()
 
     def move(self, path):
-        shutil.copy(path, self.path)
+        shutil.copy(path, self.get_path())
 
     def save(self, file): 
         file.save(self.get_path())
     
     def remove_file(self):
         os.remove(self.get_path())
-
-    def delete_files(self):
-        for file in os.listdir(self.get_path()):
-            os.remove(os.path.join(self.get_path(), file))
 
     def rewrite_file(self, update_data):
         with open(self.get_path(), 'w') as f:
