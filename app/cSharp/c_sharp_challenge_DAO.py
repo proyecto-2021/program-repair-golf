@@ -92,3 +92,6 @@ class CSharpChallengeDAO:
     def remove_challenge_dir(self, challenge_name):
         challenge_dir = self.CHALLENGE_SAVE_PATH + os.path.splitext(challenge_name)[0]
         shutil.rmtree(challenge_dir)
+        
+    def get_all_challenges(self):
+        return db.session.query(CSharpChallengeModel).all()
