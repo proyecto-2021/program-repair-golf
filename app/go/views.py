@@ -192,8 +192,10 @@ def update_a_go_challenge(id):
         challenge.set_tests_code(temp_test_file.get_path())
         
         if not challenge.tests_fail():
-            temporary_directory.delete_files()
+            temporary_directory.remove_dir()
             return make_response(jsonify({'error' : 'source code must fails tests'}), 412)
+        
+        challenge.set_tests_code(old_tests.get_path())
    
     elif not new_code and new_test:
         temp_code_file = Go_src(path = temporary_directory.get_path() + 'temp.go')
@@ -201,8 +203,10 @@ def update_a_go_challenge(id):
         challenge.set_code(temp_code_file.get_path())
         
         if not challenge.tests_fail():
-            temporary_directory.delete_files()
+            temporary_directory.remove_dir()
             return make_response(jsonify({'error' : 'tests must fails'}), 412)
+        
+        challenge.set_code(old_code.get_path())
 
     if new_code:
         old_code.rewrite_file(challenge.get_code())
