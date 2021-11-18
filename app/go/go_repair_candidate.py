@@ -8,6 +8,7 @@ class GoRepairCandidate:
 		self.challenge = challenge
 		self.dir_path = dir_path
 		self.file_path = file_path
+		self.tests_code = Go_src(path=self.dir_path)
 		self.repair_code = Go_src(path=self.file_path)
 
 	def get_content(self, score):
@@ -26,8 +27,7 @@ class GoRepairCandidate:
 		return self.repair_code.compiles(is_code=True)
 
 	def tests_fail(self):
-		tests = Go_src(path=self.dir_path)
-		return tests.tests_fail()
+		return self.tests_code.tests_fail()
 
 	def save(self):
 		self.repair_code.save()

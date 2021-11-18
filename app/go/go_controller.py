@@ -23,7 +23,7 @@ class Controller():
             challenge = GoChallengeC(path_code=c.code,path_tests_code=c.tests_code,
                 repair_objective=c.repair_objective,complexity=c.complexity)
 
-            show.append(challenge.get_content_all())
+            show.append(challenge.get_content(tests_code=False))
 
         return jsonify({"challenges" : show})
 
@@ -37,7 +37,7 @@ class Controller():
         challenge = GoChallengeC(path_code=c.code,path_tests_code=c.tests_code,
             repair_objective=c.repair_objective,complexity=c.complexity)
 
-        show = challenge.get_content_by_id_and_put()
+        show = challenge.get_content(id=False)
 
         return jsonify({"challenge" : show})
 
@@ -107,6 +107,10 @@ class Controller():
         score = repair_candidate.score()
 
         dir.remove_dir()
+
+        if score < c.best_score:
+            c.best_score = score
+            dao.update_challenge(id, c)
 
         show = repair_candidate.get_content(score)
     

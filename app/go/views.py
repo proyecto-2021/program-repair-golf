@@ -9,135 +9,29 @@ from .go_src import Go_src
 from .go_challenge import GoChallengeC
 from .go_repair_candidate import GoRepairCandidate
 from .go_directory_management import GoDirectoryManagement
+from .go_controller import Controller
 
 
 dao = goChallengeDAO()
+controller = Controller()
 
 
 @go.route('api/v1/go-challenges/<int:id>/repair', methods=['POST'])
 def repair_challenge_go(id):
-    '''
-    code_solution_file = request.files['source_code_file']
-    subprocess.run(["mkdir","solution"],cwd="public/challenges",stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL)
-    code_solution_path = os.path.abspath('public/challenges/solution/code_solution.go')
-    code_solution_file.save(code_solution_path)
-    
-    is_good_code_solution_file = subprocess.run(["go build"], cwd=os.path.abspath("public/challenges/solution"),stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
-    if is_good_code_solution_file.returncode == 2:
-        return make_response((jsonify({"code_solution_file":"with errors"}),409))
-    
-    challenge_original = GoChallenge.query.filter_by(id=id).first()
-    if challenge_original is None:
-        return make_response(jsonify({'Challenge' : 'this challenge does not exist'}), 404)
-    challenge_to_dict = challenge_original.convert_dict()
-    tests_code = challenge_to_dict["tests_code"]
-    
-    shutil.copy (tests_code,"public/challenges/solution/code_test.go")
-    
-    the_challenge_is_solved = subprocess.run(["go test"],cwd=os.path.abspath("public/challenges/solution"),stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
-    if the_challenge_is_solved.returncode == 1:
-        return make_response((jsonify({"the challenge":"not solved"}),409))  
-    
-    challenge_original_code = challenge_to_dict["code"]
-    
-    f = open (challenge_original_code,'r')
-    original_code = f.read()
-    f.close()
-
-    f = open (code_solution_path,'r')
-    solution_code = f.read()
-    f.close()
-
-    edit_distance = nltk.edit_distance(original_code,solution_code)
-
-    current_best_score = challenge_to_dict["best_score"]
-    if edit_distance < current_best_score:
-        challenge_original.best_score = edit_distance
-        db.session.commit()
-
-    challenge_original_updated = GoChallenge.query.filter_by(id=id).first()
-    challenge_to_dict_updated = challenge_original_updated.convert_dict()
-        
-
-    request_return = {
-        "repair":{
-            "challenge":{
-                "repair_objective": challenge_to_dict["repair_objective"],
-                "best_score": challenge_to_dict_updated["best_score"]
-            },
-            "score": edit_distance
-        }
-    }
-
-    subprocess.run(["rm" "-r" "solution"],cwd=os.path.abspath("public/challenges"),stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)
-    '''
-    if not dao.exists(id):
-        return make_response(jsonify({'challenge' : 'challenge does not exist'}), 404)
-
-    c = dao.get_challenge_by_id(id)
-    challenge = GoChallengeC(path_code=c.code,path_tests_code=c.tests_code,
-        repair_objective=c.repair_objective,complexity=c.complexity)
-
-    repair_code = request.files['source_code_file']
-    dir = GoDirectoryManagement(path='public/challenges/solution/')
-    code = Go_src(path='public/challenges/solution/code.go')
-    tests = Go_src(path='public/challenges/solution/code_test.go')
-
-    dir.create_dir()
-    code.create_file()
-    repair_code.save(code.get_path())
-    tests.move(challenge.get_tests_code())
-
-    repair_candidate = GoRepairCandidate(challenge=challenge, dir_path=dir.get_path(), file_path=code.get_path())
-
-    if not repair_candidate.compiles():
-        dir.remove_dir()
-        return make_response(jsonify({"source_code_file" : "with sintax errors"}), 409)
-
-    if not repair_candidate.tests_fail():
-        dir.remove_dir()
-        return make_response(jsonify({"challenge" : "not solved"}), 409) 
-
-    score = repair_candidate.score()
-    # Falta actualizar el best_score, se debe actualizar ?
-    dir.remove_dir()
-
-    show = repair_candidate.get_content(score)
-    
-    return jsonify({"repair" : show})
+    return controller.post_repair(id)
 
 
 
 @go.route('/api/v1/go-challenges', methods=['GET'])
-def get_all_challenges():
-    challenges = dao.get_all_challenges()
-    if not challenges:
-        return make_response(jsonify({'challenges' : 'not found'}), 404)
-    
-    show = []
+def get_challenges():
+    return controller.get_all_challenges()
 
-    for c in challenges:
-        challenge = GoChallengeC(path_code=c.code,path_tests_code=c.tests_code,
-            repair_objective=c.repair_objective,complexity=c.complexity)
-
-        show.append(challenge.get_content_get_all())
-
-    return jsonify({"challenges" : show})
 
 
 @go.route('/api/v1/go-challenges/<id>', methods=['GET'])
-def get_challenge_by_id(id):
-    if not dao.exists(id):
-        return make_response(jsonify({'challenge' : 'not found'}), 404)
+def get_challenge(id):
+    return controller.get_challenge_by_id(id)
 
-    c = dao.get_challenge_by_id(id)
-
-    challenge = GoChallengeC(path_code=c.code,path_tests_code=c.tests_code,
-        repair_objective=c.repair_objective,complexity=c.complexity)
-
-    show = challenge.get_content_get_by_id()
-
-    return jsonify({"challenge" : show})
 
 
 
