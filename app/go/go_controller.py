@@ -100,7 +100,7 @@ class Controller():
             dir.remove_dir()
             return make_response(jsonify({"source_code_file" : "with sintax errors"}), 409)
 
-        if not repair_candidate.tests_fail():
+        if repair_candidate.tests_fail():
             dir.remove_dir()
             return make_response(jsonify({"challenge" : "not solved"}), 409) 
 
