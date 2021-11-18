@@ -53,14 +53,3 @@ class SourceCode:
     
     def remove_file(self):
         os.remove(self.get_path())
-
-    def rewrite_file(self, update_data):
-        with open(self.get_path(), 'w') as f:
-                with open(update_data, 'r') as g:
-                    for line in g:
-                        f.write(line)
-
-    def create_file_tmp(path, name, file):
-        path_to_file = SourceCode(path = path.get_path() + name)
-        file.save(path_to_file.get_path())
-        return path_to_file

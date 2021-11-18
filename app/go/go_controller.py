@@ -125,8 +125,8 @@ class Controller():
         data = json.loads(request.form.get('challenge'))['challenge']
         challenge_dao = dao.get_challenge_by_id(id)
         challenge = Challenge(challenge_dao.id, challenge_dao.code, challenge_dao.tests_code, challenge_dao.repair_objective, challenge_dao.complexity)
-        old_code  = SourceCode(path = challenge.get_code())
-        old_tests = SourceCode(path = challenge.get_tests_code())
+        old_code  = challenge.get_code()
+        old_tests = challenge.get_tests_code()
 
         temporary_directory = DirectoryManagement(path='example-challenges/go-challenges/tmp/')
         if request.files and not(temporary_directory.is_dir()):
@@ -137,8 +137,8 @@ class Controller():
             if not ('source_code_file_name' in data):
                 return make_response(jsonify({"source_code_file_name" : "not found"}), 409)
 
-            path_to_code = SourceCode.create_file_tmp(temporary_directory, data['source_code_file_name'], request.files['source_code_file'])
-            challenge.set_code(path_to_code.get_path())
+            path_to_code = create_file_tmp(temporary_directory.get_path(), data['source_code_file_name'], request.files['source_code_file'])
+            challenge.set_code(path_to_code)
 
             if not challenge.code_compiles():
                 temporary_directory.remove_dir()
@@ -149,47 +149,48 @@ class Controller():
             if not ('test_suite_file_name' in data):
                 return make_response(jsonify({"test_suite_file_name" : "not found"}), 409)
             
-            path_to_tests = SourceCode.create_file_tmp(temporary_directory, data['test_suite_file_name'], request.files['test_suite_file'])
-            challenge.set_tests_code(path_to_tests.get_path())    
+            path_to_tests = create_file_tmp(temporary_directory.get_path(), data['test_suite_file_name'], request.files['test_suite_file'])
+            challenge.set_tests_code(path_to_tests)    
+
+            if not new_code and new_test:
+                temp_code_file = temporary_directory.get_path() + 'temp.go'
+                rewrite_file(old_code, temp_code_file)
+                challenge.set_code(temp_code_file)
+
+                if not challenge.tests_fail():
+                    temporary_directory.remove_dir()
+                    return make_response(jsonify({'error' : 'tests must fails'}), 412)
+                
+                challenge.set_code(old_code)
 
             if not challenge.tests_compiles():
                 temporary_directory.remove_dir()
                 return make_response(jsonify({"test_suite_file" : "tests with sintax errors"}), 409)
-
+            
         if new_code and new_test:
             if not challenge.tests_fail():
                 temporary_directory.remove_dir()
                 return make_response(jsonify({'error' : 'tests must fails'}), 412)  
     
         elif new_code and not new_test:
-            temp_test_file = SourceCode(path = temporary_directory.get_path() + 'temp_test.go')
-            temp_test_file.rewrite_file(old_tests.get_path())
-            challenge.set_tests_code(temp_test_file.get_path())
+            temp_test_file = temporary_directory.get_path() + 'temp_test.go'
+            rewrite_file(old_tests, temp_test_file)
+            challenge.set_tests_code(temp_test_file)
             
             if not challenge.tests_fail():
                 temporary_directory.remove_dir()
                 return make_response(jsonify({'error' : 'source code must fails tests'}), 412)
             
-            challenge.set_tests_code(old_tests.get_path())
-    
-        elif not new_code and new_test:
-            temp_code_file = SourceCode(path = temporary_directory.get_path() + 'temp.go')
-            temp_code_file.rewrite_file(old_code.get_path())
-            challenge.set_code(temp_code_file.get_path())
-            
-            if not challenge.tests_fail():
-                temporary_directory.remove_dir()
-                return make_response(jsonify({'error' : 'tests must fails'}), 412)
-            
-            challenge.set_code(old_code.get_path())
+            challenge.set_tests_code(old_tests)
 
         if new_code:
-            old_code.rewrite_file(challenge.get_code())
-            challenge.set_code(old_code.get_path()) 
+            print(challenge.get_code())
+            rewrite_file(challenge.get_code(), old_code)
+            challenge.set_code(old_code) 
 
         if new_test:
-            old_tests.rewrite_file(challenge.get_tests_code())
-            challenge.set_tests_code(old_tests.get_path())
+            rewrite_file(challenge.get_tests_code(), old_tests)
+            challenge.set_tests_code(old_tests)
         
         if request.files:
             temporary_directory.remove_dir()
@@ -203,3 +204,16 @@ class Controller():
         dao.update_challenge(challenge.get_id(), challenge.get_content(id=False, tests_code=False))
 
         return jsonify({'challenge' : challenge.get_content(id=False)})
+
+
+def rewrite_file(update_data, file_to_rewrite):
+    with open(update_data) as f:
+        with open(file_to_rewrite, 'w') as g:
+            for line in f:
+                g.write(line)
+
+
+def create_file_tmp(path, name, file):
+    path_to_file = path + name
+    file.save(path_to_file)
+    return path_to_file
