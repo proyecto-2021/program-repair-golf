@@ -9,12 +9,30 @@ from .models.rubychallengedao import RubyChallengeDAO
 from .repaircandidate import RepairCandidate
 
 class Controller:
+    """Handle request from API."""
     def __init__(self, files_path):
+        """Initialize controller.
+        
+        Parameters:
+            files_path (string): set where the files are stored,
+            dao (RubyChallengeDAO): provide an object to manage database items,
+            ruby_tmp (string): set a temporary directory.
+        """
         self.files_path = files_path
         self.dao = RubyChallengeDAO()
         self.ruby_tmp = gettempdir() + '/ruby-tmp/'
 
     def post_challenge(self, code_file, tests_code_file, json_challenge):
+        """Create a challenge and save it in the database.
+        
+        Parameters:
+            code_file (FileStorage): persistent code file to store,
+            tests_code_file (FileStorage): persistent test suite to store,
+            json_challenge (dict): data to create the challenge. It must include files names and attributes.
+        
+        Returns:
+            response (dict): a json with error/success info and a status code.
+        """
         if not (code_file and tests_code_file and json_challenge):
             return make_response(jsonify({'challenge': 'the code, tests code and json challenge are necessary'}), 400)
 
@@ -67,12 +85,25 @@ class Controller:
         return jsonify({'challenge': response})
 
     def get_challenge(self, id):
+        """Get a single challenge and its info from an id.
+        
+        Parameters:
+            id (int): id of the challenge to retrieve.
+
+        Returns:
+            response (dict): a json with error/success info and a status code.
+        """
         if not self.dao.exists(id):
                 return make_response(jsonify({'challenge': 'the id does not exist'}), 404)
         challenge = RubyChallenge(**self.dao.get_challenge(id)).get_content(exclude=['id'])
         return jsonify({'challenge': challenge})
 
     def get_all_challenges(self):
+        """Retrieve all challlenges in the database.
+
+        Returns:
+            response (dict): a json with error/success info and a status code.
+        """
         all_challenges = []
         for challenge in self.dao.get_challenges():
             challenge_content = RubyChallenge(**challenge).get_content(exclude=['tests_code'])
@@ -80,6 +111,16 @@ class Controller:
         return jsonify({'challenges': all_challenges})
 
     def post_repair(self, id, user, repair_code):
+        """Create a repair candidate for a challenge and check its validity.
+        
+        Parameters:
+            id (int): id of the challenge to attempt a repair,
+            user (User): the user trying to fix the code,
+            repair_code (FileStorage): file with the candidate code.
+
+        Returns:
+            response (dict): a json with error/success info and a status code.
+        """
 
         if not repair_code:
             return make_response(jsonify({'challenge': 'a repair candidate is necessary'}), 400)
@@ -115,6 +156,17 @@ class Controller:
         return jsonify(rep_candidate.get_content(user.username, self.dao.get_attempts_count(id, user.id), score))
 
     def modify_challenge(self, id, code_file, tests_code_file, json_challenge):
+        """Modify a challenge data in the database.
+        
+        Parameters:
+            id (int): id of the challenge to modify,
+            code_file (FileStorage): persistent code file to store replacing the original,
+            tests_code_file (FileStorage): persistent test suite to store replacing the original,
+            json_challenge (dict): data to modify the challenge. It may contain files names and attributes.
+        
+        Returns:
+            response (dict): a json with error/success info and a status code.
+        """
         if not self.dao.exists(id):
             return make_response(jsonify({'challenge': 'the id does not exist'}), 404)
 
@@ -176,6 +228,15 @@ class Controller:
         return jsonify({'challenge': response})
 
     def copy_files(self, old_challenge_code, new_challenge_code):
+        """Copies files on demand for modify_challenge.
+        
+        Parameters:
+            old_challenge_code (RubyCode): original challenge code beign replaced,
+            new_challenge_code (RubyCode): new challenge code beign saved.
+        
+        Returns:
+            Bool: False if trying to replace a file related to another challenge. True if success.
+        """
         if old_challenge_code.get_file_name() != new_challenge_code.get_file_name():
             if not new_challenge_code.move(self.files_path, names_match=False):
                 rmtree(self.ruby_tmp)
@@ -186,6 +247,18 @@ class Controller:
         return True
 
     def set_new_code(self, name, file, old_challenge_code, new_challenge_code):
+        """Set new challenge code.
+        
+        Parameters:
+            name (String): name with which the code is saved,
+            file (FileStorage/String): code to be saved. If it is a FileStorage, save it.
+                If it is a String, copy the file that the String references,
+            old_challenge_code (RubyCode): original challenge code,
+            new_challenge_code (RubyCode): new challenge code.
+
+        Returns:
+            Bool: False if the new code fails to compile. True in other cases.
+        """
         if file is not None:
             new_challenge_code.set_code(self.ruby_tmp, name, file)
             new_challenge_code.save()
