@@ -1,17 +1,11 @@
 from posixpath import basename
 from . import cSharp
-from .c_sharp_src import CSharpSrc
 from .c_sharp_challenge import CSharpChallenge
 from .c_sharp_repair_candidate import CSharpRepairCandidate
-from .models import CSharpChallengeModel
 from .c_sharp_challenge_DAO import CSharpChallengeDAO
 from json import loads
-from app import db
 from flask import jsonify, make_response, json, request
-import subprocess, os
-from subprocess import PIPE
-import shutil
-
+import os
 
 DAO = CSharpChallengeDAO()
 
@@ -116,13 +110,12 @@ def post_csharp_challenges():
                      'source_code_file', 'test_suite_file',
                      'repair_objective', 'complexity')
     if all(key in new_challenge for key in required_keys):
-        challenge_dir = DAO.CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name']
         try:
-            os.mkdir(challenge_dir)
+            ch_dir = DAO.CHALLENGE_SAVE_PATH + new_challenge['source_code_file_name']
         except FileExistsError:
             return make_response(jsonify({'Challenge': 'Already exists'}), 409)
-        new_source_code_path = challenge_dir + "/" + new_challenge['source_code_file_name'] + ".cs"
-        new_test_suite_path = challenge_dir + "/" + new_challenge['test_suite_file_name'] + ".cs"
+        new_source_code_path = ch_dir + "/" + new_challenge['source_code_file_name'] + ".cs"
+        new_test_suite_path = ch_dir + "/" + new_challenge['test_suite_file_name'] + ".cs"
         challenge = CSharpChallenge(new_challenge['source_code_file'],
                                     new_challenge['test_suite_file'],
                                     new_challenge['source_code_file_name'],
@@ -133,14 +126,14 @@ def post_csharp_challenges():
         new_code_exe_path = challenge.code.path.replace('.cs', '.exe')
         new_test_dll_path = challenge.test.path.replace('.cs', '.dll')
         if validate_response == 0:
-            shutil.rmtree(challenge_dir)
+            challenge_dir = self.CHALLENGE_SAVE_PATH + os.path.splitext(challenge_name)[0]
             return make_response(jsonify({'Test': 'At least one has to fail'}), 409)
 
         elif validate_response == 1:
             DAO.remove(new_code_exe_path, new_test_dll_path)
             complexity = int(new_challenge['complexity'])
             if complexity < 1 or complexity > 5:
-                shutil.rmtree(challenge_dir)
+                challenge_dir = self.CHALLENGE_SAVE_PATH + os.path.splitext(challenge_name)[0]
                 return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
             new_data_id = DAO.save_to_db(new_challenge['repair_objective'],
                                          complexity,
@@ -150,11 +143,11 @@ def post_csharp_challenges():
             return make_response(jsonify({'challenge': content}))
 
         elif validate_response == 2:
-            shutil.rmtree(challenge_dir)
+            challenge_dir = self.CHALLENGE_SAVE_PATH + os.path.splitext(challenge_name)[0]
             return make_response(jsonify({'Test': 'Sintax errors'}), 409)
 
         else:
-            shutil.rmtree(challenge_dir)
+            challenge_dir = self.CHALLENGE_SAVE_PATH + os.path.splitext(challenge_name)[0]
             return make_response(jsonify({'Challenge': 'Sintax errors'}), 409)
 
     else:
@@ -179,11 +172,11 @@ def repair_Candidate(id):
         repair = CSharpRepairCandidate(challenge_to_repair,file,challenge_name,repair_path)
         validation_result = repair.validate()
         if validation_result == -1:
-            repair.code.rm()
+            DAO.remove(repair.code.path)
             return make_response(jsonify({'Repair candidate': 'Sintax error'}), 409)
 
         elif validation_result == 1:
-            repair.code.rm()
+            DAO.remove(repair.code.path)
             DAO.remove(repair.code.path.replace('.cs', '.exe'),
                        repair.challenge.test.path.replace(".cs", ".dll"))
             return make_response(jsonify({'Repair candidate': 'Tests not passed'}), 409)
@@ -197,7 +190,7 @@ def repair_Candidate(id):
                 "repair_objective": challenge['repair_objective'],
                 "best_score": challenge['best_score']
             }
-            repair.code.rm()
+            DAO.remove(repair.code.path)
             DAO.remove(repair.code.path.replace('.cs', '.exe'),
                        repair.challenge.test.path.replace(".cs", ".dll"))
             return make_response(jsonify({'Repair': {'challenge': challenge_data, 'score': score}}), 200)
@@ -217,7 +210,7 @@ def get_challenge(id):
 def get_csharp_challenges():
     challenge = {'challenges': []}
     show = []
-    challenge['challenges'] = db.session.query(CSharpChallengeModel).all()
+    challenge['challenges'] = DAO.get_all_challenges()
     for i in challenge['challenges']:
         show.append(DAO.get_challenge_db(i.__repr__()['id'],
                                          show_files_content=True))
