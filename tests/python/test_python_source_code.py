@@ -16,14 +16,14 @@ def test_pythonsourcecode_first_builder(client):
 
 # testing builder 
 def test_pythonsourcecode_second_builder(client): 
-    path = 'tests/python/example_programs_test/valid_test_1.py'
+    path = 'tests/python/example_programs_test/valid_atest_1.py'
     
     pythonSourceCodeInstance = PythonSourceCode(path=path );
     
     pathRead = read_file(path,'rb')
 
     assert pythonSourceCodeInstance.path == path 
-    assert pythonSourceCodeInstance.name == 'valid_test_1.py'
+    assert pythonSourceCodeInstance.name == 'valid_atest_1.py'
     assert pythonSourceCodeInstance.content == pathRead
 
 # testing builder 
@@ -67,9 +67,9 @@ def test_pythonsourcecode_update(client):
 
 # testing method move_code
 def test_pythonsourcecode_move_code(client):
-    path = 'tests/python/example_programs_test/valid_test_1.py'
+    path = 'tests/python/example_programs_test/valid_atest_1.py'
     
-    name = 'valid_test_1.py'
+    name = 'valid_atest_1.py'
 
     pythonSourceCodeInstance = PythonSourceCode(path=path);
 
