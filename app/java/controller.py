@@ -130,10 +130,12 @@ class controller():
                 ruta_file_tmp = UPLOAD_TMP + curr['code'] + '.java'
                 code_repair = FileManagement.get_code_file_by_path(ruta_file_tmp)
                 value_dist = nltk.edit_distance(code_class, code_repair)
+                DAO_java_challenge.create_attempts_by_user(id, User.to_dict(current_identity)['id'])
+                intentos = DAO_java_challenge.get_cant_attempts(id, User.to_dict(current_identity)['id'])
                 if value_dist < curr['best_score']:
                     challenge.score = value_dist
-                    DAO_java_challenge.update(challenge)                    
-                    return {"repair": {"challenge": ChallengeCandidate.create_desafio(challenge),"player":{"username": User.to_dict(current_identity)['username']} ,"attempts": 1, "score": value_dist}}
+                    DAO_java_challenge.update(challenge)
+                    return {"repair": {"challenge": ChallengeCandidate.create_desafio(challenge),"player":{"username": User.to_dict(current_identity)['username']} ,"attempts": intentos, "score": value_dist}}
                 else:
                     raise Exception(f'La distancia de edicion es mayor o igual a la existente, tu puntuacion es: {value_dist}')
             else:
