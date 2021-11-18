@@ -138,19 +138,19 @@ class Controller:
         else:
             nc_code_name = old_challenge.get_code().get_file_name()
             nc_test_name = old_challenge.get_tests_code().get_file_name()
-
-        if not new_challenge.data_ok():
-            return make_response(jsonify({'challenge': 'the data is incomplete or invalid'}), 400)
             
         if isdir(self.ruby_tmp):
             rmtree(self.ruby_tmp)
         mkdir(self.ruby_tmp)
 
-        if not self.set_new_challenge(nc_code_name, code_file, old_challenge.get_code(), new_challenge.get_code()):
+        if not self.set_new_code(nc_code_name, code_file, old_challenge.get_code(), new_challenge.get_code()):
             return make_response(jsonify({'challenge': 'the source code does not compile'}), 400)
         
-        if not self.set_new_challenge(nc_test_name, tests_code_file, old_challenge.get_tests_code(), new_challenge.get_tests_code()):
+        if not self.set_new_code(nc_test_name, tests_code_file, old_challenge.get_tests_code(), new_challenge.get_tests_code()):
             return make_response(jsonify({'challenge': 'the test suite does not compile'}), 400)
+
+        if not new_challenge.data_ok():
+            return make_response(jsonify({'challenge': 'the data is incomplete or invalid'}), 400)
 
         if not new_challenge.get_tests_code().dependencies_ok(new_challenge.get_code()):
             rmtree(self.ruby_tmp)
@@ -185,7 +185,7 @@ class Controller:
             new_challenge_code.move(self.files_path)
         return True
 
-    def set_new_challenge(self, name, file, old_challenge_code, new_challenge_code):
+    def set_new_code(self, name, file, old_challenge_code, new_challenge_code):
         if file is not None:
             new_challenge_code.set_code(self.ruby_tmp, name, file)
             new_challenge_code.save()
