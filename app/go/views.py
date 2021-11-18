@@ -147,99 +147,83 @@ def update_a_go_challenge(id):
     if not dao.exists(id):
         return make_response(jsonify({'challenge' : 'not found'}), 404)
 
-    challenge = dao.get_challenge_by_id(id)
-    
-    directory  = 'tmp'
-    parent_dir = 'example-challenges/go-challenges/'
-    path_directory = Go_src.create_path(parent_dir, directory)
-    temporary_directory = Go_src(path=path_directory)
+    data = json.loads(request.form.get('challenge'))['challenge']
+    challenge_dao = dao.get_challenge_by_id(id)
+    challenge = GoChallengeC(challenge_dao.id, challenge_dao.code, challenge_dao.tests_code, challenge_dao.repair_objective, challenge_dao.complexity)
+    old_code  = Go_src(path = challenge.get_code())
+    old_tests = Go_src(path = challenge.get_tests_code())
+
+    temporary_directory = GoDirectoryManagement(path='example-challenges/go-challenges/tmp/')
     if request.files and not(temporary_directory.is_dir()):
         temporary_directory.create_dir()
 
-    old_challenge_to_update = GoChallengeC(challenge.id, challenge.code, challenge.tests_code, challenge.repair_objective, challenge.complexity)
-
-    path_to_old_code_file = Go_src(path=old_challenge_to_update.get_code())
-    path_to_old_test_file = Go_src(path=old_challenge_to_update.get_tests_code())
-
-    request_data = json.loads(request.form.get('challenge'))['challenge']
-
     new_code = 'source_code_file' in request.files 
     if new_code:
-        if not ('source_code_file_name' in request_data):
+        if not ('source_code_file_name' in data):
             return make_response(jsonify({"source_code_file_name" : "not found"}), 409)
 
-        new_code_file_name = request_data['source_code_file_name']
-        new_code_path = Go_src.create_path(temporary_directory.get_path(), new_code_file_name)
-        new_code_file = Go_src(path=new_code_path, file=request.files['source_code_file'])
-        old_challenge_to_update.set_code(new_code_file.get_path())
-        new_code_file.save()
+        path_to_code = Go_src.create_file_tmp(temporary_directory, data['source_code_file_name'], request.files['source_code_file'])
+        challenge.set_code(path_to_code.get_path())
 
-        if not old_challenge_to_update.code_compiles():
-            temporary_directory.delete_files()
+        if not challenge.code_compiles():
+            temporary_directory.remove_dir()
             return make_response(jsonify({"source_code_file" : "source code with sintax errors"}), 409)           
 
     new_test = 'test_suite_file' in request.files
     if new_test: 
-        if not ('test_suite_file_name' in request_data):
+        if not ('test_suite_file_name' in data):
             return make_response(jsonify({"test_suite_file_name" : "not found"}), 409)
         
-        new_test_name = request_data['test_suite_file_name']
-        new_test_path = Go_src.create_path(temporary_directory.get_path(), new_test_name)
-        new_test_file = Go_src(path=new_test_path, file=request.files['test_suite_file'])
-        old_challenge_to_update.set_tests_code(new_test_file.get_path())
-        new_test_file.save()
+        path_to_tests = Go_src.create_file_tmp(temporary_directory, data['test_suite_file_name'], request.files['test_suite_file'])
+        challenge.set_tests_code(path_to_tests.get_path())    
 
-        if not old_challenge_to_update.tests_compiles():
-            temporary_directory.delete_files()
+        if not challenge.tests_compiles():
+            temporary_directory.remove_dir()
             return make_response(jsonify({"test_suite_file" : "tests with sintax errors"}), 409)
 
     if new_code and new_test:
-        if not old_challenge_to_update.tests_fail():
-            temporary_directory.delete_files()
+        if not challenge.tests_fail():
+            temporary_directory.remove_dir()
             return make_response(jsonify({'error' : 'tests must fails'}), 412)  
-
+   
     elif new_code and not new_test:
-        directory_to_tests = 'temp_test.go'
-        path_to_temp_tests = Go_src.create_path(temporary_directory.get_path(), directory_to_tests)
-        temp_test_file = Go_src(path=path_to_temp_tests)
-        temp_test_file.rewrite_file(path_to_old_test_file.get_path())
+        temp_test_file = Go_src(path = temporary_directory.get_path() + 'temp_test.go')
+        temp_test_file.rewrite_file(old_tests.get_path())
+        challenge.set_tests_code(temp_test_file.get_path())
         
-        if not temp_test_file.tests_fail():
+        if not challenge.tests_fail():
             temporary_directory.delete_files()
             return make_response(jsonify({'error' : 'source code must fails tests'}), 412)
-
+   
     elif not new_code and new_test:
-        directory_to_code = 'temp.go'
-        path_to_temp_code_file = Go_src.create_path(temporary_directory.get_path(), directory_to_code)
-        temp_code_file = Go_src(path=path_to_temp_code_file)
-        temp_code_file.rewrite_file(path_to_old_code_file.get_path())
+        temp_code_file = Go_src(path = temporary_directory.get_path() + 'temp.go')
+        temp_code_file.rewrite_file(old_code.get_path())
+        challenge.set_code(temp_code_file.get_path())
         
-        if not new_test_file.tests_fail():
+        if not challenge.tests_fail():
             temporary_directory.delete_files()
             return make_response(jsonify({'error' : 'tests must fails'}), 412)
 
     if new_code:
-        path_to_old_code_file.rewrite_file(new_code_file.get_path())
-        old_challenge_to_update.set_code(path_to_old_code_file.get_path()) 
-        new_code_file.remove_file()
+        old_code.rewrite_file(challenge.get_code())
+        challenge.set_code(old_code.get_path()) 
 
     if new_test:
-        path_to_old_test_file.rewrite_file(new_test_file.get_path())
-        old_challenge_to_update.set_tests_code(path_to_old_test_file.get_path())
-        new_test_file.remove_file()
+        old_tests.rewrite_file(challenge.get_tests_code())
+        challenge.set_tests_code(old_tests.get_path())
     
     if request.files:
         temporary_directory.remove_dir()
 
-    if 'repair_objective' in request_data and request_data['repair_objective'] != old_challenge_to_update.get_repair_objective():
-        old_challenge_to_update.set_repair_objective(request_data['repair_objective'])
+    if 'repair_objective' in data and data['repair_objective'] != challenge.get_repair_objective():
+        challenge.set_repair_objective(data['repair_objective'])
 
-    if 'complexity' in request_data and request_data['complexity'] != old_challenge_to_update.get_complexity():
-       old_challenge_to_update.set_complexity(request_data['complexity'])
+    if 'complexity' in data and data['complexity'] != challenge.get_complexity():
+       challenge.set_complexity(data['complexity'])
     
-    dao.update_challenge(old_challenge_to_update.get_id(), old_challenge_to_update.get_content())
+    dao.update_challenge(challenge.get_id(), challenge.get_content())
 
-    return jsonify({'challenge' : old_challenge_to_update.get_content_get_by_id()})
+    return jsonify({'challenge' : challenge.get_content_get_by_id()})
     
 
 @go.route('/api/v1/go-challenges', methods=['POST'])

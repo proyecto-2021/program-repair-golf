@@ -107,9 +107,3 @@ class GoChallengeC:
 
     def tests_fail(self):
         return self.tests_code.tests_fail()
-
-    def remove_dir(self):
-        self.code.remove_dir()
-
-    def delete_file(self, is_code=True):
-        self.code.delete_files() if is_code else self.tests_code.delete_files()
