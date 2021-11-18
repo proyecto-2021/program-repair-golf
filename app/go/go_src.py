@@ -25,7 +25,7 @@ class Go_src:
         return (subprocess.run([command], cwd = path, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)).returncode == 0
 
     def tests_compiles(self, path, command):
-        return (subprocess.run([command], cwd = path, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)).returncode != 1  
+        return (subprocess.run([command], cwd = path, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)).returncode != 1 and (subprocess.run([command], cwd = path, stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL, shell=True)).returncode != 2 
 
     def tests_fail(self):
         path_tests = os.path.abspath(re.sub('/\w+_\w+.go', '/', self.get_path()))
