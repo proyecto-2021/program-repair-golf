@@ -51,7 +51,8 @@ class CSharpChallengeDAO:
 
     def remove(self, *paths):
         for path in paths:
-            os.remove(path)
+            if os.path.exists(path) and os.path.isfile(path):
+                os.remove(path)
 
     def handle_put_files(self, result, prev_src_path, prev_test_path, src_path=None, test_path=None):
         if src_path is not None:
@@ -82,3 +83,9 @@ class CSharpChallengeDAO:
             if test_path is not None:
                 self.remove(dll_new, exe_prev, prev_test_path)
                 shutil.move(test_path, prev_test_path)
+
+    def create_challenge_dir(self, challenge_name):
+        challenge_dir = self.CHALLENGE_SAVE_PATH + os.path.splitext(challenge_name)[0]
+        os.mkdir(create_challenge_dir)
+        return challenge_dir + '/'
+
