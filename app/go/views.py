@@ -12,7 +12,6 @@ from .go_controller import Controller
 dao = goChallengeDAO()
 controller = Controller()
 
-
 @go.route('api/v1/go-challenges/<int:id>/repair', methods=['POST'])
 def repair_challenge_go(id):
     return controller.post_repair(id)

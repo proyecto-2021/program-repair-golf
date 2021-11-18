@@ -74,12 +74,13 @@ class Controller:
 
     def get_all_challenges(self):
         all_challenges = []
-        for challenge in [challenge.get_dict() for challenge in self.dao.get_challenges()]:
+        for challenge in self.dao.get_challenges():
             challenge_content = RubyChallenge(**challenge).get_content(exclude=['tests_code'])
             all_challenges.append(challenge_content)
         return jsonify({'challenges': all_challenges})
 
-    def post_repair(self, id, repair_code):
+    def post_repair(self, id, user, repair_code):
+
         if not repair_code:
             return make_response(jsonify({'challenge': 'a repair candidate is necessary'}), 400)
 
@@ -95,6 +96,8 @@ class Controller:
         rep_candidate = RepairCandidate(challenge, repair_code, self.ruby_tmp)
         rep_candidate.save_candidate()
 
+        self.dao.add_attempt(id, user.id)
+
         if not rep_candidate.compiles():
             rmtree(self.ruby_tmp)
             return make_response(jsonify({'challenge': 'the repair candidate has syntax errors'}),400)
@@ -103,13 +106,13 @@ class Controller:
             rmtree(self.ruby_tmp)
             return make_response(jsonify({'challenge': 'the repair candidate does not solve the problem'}),200)
 
-        new_score = rep_candidate.compute_score()
-        if new_score < challenge.get_best_score() or challenge.get_best_score() == 0:
-            challenge.set_best_score(new_score)
-            self.dao.update_challenge(id,{'best_score':new_score})
+        score = rep_candidate.compute_score()
+        if score < challenge.get_best_score() or challenge.get_best_score() == 0:
+            challenge.set_best_score(score)
+            self.dao.update_challenge(id,{'best_score': score})
         
         rmtree(self.ruby_tmp)
-        return jsonify(rep_candidate.get_content(new_score))
+        return jsonify(rep_candidate.get_content(user.username, self.dao.get_attempts_count(id, user.id), score))
 
     def modify_challenge(self, id, code_file, tests_code_file, json_challenge):
         if not self.dao.exists(id):

@@ -1,4 +1,5 @@
 from app import create_app, db
+from app.auth.usermodel import User
 import pytest
 import os, glob
 
@@ -16,3 +17,12 @@ def client():
 
     for filename in glob.glob('/tmp/example*'):
         os.remove(filename)
+
+
+@pytest.fixture(scope='module')
+def auth(client):
+    user = {'username': 'ruby', 'password': 'ruby'}
+    r = client.post('/users', json=user)
+    r = client.post('/auth', json=user)
+    token = r.json['access_token']
+    return token
