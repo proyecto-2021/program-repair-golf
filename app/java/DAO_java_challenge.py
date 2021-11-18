@@ -1,6 +1,7 @@
-from app.java.models_java import Challenge_java
-from . import java
+from app.java.models_java import Challenge_java, java_attempts
+#from . import java
 from app import db
+from app.auth.userdao import get_user_by_id
 
 class DAO_java_challenge():
 
@@ -35,4 +36,22 @@ class DAO_java_challenge():
 
     def update(challenge):
         db.session.add(challenge)
+        db.session.commit()
+
+    def get_attempts(challenge_id, user_id):
+        return db.session.query(java_attempts).filter_by(challenge_id=challenge_id, user_id=user_id).first()
+
+    def get_cant_attempts(challenge_id, user_id):
+        return db.session.query(java_attempts).filter_by(challenge_id=challenge_id, user_id=user_id).first().attempts
+
+    def create_attempts_by_user(challenge_id, user_id):
+        challenge = DAO_java_challenge.get_attempts(challenge_id, user_id)
+        if challenge is None:
+            user = get_user_by_id(user_id)
+            curr_challenge = db.session.query(Challenge_java).filter_by(id=challenge_id).first()
+            curr_challenge.attempts_by_users.append(user) 
+            db.session.add(curr_challenge)
+            db.session.commit()
+        attempts = DAO_java_challenge.get_cant_attempts(challenge_id, user_id)
+        db.session.query(java_attempts).filter_by(challenge_id=challenge_id, user_id=user_id).update({'attempts': attempts+1})
         db.session.commit()
