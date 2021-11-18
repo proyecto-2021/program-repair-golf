@@ -38,7 +38,3 @@ class CSharpSrc:
     def save(self):
         if not os.path.exists(self.path):
             self.code_file.save(self.path)
-
-    def rm(self):
-        if os.path.exists(self.path):
-            os.remove(self.path)
