@@ -63,11 +63,11 @@ class Controller():
             if every_challenge.code == new_challenge.get_code():
                 return make_response(jsonify({"challenge": "repeated"}), 409)
 
-        if new_challenge.code_compiles() == False:
+        if not new_challenge.code_compiles():
             return make_response(jsonify({"code_file": "The code has syntax errors"}), 412)
-        elif new_challenge.tests_compiles() == False:
+        elif not new_challenge.tests_compiles():
             return make_response(jsonify({"test_code_file": "The test code has syntax errors"}), 412)
-        elif new_challenge.tests_fail() == False:
+        elif not new_challenge.tests_fail():
             return make_response(jsonify({"ERROR: tests": "There must be at least one test that fails"}), 412)
 
         challenge_dao = dao.create_challenge(new_challenge.get_code(), new_challenge.get_tests_code(), new_challenge.get_repair_objective(), new_challenge.get_complexity())
