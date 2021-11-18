@@ -1,6 +1,6 @@
 import subprocess, os, re, shutil
 
-class Go_src:
+class SourceCode:
 
     def __init__(self, path=None):
         self.path = path
@@ -61,6 +61,6 @@ class Go_src:
                         f.write(line)
 
     def create_file_tmp(path, name, file):
-        path_to_file = Go_src(path = path.get_path() + name)
+        path_to_file = SourceCode(path = path.get_path() + name)
         file.save(path_to_file.get_path())
         return path_to_file

@@ -1,11 +1,11 @@
-from .go_src import Go_src
+from .go_source_code import SourceCode
 
-class GoChallengeC:
+class Challenge:
 
     def __init__(self, id=None, path_code=None, path_tests_code=None, repair_objective=None, complexity=None):
         self.id = id
-        self.code = Go_src(path = path_code)
-        self.tests_code = Go_src(path = path_tests_code)
+        self.code = SourceCode(path = path_code)
+        self.tests_code = SourceCode(path = path_tests_code)
         self.repair_objective = repair_objective
         self.complexity = complexity
         self.best_score = 0

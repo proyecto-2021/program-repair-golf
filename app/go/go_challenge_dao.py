@@ -2,7 +2,7 @@ import math
 from app import db
 from . import go
 from .models_go import GoChallenge
-class goChallengeDAO():
+class ChallengeDAO():
 	def __init__(self):
 		pass 
 

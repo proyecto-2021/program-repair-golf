@@ -1,11 +1,11 @@
 from flask import jsonify, request, make_response, json
-from .go_challenge_dao import goChallengeDAO
-from .go_src import Go_src
-from .go_challenge import GoChallengeC
-from .go_repair_candidate import GoRepairCandidate
-from .go_directory_management import GoDirectoryManagement
+from .go_challenge_dao import ChallengeDAO
+from .go_source_code import SourceCode
+from .go_challenge import Challenge
+from .go_repair_candidate import RepairCandidate
+from .go_directory_management import DirectoryManagement
 
-dao = goChallengeDAO()
+dao = ChallengeDAO()
 class Controller():
 	
     def __init__(self):
@@ -20,7 +20,7 @@ class Controller():
         show = []
 
         for c in challenges:
-            challenge = GoChallengeC(path_code=c.code,path_tests_code=c.tests_code,
+            challenge = Challenge(path_code=c.code,path_tests_code=c.tests_code,
                 repair_objective=c.repair_objective,complexity=c.complexity)
 
             show.append(challenge.get_content(tests_code=False))
@@ -34,7 +34,7 @@ class Controller():
 
         c = dao.get_challenge_by_id(id)
 
-        challenge = GoChallengeC(path_code=c.code,path_tests_code=c.tests_code,
+        challenge = Challenge(path_code=c.code,path_tests_code=c.tests_code,
             repair_objective=c.repair_objective,complexity=c.complexity)
 
         show = challenge.get_content(id=False)
@@ -56,7 +56,7 @@ class Controller():
         repair_obj = challenge_data['repair_objective']
         comp = challenge_data['complexity']
 
-        new_challenge = GoChallengeC(path_code=code_path, path_tests_code=test_suite_path, repair_objective=repair_obj, complexity=comp)
+        new_challenge = Challenge(path_code=code_path, path_tests_code=test_suite_path, repair_objective=repair_obj, complexity=comp)
 
         all_the_challenges = dao.get_all_challenges()
         for every_challenge in all_the_challenges:
@@ -81,20 +81,20 @@ class Controller():
             return make_response(jsonify({'challenge' : 'challenge does not exist'}), 404)
 
         c = dao.get_challenge_by_id(id)
-        challenge = GoChallengeC(path_code=c.code,path_tests_code=c.tests_code,
+        challenge = Challenge(path_code=c.code,path_tests_code=c.tests_code,
             repair_objective=c.repair_objective,complexity=c.complexity)
 
         repair_code = request.files['source_code_file']
-        dir = GoDirectoryManagement(path='public/challenges/solution/')
-        code = Go_src(path='public/challenges/solution/code.go')
-        tests = Go_src(path='public/challenges/solution/code_test.go')
+        dir = DirectoryManagement(path='public/challenges/solution/')
+        code = SourceCode(path='public/challenges/solution/code.go')
+        tests = SourceCode(path='public/challenges/solution/code_test.go')
 
         dir.create_dir()
         code.create_file()
         repair_code.save(code.get_path())
         tests.move(challenge.get_tests_code())
 
-        repair_candidate = GoRepairCandidate(challenge=challenge, dir_path=dir.get_path(), file_path=code.get_path())
+        repair_candidate = RepairCandidate(challenge=challenge, dir_path=dir.get_path(), file_path=code.get_path())
 
         if not repair_candidate.compiles():
             dir.remove_dir()
@@ -124,11 +124,11 @@ class Controller():
 
         data = json.loads(request.form.get('challenge'))['challenge']
         challenge_dao = dao.get_challenge_by_id(id)
-        challenge = GoChallengeC(challenge_dao.id, challenge_dao.code, challenge_dao.tests_code, challenge_dao.repair_objective, challenge_dao.complexity)
-        old_code  = Go_src(path = challenge.get_code())
-        old_tests = Go_src(path = challenge.get_tests_code())
+        challenge = Challenge(challenge_dao.id, challenge_dao.code, challenge_dao.tests_code, challenge_dao.repair_objective, challenge_dao.complexity)
+        old_code  = SourceCode(path = challenge.get_code())
+        old_tests = SourceCode(path = challenge.get_tests_code())
 
-        temporary_directory = GoDirectoryManagement(path='example-challenges/go-challenges/tmp/')
+        temporary_directory = DirectoryManagement(path='example-challenges/go-challenges/tmp/')
         if request.files and not(temporary_directory.is_dir()):
             temporary_directory.create_dir()
 
@@ -137,7 +137,7 @@ class Controller():
             if not ('source_code_file_name' in data):
                 return make_response(jsonify({"source_code_file_name" : "not found"}), 409)
 
-            path_to_code = Go_src.create_file_tmp(temporary_directory, data['source_code_file_name'], request.files['source_code_file'])
+            path_to_code = SourceCode.create_file_tmp(temporary_directory, data['source_code_file_name'], request.files['source_code_file'])
             challenge.set_code(path_to_code.get_path())
 
             if not challenge.code_compiles():
@@ -149,7 +149,7 @@ class Controller():
             if not ('test_suite_file_name' in data):
                 return make_response(jsonify({"test_suite_file_name" : "not found"}), 409)
             
-            path_to_tests = Go_src.create_file_tmp(temporary_directory, data['test_suite_file_name'], request.files['test_suite_file'])
+            path_to_tests = SourceCode.create_file_tmp(temporary_directory, data['test_suite_file_name'], request.files['test_suite_file'])
             challenge.set_tests_code(path_to_tests.get_path())    
 
             if not challenge.tests_compiles():
@@ -162,7 +162,7 @@ class Controller():
                 return make_response(jsonify({'error' : 'tests must fails'}), 412)  
     
         elif new_code and not new_test:
-            temp_test_file = Go_src(path = temporary_directory.get_path() + 'temp_test.go')
+            temp_test_file = SourceCode(path = temporary_directory.get_path() + 'temp_test.go')
             temp_test_file.rewrite_file(old_tests.get_path())
             challenge.set_tests_code(temp_test_file.get_path())
             
@@ -173,7 +173,7 @@ class Controller():
             challenge.set_tests_code(old_tests.get_path())
     
         elif not new_code and new_test:
-            temp_code_file = Go_src(path = temporary_directory.get_path() + 'temp.go')
+            temp_code_file = SourceCode(path = temporary_directory.get_path() + 'temp.go')
             temp_code_file.rewrite_file(old_code.get_path())
             challenge.set_code(temp_code_file.get_path())
             
