@@ -89,3 +89,6 @@ class CSharpChallengeDAO:
         os.mkdir(create_challenge_dir)
         return challenge_dir + '/'
 
+    def remove_challenge_dir(self, challenge_name):
+        challenge_dir = self.CHALLENGE_SAVE_PATH + os.path.splitext(challenge_name)[0]
+        shutil.rmtree(challenge_dir)
