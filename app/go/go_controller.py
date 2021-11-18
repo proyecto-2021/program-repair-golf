@@ -117,7 +117,7 @@ class Controller():
         return jsonify({"repair" : show})
 
 
-    def update_a_go_challenge(id):
+    def update_a_go_challenge(self, id):
 
         if not dao.exists(id):
             return make_response(jsonify({'challenge' : 'not found'}), 404)
