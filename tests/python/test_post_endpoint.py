@@ -37,7 +37,7 @@ def test_post_challenge_binarycode_empty(client):
     dataChallengePost = request_creator(code_name="valid_code_1.py", test_name="valid_atest_1.py", 
     test_path=examples_path + "valid_atest_1.py", repair_objective="Make all tests pass.", complexity="2")
     
-    response = client.post(api_url, data=dataChallengePost)
+    response = client.post(api_url, data=dataChallengePost, headers={'Authorization': f'JWT {get_jwt_token(client)}'})
     
     assert response.status_code == 409
     assert response.json['Error'] == 'Source code, test code or general data were not provided'
@@ -46,7 +46,7 @@ def test_post_challenge_binarycodetest_empty(client):
     dataChallengePost = request_creator(code_name="valid_code_1.py", test_name="valid_atest_1.py", 
     code_path=examples_path + "valid_code_1.py", repair_objective="Make all tests pass.", complexity="2")
     
-    response = client.post(api_url, data=dataChallengePost)
+    response = client.post(api_url, data=dataChallengePost, headers={'Authorization': f'JWT {get_jwt_token(client)}'})
     
     assert response.status_code == 409
     assert response.json['Error'] == 'Source code, test code or general data were not provided'

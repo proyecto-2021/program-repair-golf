@@ -9,14 +9,14 @@ def test_update_simple_fields(client):
     challenge_id = post_info.json['challenge']['id']
     #send an update request
     update_request = request_creator(repair_objective="updated", complexity="3")
-    response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+    response = client.put(api_url + '/' + str(challenge_id), data=update_request, headers={'Authorization': f'JWT {get_jwt_token(client)}'})
 
     update_expected_response = create_expected_response(0, "valid_code_1.py", "3", 'updated', "valid_atest_8.py")
 
     assert response.status_code == 200
     assert response.json == update_expected_response
     #check te same with get
-    response = client.get(api_url + '/' + str(challenge_id))
+    response = client.get(api_url + '/' + str(challenge_id), headers={'Authorization': f'JWT {get_jwt_token(client)}'})
     assert response.json == update_expected_response
 
 def test_update_valid_code(client):
@@ -25,7 +25,7 @@ def test_update_valid_code(client):
     challenge_id = post_info.json['challenge']['id']
     #send an update request
     update_request = request_creator(code_path=examples_path + "valid_code_4.py")
-    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request, headers={'Authorization': f'JWT {get_jwt_token(client)}'})
 
     assert update_response.status_code == 200
     #the file has been saved correctly
@@ -37,7 +37,7 @@ def test_update_not_compiling_code(client):
     challenge_id = post_info.json['challenge']['id']
     #send an update request
     update_request = request_creator(code_path=examples_path + "code_not_compile.py")
-    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request, headers={'Authorization': f'JWT {get_jwt_token(client)}'})
 
     assert update_response.status_code == 409
     #the filename hasn't changed, its the same we used for post
@@ -50,7 +50,7 @@ def test_update_repaired_code(client):
     challenge_id = post_info.json['challenge']['id']
     #send an update request with repaired code
     update_request = request_creator(code_path=examples_path + "code_repair_2.py")
-    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request, headers={'Authorization': f'JWT {get_jwt_token(client)}'})
 
     assert update_response.status_code == 409
     #the filename hasn't changed, its the same we used for post
@@ -61,7 +61,7 @@ def test_update_test_invalid_import(client):
     challenge_id = post_info.json['challenge']['id']
 
     update_request = request_creator(test_path=examples_path + "import_error_atest.py")
-    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request, headers={'Authorization': f'JWT {get_jwt_token(client)}'})
 
     assert update_response.status_code == 409
     
@@ -74,14 +74,14 @@ def test_update_code_name_fails(client):
     
     #updating to a name that already exists
     update_request = request_creator(code_name="valid_code_20.py")
-    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request, headers={'Authorization': f'JWT {get_jwt_token(client)}'})
 
     assert update_response.status_code == 409   #should get error for name conflict
     assert update_response.json['Error'] == "Another code with that name already exists"
 
     #updating to a name that doesn't exists
     update_request = request_creator(code_name="another_unique_name.py")
-    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request, headers={'Authorization': f'JWT {get_jwt_token(client)}'})
 
     assert update_response.status_code == 409   #test will not find that file to import
     assert update_response.json['Error'] == "Import error, tests can't run"
@@ -93,7 +93,7 @@ def test_update_all(client):
     update_request = request_creator(code_path=examples_path + "code_change_my_name_4.py", 
     test_path=examples_path + "atest_change_my_name_4.py", code_name="unique_code_1.py", test_name="unique_atest_1.py")
 
-    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request, headers={'Authorization': f'JWT {get_jwt_token(client)}'})
 
     assert update_response.status_code == 200
 
@@ -107,7 +107,7 @@ def test_update_all_code_name_conflict(client):
     update_request = request_creator(code_path=examples_path + "code_change_my_name_4.py", 
     test_path=examples_path + "atest_change_my_name_4.py", code_name="test_will_not_find_me.py", test_name="unique_atest_2.py")
 
-    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request)
+    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request, headers={'Authorization': f'JWT {get_jwt_token(client)}'})
 
     assert update_response.status_code == 409
     assert  update_response.json['Error'] == "Import error, tests can't run"
