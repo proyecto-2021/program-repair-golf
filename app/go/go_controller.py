@@ -68,15 +68,15 @@ class Controller():
         if not new_challenge.code_compiles():
         	new_challenge.code.remove_file()
         	new_challenge.tests_code.remove_file()
-			return make_response(jsonify({"code_file": "The code has syntax errors"}), 412)
+        	return make_response(jsonify({"code_file": "The code has syntax errors"}), 412)
         elif not new_challenge.tests_compiles():
         	new_challenge.code.remove_file()
         	new_challenge.tests_code.remove_file()
-            return make_response(jsonify({"test_code_file": "The test code has syntax errors"}), 412)
+        	return make_response(jsonify({"test_code_file": "The test code has syntax errors"}), 412)
         elif not new_challenge.tests_fail():
         	new_challenge.code.remove_file()
         	new_challenge.tests_code.remove_file()
-            return make_response(jsonify({"ERROR: tests": "There must be at least one test that fails"}), 412)
+        	return make_response(jsonify({"ERROR: tests": "There must be at least one test that fails"}), 412)
 
         dao.create_challenge(new_challenge.get_code(), new_challenge.get_tests_code(), new_challenge.get_repair_objective(), new_challenge.get_complexity())
 
