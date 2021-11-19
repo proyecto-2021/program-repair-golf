@@ -59,10 +59,10 @@ def test_update_code_without_codename(client):
 
     # act
     ret_update = client.put(f"go/api/v1/go-challenges/1", data=challengeupdate)
-    ret_update_json=ret_update.json["file name"]
+    ret_update_json=ret_update.json["source_code_file_name"]
     
     # assert
-    assert ret_update_json=="conflict"
+    assert ret_update_json=="not found"
     assert ret_update.status_code== 409
 
     # cleanup
@@ -80,10 +80,10 @@ def test_update_test_without_testname(client):
 
     # act
     ret_update = client.put(f"go/api/v1/go-challenges/1", data=challengeupdate)
-    ret_update_json=ret_update.json["file name"]
+    ret_update_json=ret_update.json["test_suite_file_name"]
     
     # assert
-    assert ret_update_json=="conflict"
+    assert ret_update_json=="not found"
     assert ret_update.status_code== 409
 
     # cleanup
@@ -246,10 +246,10 @@ def test_update_test_code_with_syntax_error(client):
     ret_post_json = ret_post.json["challenge"]
     postid=ret_post_json["id"]
     ret_update = client.put(f"go/api/v1/go-challenges/{postid}", data=challengeupdate)
-    ret_update_json=ret_update.json["test_code_file"]
+    ret_update_json=ret_update.json["test_suite_file"]
     
     # assert
-    assert ret_update_json=="test with sintax errors"
+    assert ret_update_json=="tests with sintax errors"
     assert ret_update.status_code== 409
 
     # cleanup
@@ -289,7 +289,7 @@ def test_update_with_a_passing_test(client):
     ret_update_json=ret_update.json["error"]
     
     # assert
-    assert ret_update_json=="test must fails"
+    assert ret_update_json=="tests must fails"
     assert ret_update.status_code== 412
 
     # cleanup
@@ -327,7 +327,7 @@ def test_update_code_with_a_passing_test(client):
     ret_update_json=ret_update.json["error"]
     
     # assert
-    assert ret_update_json=="test must fails"
+    assert ret_update_json=="source code must fails tests"
     assert ret_update.status_code== 412
 
     # cleanup
@@ -365,7 +365,7 @@ def test_update_test_with_a_passing_test(client):
     ret_update_json=ret_update.json["error"]
     
     # assert
-    assert ret_update_json=="test must fails"
+    assert ret_update_json=="source code must fails tests"
     assert ret_update.status_code== 412
 
     # cleanup

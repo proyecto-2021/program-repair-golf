@@ -207,6 +207,8 @@ class Controller():
 
         if 'complexity' in data and data['complexity'] != challenge.get_complexity():
             challenge.set_complexity(data['complexity'])
+
+        challenge.set_best_score(0)
         
         dao.update_challenge(challenge.get_id(), challenge.get_content(id=False, tests_code=False))
 
