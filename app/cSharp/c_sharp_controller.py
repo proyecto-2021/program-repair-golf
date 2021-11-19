@@ -80,3 +80,7 @@ class CSharpController:
 
         else:
             return make_response(jsonify({'challenge': 'Data not found'}), 404)
+
+    def update_challenge(self, id, code, code_test, complexity, repair_objective):
+        # To implement method
+        pass
