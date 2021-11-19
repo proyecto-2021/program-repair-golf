@@ -4,12 +4,8 @@ from app import db
 from . import go
 from .models_go import GoChallenge
 import os, subprocess, math, nltk, shutil
-#from .go_challenge_dao import goChallengeDAO
-#from .go_src import Go_src
 from .go_controller import Controller
 
-
-#dao = ChallengeDAO()
 controller = Controller()
 
 @go.route('api/v1/go-challenges/<int:id>/repair', methods=['POST'])
@@ -31,3 +27,4 @@ def update_a_go_challenge(id):
 @go.route('/api/v1/go-challenges', methods=['POST'])
 def create_go_challenge():
     return controller.post_challenge()
+    

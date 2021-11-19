@@ -8,8 +8,8 @@ from app import db
 import math
 
 dao = ChallengeDAO()
+
 class Controller():
-	
     def __init__(self):
 	    pass
 

@@ -1,7 +1,6 @@
 import subprocess, os, re, shutil
 
 class SourceCode:
-
     def __init__(self, path=None):
         self.path = path
 
