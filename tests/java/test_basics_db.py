@@ -21,7 +21,7 @@ def test_put_1(client):
     code = "code"
     test = "test"
     repair = "repair"
-    complexity = "complexity"
+    complexity = "1"
 
     dict = create_dict(code, test, repair, complexity)
 
@@ -51,12 +51,12 @@ def test_put_1(client):
     db.session.commit()
 
     assert resp['repair_objective'] == repair
-    assert resp['complexity'] == complexity
+    assert int(resp['complexity']) == 1
     assert resp['code'] == code 
     assert resp['tests_code'] == test
 
     assert resp1['repair_objective'] == repair_upd
-    assert resp1['complexity'] == complexity_upd
+    assert int(resp1['complexity']) == 3
     assert resp1['code'] == code_upd
     assert resp1['tests_code'] == test_code_upd
 
@@ -65,7 +65,7 @@ def test_get_not_exist_id(client):
     code1 = "code1"
     test1 = "test1"
     repair = "repair"
-    complexity = "complexity"
+    complexity = "1"
     dict = create_dict(code1, test1, repair, complexity)
 
     DAO_java_challenge.create_challenge(dict)
@@ -82,7 +82,7 @@ def test_post(client):
     code1 = "code1"
     test1 = "test1"
     repair = "repair"
-    complexity = "complexity"
+    complexity = "2"
     dict = create_dict(code1, test1, repair, complexity)
 
     DAO_java_challenge.create_challenge(dict)
@@ -94,32 +94,32 @@ def test_post(client):
     assert resp['code'] == code1
     assert resp['tests_code'] == test1
     assert resp['repair_objective'] == repair
-    assert resp['complexity'] == complexity
+    assert int(resp['complexity']) == 2
     assert resp['best_score'] == 500
 
 def test_post_many_loads(client):
     code1 = "code1"
     test1 = "test1"
     repair = "repair"
-    complexity = "complexity"
+    complexity = "1"
     dict = create_dict(code1, test1, repair, complexity)
 
     code2 = "code2"
     test2 = "test2"
     repair2 = "repair2"
-    complexity2 = "complexity2"
+    complexity2 = "2"
     dict2 = create_dict(code2, test2, repair2, complexity2)
 
     code3 = "code3"
     test3 = "test3"
     repair3 = "repair3"
-    complexity3 = "complexity3"
+    complexity3 = "3"
     dict3 = create_dict(code3, test3, repair3, complexity3)
 
     code4 = "code4"
     test4 = "test4"
     repair4 = "repair4"
-    complexity4 = "complexity4"
+    complexity4 = "4"
     dict4 = create_dict(code4, test4, repair4, complexity4)
 
     DAO_java_challenge.create_challenge(dict)
@@ -147,13 +147,13 @@ def test_post_same_name(client):
     code1 = "code1"
     test1 = "test1"
     repair = "repair"
-    complexity = "complexity"
+    complexity = "1"
     dict = create_dict(code1, test1, repair, complexity)
 
     code2 = "code1"
     test2 = "test1"
     repair2 = "repair"
-    complexity2 = "complexity"
+    complexity2 = "1"
     dict2 = create_dict(code2, test2, repair2, complexity2)
 
     DAO_java_challenge.create_challenge(dict)
