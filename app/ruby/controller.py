@@ -143,7 +143,7 @@ class Controller:
             rmtree(self.ruby_tmp)
             return make_response(jsonify({'challenge': 'the repair candidate has syntax errors'}),400)
 
-        if not rep_candidate.test_ok():
+        if not rep_candidate.tests_ok():
             rmtree(self.ruby_tmp)
             return make_response(jsonify({'challenge': 'the repair candidate does not solve the problem'}),200)
 
