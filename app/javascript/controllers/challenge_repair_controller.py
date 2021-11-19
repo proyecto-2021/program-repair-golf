@@ -1,42 +1,50 @@
 import nltk
 from flask import make_response,jsonify,request
-from .files_controller import open_file, exist_file, to_temp_file, replace_file,upload_file
+from .files_controller import open_file, exist_file, to_temp_file, replace_file,upload_file, remove_files
 from ..modules.source_code_module import compile_js, test_run
 from ..exceptions.ChallengeRepairException import ChallengeRepairException
+from ..exceptions.CommandRunException import CommandRunException
 from ..dao.challenge_dao import ChallengeDAO
 from ..dao.attempt_dao import AttemptsDAO
 from ...auth.userdao import get_user_by_id
 
 class ChallengeRepairController():
 
-    def repair(id,code_files_new,current_identity):
+    def repair(id,code_files_new,user_id):
         challenge = ChallengeDAO.get_challenge(id)
+        AttemptsDAO.create_attempt(challenge.id,user_id)
         if not exist_file(challenge.code):
             raise ChallengeRepairException(f'The file does not exists{challenge.code}', ChallengeRepairException.HTTP_NOT_FOUND)
     
         file_path_new = to_temp_file(challenge.code)  
-        upload_file(code_files_new, file_path_new)
-        compile_js(file_path_new)
-        test_run(challenge.tests_code)
+        replace_file(challenge.code,file_path_new)
+        upload_file(code_files_new, challenge.code)
 
+        try: 
+            compile_js(challenge.code)
+            test_run(challenge.tests_code)
+            
+        except CommandRunException as e: 
+            remove_files(challenge.code)
+            replace_file(file_path_new, challenge.code)
+            raise CommandRunException(e.msg, e.HTTP_code)
+       
         score = ChallengeRepairController.calculate_score(challenge.code,file_path_new)
         if not ChallengeRepairController.score_ok(score,challenge.best_score):
             raise ChallengeRepairException(f'The proposed score{score} is not less than the current score{challenge.best_score}', ChallengeRepairException.HTTP_NOT_FOUND)
 
-        replace_file(file_path_new, challenge.code)
+        remove_files(file_path_new)
         ChallengeDAO.update_challenge(challenge.id,None,None,None,None,score)
-
-        AttemptsDAO.create_attempt(challenge.id,current_identity)
 
         challenge_dict = challenge.to_dict()
 
         for k in ['id','code','complexity','tests_code']:
-             del challenge_dict[k]
+            del challenge_dict[k]
 
         return {'repair' :{
                             'challenge': challenge_dict,
-                            'player': {'username': get_user_by_id(current_identity).name},
-                            'attemps': AttemptsDAO.get_attempts_count(challenge.id,current_identity), 
+                            'player': {'username': get_user_by_id(user_id).username},
+                            'attemps': AttemptsDAO.get_attempts_count(challenge.id,user_id), 
                             'score': score
                         }}
 
