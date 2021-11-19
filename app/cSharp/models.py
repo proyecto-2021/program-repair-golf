@@ -1,5 +1,12 @@
 from app import db
 
+c_sharp_attempts = db.Table('c_sharp_attempts',
+    db.Column('challenge_id', db.Integer, db.ForeignKey('c_sharp_challenge_model.id'), primary_key=True),
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('attempts', db.Integer, default=0)
+)
+
+
 class CSharpChallengeModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(256), unique=True, nullable=False)
@@ -17,4 +24,3 @@ class CSharpChallengeModel(db.Model):
             "complexity": self.complexity,
             "best_score": self.best_score
         }
-    
