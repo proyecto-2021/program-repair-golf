@@ -47,8 +47,13 @@ class Controller():
         
         code_file = request.files["source_code_file"]
         code_path = 'public/challenges/' + challenge_data['source_code_file_name']
+        
+        all_the_challenges = dao.get_all_challenges()
+        for every_challenge in all_the_challenges:
+            if every_challenge.code == code_path:
+            	return make_response(jsonify({"challenge": "repeated"}), 409)
+        
         code_file.save(code_path)
-
         test_suite_file = request.files["test_suite_file"]
         test_suite_path = 'public/challenges/' + challenge_data['test_suite_file_name']
         test_suite_file.save(test_suite_path)
@@ -57,14 +62,6 @@ class Controller():
         comp = challenge_data['complexity']
 
         new_challenge = Challenge(path_code=code_path, path_tests_code=test_suite_path, repair_objective=repair_obj, complexity=comp)
-
-        all_the_challenges = dao.get_all_challenges()
-        for every_challenge in all_the_challenges:
-            if every_challenge.code == new_challenge.get_code():
-            	new_challenge.code.remove_file()
-            	new_challenge.tests_code.remove_file()
-            	return make_response(jsonify({"challenge": "repeated"}), 409)
-
         if not new_challenge.code_compiles():
         	new_challenge.code.remove_file()
         	new_challenge.tests_code.remove_file()
