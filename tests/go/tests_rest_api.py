@@ -32,6 +32,7 @@ def test_get_all_empty(client):
     assert (ret_get_json=="not found")
     assert ret_get.status_code == 404
 
+
 def test_get_all_working(client):
     # arrange
     for i in range(0,3):
@@ -206,10 +207,9 @@ def test_update_code_with_syntax_error(client):
     ret_post_json = ret_post.json["challenge"]
     postid=ret_post_json["id"]
     ret_update = client.put(f"go/api/v1/go-challenges/{postid}", data=challengeupdate)
-    ret_update_json=ret_update.json["code_file"]
+    ret_update_json = ret_update.json["source_code_file"]
     
-    # assert
-    assert ret_update_json=="code with sintax errors"
+    assert ret_update_json=="source code with sintax errors"
     assert ret_update.status_code== 409
 
     # cleanup
@@ -748,3 +748,5 @@ def test_repair_for_check_id_not_associated(client):
 
     #cleanup
     clean()
+
+    
