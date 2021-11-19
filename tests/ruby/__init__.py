@@ -1,5 +1,6 @@
 from app import create_app, db
 from app.auth.usermodel import User
+from .data_generator import get_data
 import pytest
 import os, glob
 
@@ -17,6 +18,8 @@ def client():
 
     for filename in glob.glob('/tmp/example*'):
         os.remove(filename)
+    for filename in glob.glob('/tmp/new_example*'):
+        os.remove(filename)
 
 
 @pytest.fixture(scope='module')
@@ -26,3 +29,9 @@ def auth(client):
     r = client.post('/auth', json=user)
     token = r.json['access_token']
     return token
+
+@pytest.fixture(scope='module')
+def generic_post(client, auth):
+    data = get_data('example', 'example_test', 'Testing', '1', 'example', 'example_test')
+    r = client.post('ruby/challenge', data=data, headers={'Authorization': f'JWT {auth}'})
+    return r.json
