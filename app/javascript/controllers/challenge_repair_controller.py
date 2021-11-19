@@ -4,10 +4,12 @@ from .files_controller import open_file, exist_file, to_temp_file, replace_file,
 from ..modules.source_code_module import compile_js, test_run
 from ..exceptions.ChallengeRepairException import ChallengeRepairException
 from ..dao.challenge_dao import ChallengeDAO
+from ..dao.attempt_dao import AttemptsDAO
+from ...auth.userdao import get_user_by_id
 
 class ChallengeRepairController():
 
-    def repair(id,code_files_new):
+    def repair(id,code_files_new,current_identity):
         challenge = ChallengeDAO.get_challenge(id)
         if not exist_file(challenge.code):
             raise ChallengeRepairException(f'The file does not exists{challenge.code}', ChallengeRepairException.HTTP_NOT_FOUND)
@@ -24,6 +26,8 @@ class ChallengeRepairController():
         replace_file(file_path_new, challenge.code)
         ChallengeDAO.update_challenge(challenge.id,None,None,None,None,score)
 
+        AttemptsDAO.create_attempt(challenge.id,current_identity)
+
         challenge_dict = challenge.to_dict()
 
         for k in ['id','code','complexity','tests_code']:
@@ -31,8 +35,8 @@ class ChallengeRepairController():
 
         return {'repair' :{
                             'challenge': challenge_dict,
-                            'player': {'username': 'user'},
-                            'attemps': '1',
+                            'player': {'username': get_user_by_id(current_identity).name},
+                            'attemps': AttemptsDAO.get_attempts_count(challenge.id,current_identity), 
                             'score': score
                         }}
 
