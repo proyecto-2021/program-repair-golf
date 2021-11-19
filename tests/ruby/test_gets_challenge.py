@@ -1,23 +1,19 @@
-from . import client, auth
+from . import client, auth, generic_post
 from .data_generator import get_data
 
-def test_get_after_post(client, auth):
+def test_get_after_post(client, auth, generic_post):
     #arrange
-    url1 = '/ruby/challenge'
-    data = get_data('example2', 'example_test2', 'Testing', '5', 'example_challenge', 'example_test2')
-    r1 = client.post(url1, data=data, headers={'Authorization': f'JWT {auth}'})
-    id = r1.json['challenge']['id']
-    post_result = r1.json['challenge']
-    post_result.pop('id')
-    url2 = f'/ruby/challenge/{id}'
+    orig_json = generic_post['challenge'].copy()
+    id = orig_json['id']
+    orig_json.pop('id')
+    url = f'/ruby/challenge/{id}'
 
     #act
-    r2 = client.get(url2, headers={'Authorization': f'JWT {auth}'})
+    r = client.get(url, headers={'Authorization': f'JWT {auth}'})
 
     #assert
-    assert r1.status_code == 200
-    assert r2.status_code == 200
-    assert r2.json['challenge'] == post_result
+    assert r.status_code == 200
+    assert r.json['challenge'] == orig_json
 
 def test_get_invalid_challenge(client, auth):
     #arrange
@@ -36,7 +32,7 @@ def test_get_all_after_post(client, auth):
     r1 = client.get(url1, headers={'Authorization': f'JWT {auth}'})
     list1 = r1.json['challenges']
     url2 = '/ruby/challenge'
-    data = get_data('example21', 'example_test21', 'Testing', '4', 'example_challenge', 'example_test21')
+    data = get_data('example3', 'example_test3', 'Testing', '4', 'example', 'example_test3')
     r2 = client.post(url2, data=data, headers={'Authorization': f'JWT {auth}'})
     post_result = r2.json['challenge']
     post_result.pop('tests_code')
