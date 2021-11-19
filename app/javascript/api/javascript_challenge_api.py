@@ -53,9 +53,7 @@ class JavascriptChallengeAPI(MethodView):
                 return make_response(jsonify({'Challenge': challenge}), 200) 
             else: 
                 code_files_new = request.files['source_code_file']
-                #debemos pasarle current_identity
-                challenge_rep = ChallengeRepairController.repair(id, code_files_new)
-                #debemos guardar el intento de este usuario en la base
+                challenge_rep = ChallengeRepairController.repair(id, code_files_new,current_identity.id)
                 return make_response(jsonify({'Challenge': challenge_rep}), 200) 
         except CommandRunException as e: 
             return make_response(jsonify({'Error': e.msg }), e.HTTP_code)
