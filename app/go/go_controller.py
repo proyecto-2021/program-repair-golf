@@ -162,9 +162,7 @@ class Controller():
             if not new_code and new_test:
                 temp_code_file = temporary_directory.get_path() + 'temp.go'
 
-                #rewrite_file(old_code, temp_code_file)
                 challenge.rewrite_code(temp_code_file)
-
                 challenge.set_code(temp_code_file)
 
                 if not challenge.tests_fail():
@@ -185,9 +183,7 @@ class Controller():
         elif new_code and not new_test:
             temp_test_file = temporary_directory.get_path() + 'temp_test.go'
 
-            #rewrite_file(old_tests, temp_test_file)
             challenge.rewrite_tests_code(temp_test_file)
-
             challenge.set_tests_code(temp_test_file)
             
             if not challenge.tests_fail():
@@ -197,18 +193,11 @@ class Controller():
             challenge.set_tests_code(old_tests)
 
         if new_code:
-            print(challenge.get_code())
-
-            #rewrite_file(challenge.get_code(), old_code)
             challenge.rewrite_code(old_code)
-
             challenge.set_code(old_code) 
 
         if new_test:
-
-            #rewrite_file(challenge.get_tests_code(), old_tests)
             challenge.rewrite_tests_code(old_tests)
-
             challenge.set_tests_code(old_tests)
         
         if request.files:
@@ -224,13 +213,6 @@ class Controller():
 
         return jsonify({'challenge' : challenge.get_content(id=False)})
 
-'''
-def rewrite_file(update_data, file_to_rewrite):
-    with open(update_data) as f:
-        with open(file_to_rewrite, 'w') as g:
-            for line in f:
-                g.write(line)
-'''
 
 def create_file_tmp(path, name, file):
     path_to_file = path + name
