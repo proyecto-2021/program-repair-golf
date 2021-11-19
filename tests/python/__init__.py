@@ -19,3 +19,12 @@ def client():
         print(f"\n{file}")
         if file != 'README.md':
             os.remove(os.path.join(public_path, file))
+
+@pytest.fixture(scope = 'module')
+def jwt_token(client):
+    #creating the user
+    user = {'username': 'el gran pepito', 'password': 'user'}
+    client.post('/users', json=user)
+    auth_result = client.post('/auth', json=user)
+    #getting a token
+    return auth_result.json['access_token']
