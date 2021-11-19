@@ -13,10 +13,12 @@ class RepairCandidate:
 
 	def get_content(self, score):
 		return {
-			'repair_objective': self.challenge.get_repair_objective(),
-			'best_score': self.challenge.get_best_score(),
+			'challenge':{
+				'repair_objective': self.challenge.get_repair_objective(),
+				'best_score': self.challenge.get_best_score(),
+			},
 			'player': {'username': 'Moli'},
-			'attemps': 1,
+			'attempts': 1,
 			'score': score
 		}
 

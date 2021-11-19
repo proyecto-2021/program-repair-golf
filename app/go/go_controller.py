@@ -84,7 +84,7 @@ class Controller():
             return make_response(jsonify({'challenge' : 'challenge does not exist'}), 404)
 
         c = dao.get_challenge_by_id(id)
-        challenge = Challenge(path_code=c.code,path_tests_code=c.tests_code,
+        challenge = Challenge(id=c.id, path_code=c.code,path_tests_code=c.tests_code,
             repair_objective=c.repair_objective,complexity=c.complexity,best_score=c.best_score)
 
         repair_code = request.files['source_code_file']
@@ -112,8 +112,8 @@ class Controller():
         dir.remove_dir()
 
         if score < challenge.get_best_score():
-            c.best_score = challenge.get_best_score()
-            dao.commit()
+            challenge.set_best_score(score)
+            dao.update_challenge(challenge.get_id(), challenge.get_content(id=False, tests_code=False))
 
         show = repair_candidate.get_content(score)
     

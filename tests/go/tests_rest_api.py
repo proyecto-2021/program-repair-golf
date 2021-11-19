@@ -724,7 +724,7 @@ def test_repair_for_check_upgrade_best_score(client):
     ret_repair = client.post(f"go/api/v1/go-challenges/{ret_post_json['id']}/repair", data=challenge_repair)
     ret_repair_json = ret_repair.json["repair"]
     score = ret_repair_json["score"]
-    ret_repair_json = ret_repair_json
+    ret_repair_json = ret_repair_json["challenge"]
     # Assert
     assert score == 3
     #Testeo si el bestscore anterior es mayor al actual. Esto se debe cumplir ya que
