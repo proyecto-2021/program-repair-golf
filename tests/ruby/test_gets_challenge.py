@@ -51,3 +51,27 @@ def test_get_all_after_post(client, auth):
     assert len(list1) == len(list2) - 1
     assert set(challenge['id'] for challenge in list1).issubset(set(challenge['id'] for challenge in list2))
     assert post_result in list2
+
+
+def test_get_without_authentication(client):
+    # arrange
+    url = '/ruby/challenge/1000'
+
+    # act
+    r = client.get(url)
+
+    # assert
+    assert r.status_code == 401
+    assert r.json['error'] == 'Authorization Required'
+
+
+def test_get_all_without_authentication(client):
+    # arrange
+    url = '/ruby/challenges'
+
+    # act
+    r = client.get(url)
+
+    # assert
+    assert r.status_code == 401
+    assert r.json['error'] == 'Authorization Required'

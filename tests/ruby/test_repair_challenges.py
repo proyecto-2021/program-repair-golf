@@ -73,3 +73,15 @@ def test_post_repair_without_repair_candidate(client, auth, generic_post):
     # assert
     assert r.status_code == 400
     assert r.json['challenge'] == 'a repair candidate is necessary'
+
+
+def test_post_repair_without_authentication(client):
+    # arrange
+    url = '/ruby/challenge/1000/repair'
+
+    # act
+    r = client.post(url)
+
+    # assert
+    assert r.status_code == 401
+    assert r.json['error'] == 'Authorization Required'

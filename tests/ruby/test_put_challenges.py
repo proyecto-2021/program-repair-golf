@@ -258,3 +258,15 @@ def test_put_invalid_json_format(client, auth, generic_post):
     assert r1.status_code == 400
     assert r1.json['challenge'] == 'the json is not in a valid format'
     assert r2.json['challenge'] == orig_json
+
+
+def test_put_without_authentication(client):
+    # arrange
+    url = '/ruby/challenge/1000'
+
+    # act
+    r = client.put(url)
+
+    # assert
+    assert r.status_code == 401
+    assert r.json['error'] == 'Authorization Required'
