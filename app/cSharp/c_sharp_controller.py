@@ -158,3 +158,43 @@ class CSharpController:
             return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
         elif val_status == 2:
             return make_response(jsonify({'Test': 'Sintax errors'}), 409)
+
+    def post_repair_candidate(self, id, repair_candidate):
+        if self.DAO.exist(id):
+            challenge = self.DAO.get_challenge_db(id)
+            challenge_name = os.path.basename(challenge['code'])
+            test_name = os.path.basename(challenge['tests_code'])
+            if repair_candidate is None:
+                return make_response(jsonify({'Repair candidate': 'Not found'}), 404)
+
+            file = repair_candidate
+            repair_path = self.DAO.CHALLENGE_VALIDATION_PATH + challenge_name
+            challenge_to_repair = CSharpChallenge(open(challenge['code'], "rb"), open(challenge['tests_code'], "rb"),
+                                                  challenge_name, test_name, challenge['code'], 
+                                                  challenge['tests_code'])
+            repair = CSharpRepairCandidate(challenge_to_repair, file, challenge_name, repair_path)
+            validation_result = repair.validate()
+            if validation_result == -1:
+                self.DAO.remove(repair.code.path)
+                return make_response(jsonify({'Repair candidate': 'Sintax error'}), 409)
+
+            elif validation_result == 1:
+                self.DAO.remove(repair.code.path)
+                self.DAO.remove(repair.code.path.replace('.cs', '.exe'),
+                           repair.challenge.test.path.replace(".cs", ".dll"))
+                return make_response(jsonify({'Repair candidate': 'Tests not passed'}), 409)
+            else:
+                score = repair.score()
+
+                if self.DAO.save_best_score(score, challenge['best_score'], id) == 0:
+                    challenge['best_score'] = score
+
+                challenge_data = {
+                    "repair_objective": challenge['repair_objective'],
+                    "best_score": challenge['best_score']
+                }
+                self.DAO.remove(repair.code.path)
+                self.DAO.remove(repair.code.path.replace('.cs', '.exe'), repair.challenge.test.path.replace(".cs", ".dll"))
+                return make_response(jsonify({'Repair': {'challenge': challenge_data, 'score': score}}), 200)
+        else:
+            return make_response(jsonify({"challenge": "There is no challenge for this id"}), 404)
