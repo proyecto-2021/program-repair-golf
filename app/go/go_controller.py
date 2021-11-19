@@ -161,7 +161,6 @@ class Controller():
 
             if not new_code and new_test:
                 temp_code_file = temporary_directory.get_path() + 'temp.go'
-
                 challenge.rewrite_code(temp_code_file)
                 challenge.set_code(temp_code_file)
 
@@ -182,7 +181,6 @@ class Controller():
     
         elif new_code and not new_test:
             temp_test_file = temporary_directory.get_path() + 'temp_test.go'
-
             challenge.rewrite_tests_code(temp_test_file)
             challenge.set_tests_code(temp_test_file)
             
