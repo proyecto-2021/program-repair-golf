@@ -81,6 +81,80 @@ class CSharpController:
         else:
             return make_response(jsonify({'challenge': 'Data not found'}), 404)
 
-    def update_challenge(self, id, code, code_test, complexity, repair_objective):
-        # To implement method
-        pass
+    def update_challenge(self, id, code, code_test, challenge_data):
+        if challenge_data is not None:
+            challenge_data = json.loads(challenge_data)
+            challenge_data = challenge_data['challenge']
+
+        challenge = self.DAO.get_challenge_db(id)
+        if not self.DAO.exist(id):
+            return make_response(jsonify({"challenge": "There is no challenge for this id"}), 404)
+        files_keys = ("source_code_file", "test_suite_file")
+
+        challenge_name = os.path.basename(challenge['code'])
+        test_name = os.path.basename(challenge['tests_code'])
+        challenge_dir = self.DAO.CHALLENGE_SAVE_PATH + challenge_name.replace('.cs', '/')
+        old_challenge_path = challenge_dir + challenge_name
+        old_test_path = challenge_dir + test_name
+        new_challenge_path = self.DAO.CHALLENGE_VALIDATION_PATH + challenge_name
+        new_test_path = self.DAO.CHALLENGE_VALIDATION_PATH + test_name
+        new_challenge = code
+        new_test = code_test
+
+        if new_challenge is not None and new_test is not None:
+            new_ch = CSharpChallenge(new_challenge,
+                                     new_test,
+                                     challenge_name,
+                                     test_name,
+                                     new_challenge_path,
+                                     new_test_path)
+            val_status = new_ch.validate()
+            self.DAO.handle_put_files(val_status, old_challenge_path,
+                                      old_test_path, new_ch.code.path,
+                                      new_ch.test.path)
+            if val_status != 1:
+                return self.code_validation_response(val_status)
+        elif new_challenge is not None:
+            new_ch = CSharpChallenge(new_challenge,
+                                     open(old_test_path, "rb"),
+                                     challenge_name,
+                                     test_name,
+                                     new_challenge_path,
+                                     old_test_path)
+            val_status = new_ch.validate()
+            self.DAO.handle_put_files(val_status, old_challenge_path, new_ch.test.path,
+                                      new_ch.code.path)
+            if val_status != 1:
+                return self.code_validation_response(val_status)
+        elif new_test is not None:
+            new_ch = CSharpChallenge(open(old_challenge_path, "rb"),
+                                     new_test,
+                                     challenge_name,
+                                     test_name,
+                                     old_challenge_path,
+                                     new_test_path)
+            val_status = new_ch.validate()
+            self.DAO.handle_put_files(val_status, new_ch.code.path, old_test_path,
+                                      test_path=new_ch.test.path)
+            if val_status != 1:
+                return self.code_validation_response(val_status)
+
+        if challenge_data is not None:
+            if 'repair_objective' in challenge_data:
+                self.DAO.update_challenge_data(id, {'repair_objective': challenge_data['repair_objective']})
+
+            if 'complexity' in challenge_data:
+                complexity = int(challenge_data['complexity'])
+                if complexity < 1 or complexity > 5 :
+                    return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
+                else:
+                    self.DAO.update_challenge_data(id, {'complexity': complexity})
+        return make_response(jsonify({'challenge': self.DAO.get_challenge_db(id, show_files_content=True)}), 200)
+
+    def code_validation_response(self,val_status):
+        if val_status == -1:
+            return make_response(jsonify({'Source code': 'Sintax errors'}), 409)
+        elif val_status == 0:
+            return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
+        elif val_status == 2:
+            return make_response(jsonify({'Test': 'Sintax errors'}), 409)

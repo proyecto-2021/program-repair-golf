@@ -18,84 +18,9 @@ def login():
 
 @cSharp.route('/c-sharp-challenges/<int:id>', methods=['PUT'])
 def put_csharp_challenges(id):
-    update_request = {}
-    update_request['source_code_file'] = request.files.get('source_code_file')
-    update_request['test_suite_file'] = request.files.get('test_suite_file')
-    update_request['challenge'] = request.form.get('challenge')
-    if update_request['challenge'] is not None:
-        update_request['challenge'] = json.loads(update_request['challenge'])
-        update_request['challenge'] = update_request['challenge']['challenge']
-
-
-    challenge = DAO.get_challenge_db(id)
-    if not DAO.exist(id):
-        return make_response(jsonify({"challenge": "There is no challenge for this id"}), 404)
-    files_keys = ("source_code_file", "test_suite_file")
-
-    challenge_name = os.path.basename(challenge['code'])
-    test_name = os.path.basename(challenge['tests_code'])
-    challenge_exe = challenge_name.replace('.cs', '.exe')
-    test_dll = test_name.replace('.cs', '.dll')
-    challenge_dir = DAO.CHALLENGE_SAVE_PATH + challenge_name.replace('.cs', '/')
-    old_challenge_path = challenge_dir + challenge_name
-    old_test_path = challenge_dir + test_name
-    new_challenge_path = DAO.CHALLENGE_VALIDATION_PATH + challenge_name
-    new_test_path = DAO.CHALLENGE_VALIDATION_PATH + test_name
-    new_challenge_exe_path = DAO.CHALLENGE_VALIDATION_PATH + challenge_exe
-    new_test_dll_path = DAO.CHALLENGE_VALIDATION_PATH + test_dll
-    new_challenge = update_request['source_code_file']
-    new_test = update_request['test_suite_file']
-
-    if new_challenge is not None and new_test is not None:
-        new_ch = CSharpChallenge(new_challenge,
-                                 new_test,
-                                 challenge_name,
-                                 test_name,
-                                 new_challenge_path,
-                                 new_test_path)
-        val_status = new_ch.validate()
-        DAO.handle_put_files(val_status, old_challenge_path,
-                             old_test_path, new_ch.code.path,
-                             new_ch.test.path)
-        if val_status != 1:
-            return code_validation_response(val_status)
-    elif new_challenge is not None:
-        new_ch = CSharpChallenge(new_challenge,
-                                 open(old_test_path, "rb"),
-                                 challenge_name,
-                                 test_name,
-                                 new_challenge_path,
-                                 old_test_path)
-        val_status = new_ch.validate()
-        DAO.handle_put_files(val_status, old_challenge_path, new_ch.test.path,
-                             new_ch.code.path)
-        if val_status != 1:
-            return code_validation_response(val_status)
-    elif new_test is not None:
-        new_ch = CSharpChallenge(open(old_challenge_path, "rb"),
-                                 new_test,
-                                 challenge_name,
-                                 test_name,
-                                 old_challenge_path,
-                                 new_test_path)
-        val_status = new_ch.validate()
-        DAO.handle_put_files(val_status, new_ch.code.path, old_test_path,
-                             test_path=new_ch.test.path)
-        if val_status != 1:
-            return code_validation_response(val_status)
-
-    if update_request['challenge'] is not None:
-        if 'repair_objective' in update_request['challenge']:
-            DAO.update_challenge_data(id, {'repair_objective': update_request['challenge']['repair_objective']})
-
-        if 'complexity' in update_request['challenge']:
-            complexity = int(update_request['challenge']['complexity'])
-            if complexity < 1 or complexity > 5 :
-                return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
-            else:
-                DAO.update_challenge_data(id, {'complexity': complexity})
-    return make_response(jsonify({'challenge': DAO.get_challenge_db(id, show_files_content=True)}), 200)
-
+    return controller.update_challenge(id,request.files.get('source_code_file'),
+                                       request.files.get('test_suite_file'),
+                                       request.form.get('challenge'))
 
 @cSharp.route('/c-sharp-challenges', methods=['POST'])
 def post_csharp_challenges():
@@ -166,11 +91,3 @@ def get_csharp_challenges():
     else:
         return jsonify({'challenges': 'None Loaded'})
 
-
-def code_validation_response(val_status):
-    if val_status == -1:
-        return make_response(jsonify({'Source code': 'Sintax errors'}), 409)
-    elif val_status == 0:
-        return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
-    elif val_status == 2:
-        return make_response(jsonify({'Test': 'Sintax errors'}), 409)
