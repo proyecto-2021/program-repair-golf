@@ -1,5 +1,5 @@
 require 'minitest/autorun'
-require_relative 'example22'
+require_relative 'example6'
 
 class MedianTest < Minitest::Test
   def test_1
