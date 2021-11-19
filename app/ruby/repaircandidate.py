@@ -32,7 +32,7 @@ class RepairCandidate(object):
         '''
         return self.repair_code.compiles()
 
-    def test_ok(self):
+    def tests_ok(self):
         '''check that the candidate solution satisfies the challenge tests.
 
         Attributes:
