@@ -74,7 +74,10 @@ class controller():
             
             if 'complexity' in request.form.get('challenge'):
                 complexity_upd=challenge_upd['complexity']
-                challenge.complexity=complexity_upd
+                if int(complexity_upd) <= 5:
+                    challenge.complexity=complexity_upd
+                else:
+                    raise Exception("The complexity is greater than 5, it must be less than equal to 5")
     
             if 'source_code_file' in request.files:
                 if 'test_suite_file' in request.files:

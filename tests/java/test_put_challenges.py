@@ -88,6 +88,27 @@ def test_PUT_fails_parameters(client):
 		assert str(e) == "FileName orCode not Exist"		
 	#assert
 	assert r1.status_code == 200
+
+def test_PUT_fails_complexity(client):
+	#arrange
+	data_for_tests.delete_db()
+	data = data_for_tests.createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
+	data2 = data_for_tests.createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'Pasa', '7')
+	token=data_for_tests.get_token(client)
+	url = 'http://localhost:5000/java/java-challenges'
+	r1 = client.post(url,headers={'Authorization': f'JWT {token}'}, data=data)
+	id = r1.json['challenge']['id']
+	url2 = f'http://localhost:5000/java/java-challenges/{id}'
+	
+	#act
+	r2 = client.put(url2,headers={'Authorization': f'JWT {token}'}, data=data2)
+	#json2 = r2.json['challenge']
+	#complexity=json2['complexity']
+
+	#assert
+	assert r1.status_code == 200
+	assert r2.status_code == 404
+	
 	
 def test_PUT_pass_all_test(client):
 	#arrange

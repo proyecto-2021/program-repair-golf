@@ -41,6 +41,16 @@ def test_post_get_all(client):
 	assert a['complexity'] == 1
 	assert a['id'] != 0
 
+def test_post_complexity_invalid(client):
+	data_for_tests.delete_db()
+	url = 'http://localhost:5000/java/java-challenges'
+	data = data_for_tests.createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '7')
+	token = data_for_tests.get_token(client)
+	try:
+		client.post(url, headers={'Authorization': f'JWT {token}'}, data=data)
+	except Exception as e:
+		assert str(e) == "The complexity is greater than 5, it must be less than equal to 5"
+
 # insert two valid challenges and then get them and compare the results
 def test_many_loads(client):
 	data_for_tests.delete_db()
