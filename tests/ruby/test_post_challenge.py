@@ -46,7 +46,8 @@ def test_post_existent_challenge(client, auth):
 def test_post_code_not_compiles1(client, auth):
     # arrange
     url = '/ruby/challenge'
-    data = get_data('example3', 'example_test3', 'Testing compilation error', '4', 'example_not_compiles', 'example_test')
+    data = get_data('example3', 'example_test3', 'Testing compilation error', '4',
+                    'example_not_compiles', 'example_test')
 
     # act
     r = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
@@ -59,7 +60,8 @@ def test_post_code_not_compiles1(client, auth):
 def test_post_code_not_compiles2(client, auth):
     # arrange
     url = '/ruby/challenge'
-    data = get_data('example3', 'example_test3', 'Testing compilation error', '4', 'example', 'example_test_not_compiles')
+    data = get_data('example3', 'example_test3', 'Testing compilation error', '4',
+                    'example', 'example_test_not_compiles')
 
     # act
     r = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
@@ -69,10 +71,39 @@ def test_post_code_not_compiles2(client, auth):
     assert r.json['challenge'] == 'the source code and/or test suite does not compile'
 
 
-def test_post_bad_dependencies(client, auth):
+def test_post_bad_dependencies1(client, auth):
     # arrange
     url = '/ruby/challenge'
-    data = get_data('example3', 'example_test3', 'Testing dependencies error', '4', 'example', 'example_test_dependencies_not_okay')
+    data = get_data('example3', 'example_test3', 'Testing dependencies error', '4', 'example',
+                    'example_test_bad_dependencies1')
+
+    # act
+    r = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
+
+    # assert
+    assert r.status_code == 400
+    assert r.json['challenge'] == 'the test suite dependencies are wrong'
+
+
+def test_post_bad_dependencies2(client, auth):
+    # arrange
+    url = '/ruby/challenge'
+    data = get_data('example3', 'example_test3', 'Testing dependencies error', '4',
+                    'example', 'example_test_bad_dependencies2')
+
+    # act
+    r = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
+
+    # assert
+    assert r.status_code == 400
+    assert r.json['challenge'] == 'the test suite dependencies are wrong'
+
+
+def test_post_bad_dependencies3(client, auth):
+    # arrange
+    url = '/ruby/challenge'
+    data = get_data('example3', 'example_test3', 'Testing dependencies error', '4',
+                    'example', 'example_test_bad_dependencies3')
 
     # act
     r = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
