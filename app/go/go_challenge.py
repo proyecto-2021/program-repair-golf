@@ -1,14 +1,15 @@
 from .go_source_code import SourceCode
+from app import db
 
 class Challenge:
 
-    def __init__(self, id=None, path_code=None, path_tests_code=None, repair_objective=None, complexity=None):
+    def __init__(self, id=None, path_code=None, path_tests_code=None, repair_objective=None, complexity=None, best_score=None):
         self.id = id
         self.code = SourceCode(path = path_code)
         self.tests_code = SourceCode(path = path_tests_code)
         self.repair_objective = repair_objective
         self.complexity = complexity
-        self.best_score = 0
+        self.best_score = best_score
 
     def get_id(self):
         return self.id

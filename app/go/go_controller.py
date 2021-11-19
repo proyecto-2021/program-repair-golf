@@ -4,6 +4,8 @@ from .go_source_code import SourceCode
 from .go_challenge import Challenge
 from .go_repair_candidate import RepairCandidate
 from .go_directory_management import DirectoryManagement
+from app import db
+import math
 
 dao = ChallengeDAO()
 class Controller():
@@ -21,10 +23,10 @@ class Controller():
 
         for c in challenges:
             challenge = Challenge(id=c.id,path_code=c.code,path_tests_code=c.tests_code,
-                repair_objective=c.repair_objective,complexity=c.complexity)
+                repair_objective=c.repair_objective,complexity=c.complexity,best_score=c.best_score)
 
             show.append(challenge.get_content(tests_code=False))
-
+        
         return jsonify({"challenges" : show})
 
 
@@ -35,7 +37,7 @@ class Controller():
         c = dao.get_challenge_by_id(id)
 
         challenge = Challenge(path_code=c.code,path_tests_code=c.tests_code,
-            repair_objective=c.repair_objective,complexity=c.complexity)
+            repair_objective=c.repair_objective,complexity=c.complexity,best_score=c.best_score)
 
         show = challenge.get_content(id=False)
 
@@ -78,6 +80,7 @@ class Controller():
         id = dao.create_challenge(new_challenge.get_code(), new_challenge.get_tests_code(), new_challenge.get_repair_objective(), new_challenge.get_complexity())
 
         new_challenge.set_id(id)
+        new_challenge.set_best_score(math.inf)
         new_challenge_to_dicc = new_challenge.get_content()
         return jsonify({"challenge": new_challenge_to_dicc})
 
@@ -88,7 +91,7 @@ class Controller():
 
         c = dao.get_challenge_by_id(id)
         challenge = Challenge(path_code=c.code,path_tests_code=c.tests_code,
-            repair_objective=c.repair_objective,complexity=c.complexity)
+            repair_objective=c.repair_objective,complexity=c.complexity,best_score=c.best_score)
 
         repair_code = request.files['source_code_file']
         dir = DirectoryManagement(path='public/challenges/solution/')
@@ -113,9 +116,9 @@ class Controller():
 
         dir.remove_dir()
 
-        if score < c.best_score:
-            c.best_score = score
-            dao.update_challenge(id, c)
+        if score < challenge.get_best_score():
+            c.best_score = challenge.get_best_score()
+            dao.commit()
 
         show = repair_candidate.get_content(score)
     
