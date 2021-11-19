@@ -1,6 +1,6 @@
 from app import create_app, db
 import pytest
-from app.models import User
+from app.auth.usermodel import User
 
 
 @pytest.fixture(scope='module')
@@ -21,8 +21,8 @@ def client():
 
 
 def test_add_user(client):
-    user = User(name='admin')
+    user = User(username='admin', password='pass')
     db.session.add(user)
     db.session.commit()
 
-    assert len(User.query.filter_by(name='admin').all()) != 0
+    assert len(User.query.filter_by(username='admin').all()) != 0

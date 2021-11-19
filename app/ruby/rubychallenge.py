@@ -1,4 +1,4 @@
-from .rubycode import RubyCode, RubyTestCode
+from .rubycode import RubyCode, RubyTestsCode
 
 class RubyChallenge:
 	def __init__(self, repair_objective, complexity, best_score=0, code=None, tests_code=None, id=None):
@@ -6,12 +6,12 @@ class RubyChallenge:
 		self.complexity = complexity
 		self.best_score = best_score
 		self.code = RubyCode()
-		self.tests_code = RubyTestCode()
+		self.tests_code = RubyTestsCode()
 		self.id = id
 		if code is not None:
 			self.code = RubyCode(full_name=code)
 		if tests_code is not None:
-			self.tests_code = RubyTestCode(full_name=tests_code)
+			self.tests_code = RubyTestsCode(full_name=tests_code)
 
 	def get_code(self):
 		return self.code
@@ -43,6 +43,10 @@ class RubyChallenge:
 
 	def set_best_score(self, new_score):
 		self.best_score = new_score
+
+	def update(self, data):
+		for key, value in data.items():
+			setattr(self, key, value)
 
 	def data_ok(self):
 		return self.repair_objective and self.complexity_ok() and self.code.file_name_ok() and self.tests_code.file_name_ok()

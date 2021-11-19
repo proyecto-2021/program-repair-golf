@@ -70,9 +70,12 @@ class RubyCode:
         command = 'ruby ' + self.get_full_name()
         return subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) != 0
 
-class RubyTestCode(RubyCode):
+class RubyTestsCode(RubyCode):
     def dependencies_ok(self, code):
         command = 'grep "require_relative" ' + self.get_full_name()
         p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-        dependence_name = (p.communicate()[0].decode(sys.stdout.encoding).strip().split("'")[1])
+        grep_return = p.communicate()[0].decode(sys.stdout.encoding)
+        if grep_return.count('require_relative') != 1:
+            return False
+        dependence_name = (grep_return.strip().split("'")[1])
         return dependence_name == code.get_file_name()

@@ -1,4 +1,5 @@
-from .rubychallengemodel import RubyChallengeModel
+from .rubychallengemodel import RubyChallengeModel, ruby_attempts
+from app.auth.userdao import get_user_by_id
 from app import db
 
 class RubyChallengeDAO(object):
@@ -11,7 +12,7 @@ class RubyChallengeDAO(object):
         return challenge
 
     def get_challenges(self):
-        return db.session.query(RubyChallengeModel).all()
+        return [challenge.get_dict() for challenge in db.session.query(RubyChallengeModel).all()]
 
     def create_challenge(self, code, tests_code, repair_objective, complexity):
         challenge = RubyChallengeModel(
@@ -26,8 +27,26 @@ class RubyChallengeDAO(object):
         return challenge.get_dict()['id']
 
     def update_challenge(self, id, changes):
-        result = db.session.query(RubyChallengeModel).filter_by(id=id).update(changes)
+        db.session.query(RubyChallengeModel).filter_by(id=id).update(changes)
         db.session.commit()
 
     def exists(self, id):
         return db.session.query(RubyChallengeModel).filter_by(id=id).first() is not None
+
+    def add_attempt(self, challenge_id, user_id):
+        challenge_attempts = self.get_attempts(challenge_id, user_id)
+        if challenge_attempts is None:
+            challenge = db.session.query(RubyChallengeModel).filter_by(id=challenge_id).first()
+            user = get_user_by_id(user_id)
+            challenge.users_attempts.append(user) 
+            db.session.commit()
+        attempts = self.get_attempts_count(challenge_id, user_id)
+        db.session.query(ruby_attempts).filter_by(challenge_id=challenge_id, user_id=user_id) \
+            .update({'count': attempts+1})
+        db.session.commit()
+
+    def get_attempts(self, challenge_id, user_id):
+        return db.session.query(ruby_attempts).filter_by(challenge_id=challenge_id, user_id=user_id).first()
+
+    def get_attempts_count(self, challenge_id, user_id):
+        return self.get_attempts(challenge_id, user_id).count
