@@ -5,9 +5,11 @@ from .c_sharp_repair_candidate import CSharpRepairCandidate
 from .c_sharp_challenge_DAO import CSharpChallengeDAO
 from json import loads
 from flask import jsonify, make_response, json, request
+from .c_sharp_controller import CSharpController
 import os
 
 DAO = CSharpChallengeDAO()
+controller = CSharpController()
 
 @cSharp.route('/login')
 def login():
@@ -202,11 +204,8 @@ def repair_Candidate(id):
 
 
 @cSharp.route('/c-sharp-challenges/<int:id>', methods=['GET'])
-def get_challenge(id):
-    if DAO.exist(id):
-        return jsonify({'Challenge': DAO.get_challenge_db(id, show_files_content=True)})
-    else:
-        return make_response(jsonify({'Challenge': 'Not found'}), 404)
+def get(id):
+    return controller.get_challenge(id)
 
 
 @cSharp.route('/c-sharp-challenges', methods=['GET'])
