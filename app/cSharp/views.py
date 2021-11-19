@@ -9,7 +9,6 @@ import os
 
 DAO = CSharpChallengeDAO()
 
-
 @cSharp.route('/login')
 def login():
     return {'result': 'Ok'}
@@ -20,8 +19,11 @@ def put_csharp_challenges(id):
     update_request = {}
     update_request['source_code_file'] = request.files.get('source_code_file')
     update_request['test_suite_file'] = request.files.get('test_suite_file')
-    update_request['repair_objective'] = request.form.get('repair_objective')
-    update_request['complexity'] = request.form.get('complexity')
+    update_request['challenge'] = request.form.get('challenge')
+    if update_request['challenge'] is not None:
+        update_request['challenge'] = json.loads(update_request['challenge'])
+        update_request['challenge'] = update_request['challenge']['challenge']
+
 
     challenge = DAO.get_challenge_db(id)
     if not DAO.exist(id):
@@ -80,18 +82,19 @@ def put_csharp_challenges(id):
         if val_status != 1:
             return code_validation_response(val_status)
 
-    if update_request['repair_objective'] is not None:
-        DAO.update_challenge_data(id, {'repair_objective': update_request['repair_objective']})
+    if update_request['challenge'] is not None:
+        if 'repair_objective' in update_request['challenge']:
+            DAO.update_challenge_data(id, {'repair_objective': update_request['challenge']['repair_objective']})
 
-    if update_request['complexity'] is not None:
-        complexity = int(update_request['complexity'])
-        if complexity < 1 or complexity > 5 :
-            return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
-        else:
-            DAO.update_challenge_data(id, {'complexity': complexity})
+        if 'complexity' in update_request['challenge']:
+            complexity = int(update_request['challenge']['complexity'])
+            if complexity < 1 or complexity > 5 :
+                return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
+            else:
+                DAO.update_challenge_data(id, {'complexity': complexity})
     return make_response(jsonify({'challenge': DAO.get_challenge_db(id, show_files_content=True)}), 200)
 
-
+  
 @cSharp.route('/c-sharp-challenges', methods=['POST'])
 def post_csharp_challenges():
     # Get new challenge data
