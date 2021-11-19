@@ -43,7 +43,7 @@ class SourceCode:
 
     def get_content(self):
         with open(self.get_path(),'r') as f:
-            return f.readlines()
+            return f.read()
 
     def move(self, path):
         shutil.copy(path, self.get_path())
