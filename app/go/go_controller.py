@@ -20,7 +20,7 @@ class Controller():
         show = []
 
         for c in challenges:
-            challenge = Challenge(path_code=c.code,path_tests_code=c.tests_code,
+            challenge = Challenge(id=c.id,path_code=c.code,path_tests_code=c.tests_code,
                 repair_objective=c.repair_objective,complexity=c.complexity)
 
             show.append(challenge.get_content(tests_code=False))
@@ -75,8 +75,9 @@ class Controller():
         	new_challenge.tests_code.remove_file()
         	return make_response(jsonify({"ERROR: tests": "There must be at least one test that fails"}), 412)
 
-        dao.create_challenge(new_challenge.get_code(), new_challenge.get_tests_code(), new_challenge.get_repair_objective(), new_challenge.get_complexity())
+        id = dao.create_challenge(new_challenge.get_code(), new_challenge.get_tests_code(), new_challenge.get_repair_objective(), new_challenge.get_complexity())
 
+        new_challenge.set_id(id)
         new_challenge_to_dicc = new_challenge.get_content()
         return jsonify({"challenge": new_challenge_to_dicc})
 

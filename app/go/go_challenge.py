@@ -58,6 +58,9 @@ class Challenge:
         challenge['tests_code'] = self.tests_code.get_path()
         return challenge
 
+    def set_id(self, id):
+        self.id = id
+
     def set_code(self, path_code):
         self.code.set_path(path_code)
 
