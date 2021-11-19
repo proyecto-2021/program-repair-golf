@@ -105,17 +105,27 @@ def test_post_challenge_test_no_fails(client):
 def test_post_challenge_not_found(client):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
-    data = create_challenge('codeDoesNotExist', 'Example1Test', 'Testing', '4', 'BaseTest')
-    data1 = create_challenge('Example1', 'TestDoesNotExist', 'Testing', '1', 'BaseExample')
-    data2 = create_challenge('codeDoesNotExist', 'TestDoesNotExist', 'Testing', '4')
-    data3 = create_challenge('Example1', 'Example1Test', 'Testing', 'BaseExample', 'BaseTest')
-    data4 = create_challenge('Example1', 'Example1Test', '2', 'BaseExample', 'BaseTest')
-    data5 = create_challenge('Example1', 'Example1Test', 'BaseExample', 'BaseTest')
+    data0 = {}
+    data = create_challenge(tests_name='Example1Test',
+                            repair_objective='Testing',
+                            complexity='4', tests_code='BaseTest')
+    data1 = create_challenge(code_name='Example1', repair_objective='Testing',
+                             complexity='1', code='BaseExample')
+    data2 = create_challenge(repair_objective='Testing', complexity='4')
+    data3 = create_challenge(code_name='Example1', tests_name='Example1Test',
+                             repair_objective='Testing', code='BaseExample',
+                             tests_code='BaseTest')
+    data4 = create_challenge(code_name='Example1', tests_name='Example1Test',
+                             complexity='2', code='BaseExample',
+                             tests_code='BaseTest')
+    data5 = create_challenge(code_name='Example1', tests_name='Example1Test',
+                             code='BaseExample', tests_code='BaseTest')
 
     expected_response = {"challenge": "Data not found"}
     responses = []
 
     # Act
+    responses.append(client.post(url, data=data0))
     responses.append(client.post(url, data=data))
     responses.append(client.post(url, data=data1))
     responses.append(client.post(url, data=data2))

@@ -100,19 +100,22 @@ def post_csharp_challenges():
     # Get new challenge data
     try:
         new_challenge = loads(request.form.get('challenge'))['challenge']
-        new_challenge['source_code_file'] = request.files['source_code_file']
-        new_challenge['test_suite_file'] = request.files['test_suite_file']
+        new_challenge['source_code_file'] = request.files.get('source_code_file')
+        new_challenge['test_suite_file'] = request.files.get('test_suite_file')
     except Exception:
         return make_response(jsonify({"challenge": "Data not found"}), 404)
-    finally:
-        if 'source_code_file' not in new_challenge or 'test_suite_file' not in new_challenge:
-            return make_response(jsonify({"challenge": "Data not found"}), 404)
+    keys_in_challenge = ('source_code_file_name',
+                         'test_suite_file_name',
+                         'complexity',
+                         'repair_objective')
+    if not all(key in new_challenge for key in keys_in_challenge):
+        return make_response(jsonify({"challenge": "Data not found"}), 404)
 
     # Validate challenge data
     required_keys = ('source_code_file_name', 'test_suite_file_name',
                      'source_code_file', 'test_suite_file',
                      'repair_objective', 'complexity')
-    if all(key in new_challenge for key in required_keys):
+    if all(new_challenge[key] is not None for key in required_keys):
         try:
             ch_dir = DAO.create_challenge_dir(new_challenge['source_code_file_name'])
         except FileExistsError:
