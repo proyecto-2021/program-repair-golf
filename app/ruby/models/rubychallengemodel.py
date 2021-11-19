@@ -8,6 +8,7 @@ ruby_attempts = db.Table('ruby_attempts',
 )
 
 class RubyChallengeModel(db.Model):
+	"""Model to create a table in database."""
 	__tablename__ = 'ruby_challenge'
 	id = db.Column(db.Integer, primary_key=True)
 	code = db.Column(db.String(256))  # Path to source file
@@ -18,6 +19,7 @@ class RubyChallengeModel(db.Model):
 	users_attempts = db.relationship('User', secondary=ruby_attempts)
 
 	def get_dict(self):
+		"""Convert RubyChallengeModel into dict."""
 		return {
 			"id": self.id,
 			"code": self.code,
