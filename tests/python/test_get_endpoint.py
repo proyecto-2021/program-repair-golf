@@ -6,7 +6,7 @@ import json
 def test_get_challenge_not_found(client):
     
     invalid_id = 1000000000000000
-    result = client.get(api_url + '/' + str(invalid_id))
+    result = client.get(api_url + '/' + str(invalid_id), headers={'Authorization': f'JWT {get_jwt_token(client)}'})
 
     assert result.status_code == 409
     assert result.json['Error'] == "Challenge not found"
@@ -18,7 +18,7 @@ def test_get_single_pythonChallenge(client):
     post_info = send_post(client, "valid_code_5.py", "valid_atest_5.py", repair_objectiveParam, "3")
     
     challenge_id = post_info.json['challenge']['id']
-    result = client.get(api_url + '/' + str(challenge_id))
+    result = client.get(api_url + '/' + str(challenge_id), headers={'Authorization': f'JWT {get_jwt_token(client)}'})
     #---- end post ---#
 
     #data to be entered in the post test
@@ -38,7 +38,7 @@ def test_get_single_pythonChallenge(client):
 # testing multiple challenges
 def test_get_total_pythonChallenge(client):
     #get challenge count before test
-    responsive = client.get(api_url)
+    responsive = client.get(api_url, headers={'Authorization': f'JWT {get_jwt_token(client)}'})
     initial_challenge_len = len(responsive.json['challenges'])
     
     #--- start post challenges ---#
@@ -49,7 +49,7 @@ def test_get_total_pythonChallenge(client):
     send_post(client, "valid_code_7.py", "valid_atest_7.py", repair_objectiveParamTwo, "2")
 
     #--- end post challenges ---#
-    responsive = client.get(api_url)
+    responsive = client.get(api_url, headers={'Authorization': f'JWT {get_jwt_token(client)}'})
     data = responsive.json
     
     assert len(data['challenges']) == initial_challenge_len + 2
