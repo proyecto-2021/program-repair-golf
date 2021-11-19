@@ -14,6 +14,8 @@ def client():
             # test will be executed on the test_client object
             yield test_client
 
-    for file in os.listdir("/public/challenges/"):
-        if file != 'README':
-            os.remove(os.path.join("/public/challenges/", file))
+    public_path = "/home/nacho/Desktop/proyecto/program-repair-golf/public/challenges/"
+    for file in os.listdir(public_path):
+        print(f"\n{file}")
+        if file != 'README.md':
+            os.remove(os.path.join(public_path, file))
