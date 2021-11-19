@@ -91,7 +91,8 @@ class Controller():
         dir = DirectoryManagement(path='public/challenges/solution/')
         repair = Challenge(path_code='public/challenges/solution/code.go', path_tests_code='public/challenges/solution/code_test.go')
 
-        dir.create_dir()
+        if not (dir.is_dir()):
+            dir.create_dir()
         repair.code.create_file()
         repair_code.save(repair.code.get_path())
         repair.tests_code.move(challenge.get_tests_code())
