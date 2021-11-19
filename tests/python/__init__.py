@@ -13,3 +13,7 @@ def client():
             db.create_all()
             # test will be executed on the test_client object
             yield test_client
+
+    for file in os.listdir("/public/challenges/"):
+        if file != 'README':
+            os.remove(os.path.join("/public/challenges/", file))
