@@ -1,4 +1,5 @@
 from . import client, auth, generic_post
+from nltk import edit_distance
 
 
 def test_post_repair(client, auth, generic_post):
@@ -10,10 +11,12 @@ def test_post_repair(client, auth, generic_post):
 
     # act
     r = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
+    with open('tests/ruby/tests-data/example_fixed.rb') as f:
+        code_fixed_content = f.read()
 
     # assert
     assert r.status_code == 200
-    assert r.json['repair']['score'] != 0
+    assert r.json['repair']['score'] == edit_distance(orig_json['code'], code_fixed_content)
     assert r.json['repair']['player']['username'] == 'ruby'
     assert r.json['repair']['attempts'] == '1'
 
