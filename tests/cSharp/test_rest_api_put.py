@@ -107,3 +107,7 @@ def test_put_non_existent_challenge(client):
 
     # Cleanup
     cleanup()
+
+def test_put_with_code_and_test_and_without_challenge(client, create_challenge):
+    #TODO
+    pass
