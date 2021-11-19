@@ -1,7 +1,5 @@
 from . import client
-from app import create_app, db
 from app.cSharp.models import *
-from app.cSharp.views import *
 import pytest
 
 
@@ -49,3 +47,34 @@ def test_get_challenge_from_db_with_files_contents(client, expected_challenge_w_
 
     # Cleanup
     db.session.query(CSharpChallengeModel).delete()
+
+def test_exist(client, expected_challenge):
+    # Arrange
+    ch_id = expected_challenge['id']
+
+    # Act 
+    result_true = exist(ch_id)
+    result_false = exist(ch_id + 1)
+
+    #Assert
+    assert result_true
+    assert not result_false
+
+    # Cleanup
+    db.session.query(CSharpChallengeModel).delete() 
+
+def test_update(client, expected_challenge):
+    # Arrange
+    ch_id = expected_challenge['id']
+    data = {"complexity":2}
+    
+    #Act
+    update_challenge_data(ch_id, data)
+    ch_updated = db.session.query(CSharpChallengeModel).filter_by(id=ch_id).first().__repr__()
+
+    #Assert
+    assert ch_updated["complexity"] == data["complexity"]
+
+    # Cleanup
+    db.session.query(CSharpChallengeModel).delete()   
+
