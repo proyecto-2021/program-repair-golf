@@ -81,3 +81,9 @@ class Challenge:
 
     def tests_fail(self):
         return self.tests_code.tests_fail()
+
+    def rewrite_code(self, path):
+        return self.code.rewrite_file(path)
+
+    def rewrite_tests_code(self, path):
+        return self.tests_code.rewrite_file(path)

@@ -53,3 +53,9 @@ class SourceCode:
     
     def remove_file(self):
         os.remove(self.get_path())
+
+    def rewrite_file(self, path):
+        with open(self.get_path(), 'r') as f:
+                with open(path, 'w') as g:
+                    for line in f:
+                        g.write(line)
