@@ -96,67 +96,12 @@ def put_csharp_challenges(id):
                 DAO.update_challenge_data(id, {'complexity': complexity})
     return make_response(jsonify({'challenge': DAO.get_challenge_db(id, show_files_content=True)}), 200)
 
-  
+
 @cSharp.route('/c-sharp-challenges', methods=['POST'])
 def post_csharp_challenges():
-    # Get new challenge data
-    try:
-        new_challenge = loads(request.form.get('challenge'))['challenge']
-        new_challenge['source_code_file'] = request.files['source_code_file']
-        new_challenge['test_suite_file'] = request.files['test_suite_file']
-    except Exception:
-        return make_response(jsonify({"challenge": "Data not found"}), 404)
-    finally:
-        if 'source_code_file' not in new_challenge or 'test_suite_file' not in new_challenge:
-            return make_response(jsonify({"challenge": "Data not found"}), 404)
-
-    # Validate challenge data
-    required_keys = ('source_code_file_name', 'test_suite_file_name',
-                     'source_code_file', 'test_suite_file',
-                     'repair_objective', 'complexity')
-    if all(key in new_challenge for key in required_keys):
-        try:
-            ch_dir = DAO.create_challenge_dir(new_challenge['source_code_file_name'])
-        except FileExistsError:
-            return make_response(jsonify({'Challenge': 'Already exists'}), 409)
-        new_source_code_path = ch_dir + new_challenge['source_code_file_name'] + ".cs"
-        new_test_suite_path = ch_dir + new_challenge['test_suite_file_name'] + ".cs"
-        challenge = CSharpChallenge(new_challenge['source_code_file'],
-                                    new_challenge['test_suite_file'],
-                                    new_challenge['source_code_file_name'],
-                                    new_challenge['test_suite_file_name'],
-                                    new_source_code_path,
-                                    new_test_suite_path)
-        validate_response = challenge.validate()
-        new_code_exe_path = challenge.code.path.replace('.cs', '.exe')
-        new_test_dll_path = challenge.test.path.replace('.cs', '.dll')
-        if validate_response == 0:
-            DAO.remove_challenge_dir(new_challenge['source_code_file_name'])
-            return make_response(jsonify({'Test': 'At least one has to fail'}), 409)
-
-        elif validate_response == 1:
-            DAO.remove(new_code_exe_path, new_test_dll_path)
-            complexity = int(new_challenge['complexity'])
-            if complexity < 1 or complexity > 5:
-                DAO.remove_challenge_dir(new_challenge['source_code_file_name'])
-                return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
-            new_data_id = DAO.save_to_db(new_challenge['repair_objective'],
-                                         complexity,
-                                         challenge.code.file_name,
-                                         challenge.test.file_name)
-            content = DAO.get_challenge_db(new_data_id, show_files_content=True)
-            return make_response(jsonify({'challenge': content}))
-
-        elif validate_response == 2:
-            DAO.remove_challenge_dir(new_challenge['source_code_file_name'])
-            return make_response(jsonify({'Test': 'Sintax errors'}), 409)
-
-        else:
-            DAO.remove_challenge_dir(new_challenge['source_code_file_name'])
-            return make_response(jsonify({'Challenge': 'Sintax errors'}), 409)
-
-    else:
-        return make_response(jsonify({'challenge': 'Data not found'}), 404)
+    return controller.post_challenge(request.files.get('source_code_file'),
+                                     request.files.get('test_suite_file'),
+                                     request.form.get('challenge'))
 
 
 @cSharp.route('c-sharp-challenges/<int:id>/repair', methods=['POST'])
