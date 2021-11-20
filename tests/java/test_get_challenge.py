@@ -74,3 +74,4 @@ def test_get_java_not_token(client):
 	assert resp.status_code == 401
 	
 
+

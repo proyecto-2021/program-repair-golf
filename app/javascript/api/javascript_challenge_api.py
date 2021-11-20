@@ -13,7 +13,6 @@ from ..exceptions.challenge_dao_exception import challenge_dao_exception
 from flask import jsonify, make_response,request
 from flask_jwt import jwt_required, current_identity
 
-
 class JavascriptChallengeAPI(MethodView):
     @jwt_required()
     def get(self, id):

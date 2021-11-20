@@ -1,31 +1,35 @@
 from nltk import edit_distance
-from .go_src import Go_src
-from .go_challenge import GoChallenge
+from .go_source_code import SourceCode
+from .go_challenge import Challenge
 import os
 
-class GoRepairCandidate:
-	def __init__(self, challenge=None, repair_code=None):
+class RepairCandidate:
+	def __init__(self, challenge=None, dir_path=None, file_path=None):
 		self.challenge = challenge
-		self.repair_code = Go_src()
+		self.dir_path = dir_path
+		self.file_path = file_path
+		self.tests_code = SourceCode(path=self.dir_path)
+		self.repair_code = SourceCode(path=self.file_path)
 
-	def get_content_repair(self, score):
+	def get_content(self, score):
 		return {
-			'repair_objective': self.challenge.get_repair_objective(),
-			'best_score': self.challenge.get_best_score(),
+			'challenge':{
+				'repair_objective': self.challenge.get_repair_objective(),
+				'best_score': self.challenge.get_best_score(),
+			},
 			'player': {'username': 'Moli'},
-			'attemps': 1,
+			'attempts': 1,
 			'score': score
 		}
 
 	def score(self):
 		return edit_distance(self.repair_code.get_content(), self.challenge.get_code_content())
 
-	def code_compiles(self):
-		return self.repair_code.code_compiles()
+	def compiles(self):
+		return self.repair_code.compiles(is_code=True)
 
 	def tests_fail(self):
-		tests = Go_src(path=self.challenge.get_tests_code())
-		return tests.tests_fail()
+		return self.tests_code.tests_fail()
 
 	def save(self):
 		self.repair_code.save()
