@@ -11,6 +11,7 @@ from ...auth.userdao import get_user_by_id
 class ChallengeRepairController():
 
     def repair(id,code_files_new,user_id):
+
         challenge = ChallengeDAO.get_challenge(id)
         AttemptsDAO.create_attempt(challenge.id,user_id)
         if not exist_file(challenge.code):
@@ -40,7 +41,7 @@ class ChallengeRepairController():
 
         for k in ['id','code','complexity','tests_code']:
             del challenge_dict[k]
-
+   
         return {'repair' :{
                             'challenge': challenge_dict,
                             'player': {'username': get_user_by_id(user_id).username},
