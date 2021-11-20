@@ -1,5 +1,8 @@
-import os, subprocess, sys
+import os
+import subprocess
+import sys
 from shutil import move, copy
+
 
 class RubyCode:
     """Provide handling of the given code"""
@@ -68,7 +71,7 @@ class RubyCode:
         return self.full_name
 
     def file_name_ok(self):
-        """Check that file name is valid
+        """Check if the file name is valid
         
         Returns:
             Bool: confirmation that the file name is not empty or doesnt contain whitespace characters
@@ -87,11 +90,12 @@ class RubyCode:
         return True
 
     def move(self, path, names_match=True):
-        """move the file to a given path.
+        """Move the file to a given path.
 
         Parameters:
             path (string): is where the files will be moved,
-            names_match (Bool): is a condition that if an element with the same name already exists, do not move this file.
+            names_match (Bool): is a condition that if an element with the same name already exists,
+            do not move this file.
 
         Returns:
             Bool: report if the file could be moved or not.
@@ -122,7 +126,7 @@ class RubyCode:
         Parameters:
             new_name (string): the new name that the file will have.
 
-        Atributes:
+        Attributes:
         file_name (string): is where the new name is stored,
         full_name (string): is where the new name is stored with the same path.
         """
@@ -156,15 +160,16 @@ class RubyCode:
         """Check that the file does not run correctly.
 
         Returns:
-            Bool: report if the file couldnt be executed
+            Bool: report if the file could not be executed
         """
         command = 'ruby ' + self.get_full_name()
         return subprocess.call(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) != 0
 
+
 class RubyTestsCode(RubyCode):
     """Provide handling of the given test suite."""
     def dependencies_ok(self, code):
-        """check test suite dependencies match given code.
+        """Check test suite dependencies match given code.
 
         Parameters:
             code (RubyCode): the code to which you want to apply the test suite.
