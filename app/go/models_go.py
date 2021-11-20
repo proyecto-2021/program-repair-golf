@@ -1,4 +1,4 @@
-from .. import db
+from app import db
 #from ..auth.usermodel import User
 
 go_attemps = db.Table('go_attemps',
