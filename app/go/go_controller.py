@@ -103,6 +103,8 @@ class Controller():
 
         repair_candidate = RepairCandidate(challenge=challenge, dir_path=dir.get_path(), file_path=repair.code.get_path())
 
+        dao.add_attempt(id,current_identity.id)
+
         if not repair_candidate.compiles():
             dir.remove_dir()
             return make_response(jsonify({"source_code_file" : "with sintax errors"}), 409)

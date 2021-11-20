@@ -49,8 +49,8 @@ class ChallengeDAO():
 		go_attempts = self.get_attempts(challenge_id, user_id)
 		if not go_attempts:
 			challenge = db.session.query(GoChallenge).filter_by(id=challenge_id).first()
-        #    user = get_user_by_id(user_id)
-        #    challenge.users_attempts.append(user) 
+			user = get_user_by_id(user_id)
+			challenge.users_attempts.append(user) 
 			db.session.commit()
 		attempts = self.get_attempts_number(challenge_id, user_id)
 		db.session.query(go_attemps).filter_by(challenge_id=challenge_id, user_id=user_id).update({'attempts': attempts+1})
