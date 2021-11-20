@@ -2,7 +2,7 @@ from ..models_js import JavascriptChallenge
 from ..folders_and_files import CODES_PATH, FILE_JS_EXTENSION
 from ..exceptions.CommandRunException import CommandRunException
 from .files_controller import upload_file, open_file, to_temp_file, replace_file, remove_files 
-from ..modules.source_code_module import compile_js, test_fail_run
+from ..modules.source_code_module import compile_js, stest_fail_run
 from ..dao.challenge_dao import ChallengeDAO   
 
 class ChallengeController():
@@ -42,7 +42,7 @@ class ChallengeController():
                 replace_file(file_code_path_upd, challenge.code)
             if test_suite_file_upd:     
                 upload_file(test_suite_file_upd, file_test_path_upd)
-                test_fail_run(file_test_path_upd)  
+                stest_fail_run(file_test_path_upd)  
                 replace_file(file_test_path_upd, challenge.tests_code)
         except CommandRunException as e: 
             remove_files(file_code_path_upd,file_test_path_upd)
@@ -62,7 +62,7 @@ class ChallengeController():
         
         try: 
             compile_js(code_file_path)
-            test_fail_run(test_file_path)
+            stest_fail_run(test_file_path)
         except CommandRunException as e: 
             remove_files(code_file_path,test_file_path)
             raise CommandRunException(e.msg, e.HTTP_code)

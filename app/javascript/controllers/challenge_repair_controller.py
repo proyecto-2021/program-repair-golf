@@ -1,7 +1,7 @@
 import nltk
 from flask import make_response,jsonify,request
 from .files_controller import open_file, exist_file, to_temp_file, replace_file,upload_file
-from ..modules.source_code_module import compile_js, test_run
+from ..modules.source_code_module import compile_js, stest_run
 from ..exceptions.ChallengeRepairException import ChallengeRepairException
 from ..dao.challenge_dao import ChallengeDAO
 
@@ -15,7 +15,7 @@ class ChallengeRepairController():
         file_path_new = to_temp_file(challenge.code)  
         upload_file(code_files_new, file_path_new)
         compile_js(file_path_new)
-        test_run(challenge.tests_code)
+        stest_run(challenge.tests_code)
 
         score = ChallengeRepairController.calculate_score(challenge.code,file_path_new)
         if not ChallengeRepairController.score_ok(score,challenge.best_score):
