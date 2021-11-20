@@ -33,7 +33,6 @@ def test_get_all_empty(client,auth):
     assert (ret_get_json=="not found")
     assert ret_get.status_code == 404
 
-
 def test_get_all_working(client,auth):
     # arrange
     for i in range(0,3):
@@ -59,7 +58,7 @@ def test_update_code_without_codename(client,auth):
     }
 
     # act
-    ret_update = client.put(f"go/api/v1/go-challenges/1", data=challengeupdate)
+    ret_update = client.put(f"go/api/v1/go-challenges/1", data=challengeupdate, headers={'Authorization': f'JWT {auth}'})
     ret_update_json=ret_update.json["source_code_file_name"]
     
     # assert
@@ -80,7 +79,7 @@ def test_update_test_without_testname(client,auth):
     }
 
     # act
-    ret_update = client.put(f"go/api/v1/go-challenges/1", data=challengeupdate)
+    ret_update = client.put(f"go/api/v1/go-challenges/1", data=challengeupdate, headers={'Authorization': f'JWT {auth}'})
     ret_update_json=ret_update.json["test_suite_file_name"]
     
     # assert
@@ -207,7 +206,7 @@ def test_update_code_with_syntax_error(client,auth):
     ret_post = client.post("go/api/v1/go-challenges",data=challenge, headers={'Authorization': f'JWT {auth}'})
     ret_post_json = ret_post.json["challenge"]
     postid=ret_post_json["id"]
-    ret_update = client.put(f"go/api/v1/go-challenges/{postid}", data=challengeupdate)
+    ret_update = client.put(f"go/api/v1/go-challenges/{postid}", data=challengeupdate, headers={'Authorization': f'JWT {auth}'})
     ret_update_json = ret_update.json["source_code_file"]
     
     assert ret_update_json=="source code with sintax errors"
@@ -246,7 +245,7 @@ def test_update_test_code_with_syntax_error(client,auth):
     ret_post = client.post("go/api/v1/go-challenges",data=challenge, headers={'Authorization': f'JWT {auth}'})
     ret_post_json = ret_post.json["challenge"]
     postid=ret_post_json["id"]
-    ret_update = client.put(f"go/api/v1/go-challenges/{postid}", data=challengeupdate)
+    ret_update = client.put(f"go/api/v1/go-challenges/{postid}", data=challengeupdate, headers={'Authorization': f'JWT {auth}'})
     ret_update_json=ret_update.json["test_suite_file"]
     
     # assert
