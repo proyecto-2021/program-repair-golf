@@ -29,14 +29,14 @@ def test_post_challenge(client, create_test_data, auth):
     cleanup()
 
 
-def test_post_with_sintax_error_in_code(client):
+def test_post_with_sintax_error_in_code(client, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
     data = create_challenge('Example1', 'Example1Test', 'Testing', '5', 'ExampleSintaxErrors', 'BaseTest')
     expected_response = {'Challenge': 'Sintax errors'}
 
     # Act
-    response = client.post(url, data=data)
+    response = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
 
     # Assert
     assert response.status_code == 409
