@@ -23,7 +23,7 @@ def test_update_incorrect_complexity(client, create_test_data):
     assert resp_put.json == {'Complexity': 'Must be between 1 and 5'}
     cleanup()
 
-def test_update_code_w_sintax_error(client,create_test_data):
+def test_update_code_w_sintax_error(client, create_test_data):
     #Arrange
     url_post = 'cSharp/c-sharp-challenges'
     data = create_test_data['data']
@@ -108,6 +108,34 @@ def test_put_non_existent_challenge(client):
     # Cleanup
     cleanup()
 
-def test_put_with_code_and_test_and_without_challenge(client, create_challenge):
-    #TODO
-    pass
+def test_put_with_code_and_test_and_without_challenge(client, create_test_data, auth):
+    # Arrange
+    url = 'cSharp/c-sharp-challenges'
+    data_post = create_test_data['data']
+    data_put = create_challenge(code="BaseExample3", tests_code="BaseTest3")
+    with open('tests/cSharp/test-files/BaseExample3.cs') as f:
+        new_content_code = f.read()
+    with open('tests/cSharp/test-files/BaseTest3.cs') as f:
+        new_content_tests_code = f.read()
+
+    # Act
+    resp_post = client.post(url, data=data_post, headers={'Authorization': f'JWT {auth}'})
+    challenge_id = resp_post.json["challenge"]["id"]
+    url_put = 'cSharp/c-sharp-challenges/' + str(challenge_id)
+    resp_put = client.put(url_put, data=data_put, headers={'Authorization': f'JWT {auth}'})
+
+    # Assert
+    resp_put_json = resp_put.json
+    del resp_put_json ['challenge']['id']
+    
+    assert resp_put.status_code == 200
+    assert resp_put_json == {"challenge": { "best_score": 0,
+                                            "code": new_content_code,
+                                            "complexity": 5,
+                                            "repair_objective": "Testing",
+                                            "tests_code":new_content_tests_code                                                  
+                                          }
+                            }
+    
+    # Cleanup
+    cleanup()
