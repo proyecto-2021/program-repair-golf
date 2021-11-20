@@ -118,7 +118,7 @@ def test_repair_no_file_in_request(client, create_test_data, auth):
     cleanup()
 
 
-def test_post_better_repair(client, create_test_data):
+def test_post_better_repair(client, create_test_data, auth):
     #Arrange
     url_post = 'cSharp/c-sharp-challenges'
     data = create_test_data['data']
@@ -126,12 +126,12 @@ def test_post_better_repair(client, create_test_data):
     data_repair_2 = {'source_code_file': open('tests/cSharp/test-files/ExampleNoFailsLonger.cs', 'rb')}
 
     #Act
-    resp_post = client.post(url_post, data=data)
+    resp_post = client.post(url_post, data=data, headers={'Authorization': f'JWT {auth}'})
     challenge_id = resp_post.json['challenge']['id']
 
     url_repair = 'cSharp/c-sharp-challenges/' + str(challenge_id) + '/repair'
-    resp_repair_1 = client.post(url_repair, data=data_repair_1)
-    resp_repair_2 = client.post(url_repair, data=data_repair_2)
+    resp_repair_1 = client.post(url_repair, data=data_repair_1, headers={'Authorization': f'JWT {auth}'})
+    resp_repair_2 = client.post(url_repair, data=data_repair_2, headers={'Authorization': f'JWT {auth}'})
 
     #Assert
     assert resp_repair_1.json['Repair']['challenge']['best_score'] == resp_repair_2.json['Repair']['challenge']['best_score']
