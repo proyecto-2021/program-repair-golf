@@ -20,7 +20,7 @@ class RubyChallengeAPI(MethodView):
 
     @jwt_required()
     def post(self):
-        """Post a new Challenge"""
+        """Post a new Challenge."""
         code = request.files.get('source_code_file')
         tests_code = request.files.get('test_suite_file')
         json_challenge = request.form.get('challenge')
@@ -28,7 +28,7 @@ class RubyChallengeAPI(MethodView):
 
     @jwt_required()
     def get(self, id):
-        """Get challenge/s
+        """Get challenge/s.
         
         Parameters:
             id (int): id of the challenge to return. Defaults to None to return all challenges.
@@ -40,7 +40,7 @@ class RubyChallengeAPI(MethodView):
 
     @jwt_required()
     def put(self, id):
-        """Modify a challenge
+        """Modify a challenge.
         
         Parameters:
             id (int): id of the challenge to modify.
@@ -68,7 +68,7 @@ class RubyRepairChallengeAPI(MethodView):
         """Propose a candidate.
         
         Parameters:
-            id (int): id of the challenge to repair
+            id (int): id of the challenge to repair.
         """
         repair_candidate = request.files.get('source_code_file')
         return self.controller.post_repair(id, current_identity, repair_candidate)
