@@ -33,7 +33,7 @@ def test_post_repair(client, create_test_data, auth):
     #CleanUp
     cleanup()
 
-def test_repair_code_w_sintax_error(client, create_test_data):
+def test_repair_code_w_sintax_error(client, create_test_data, auth):
     #Arrange
     url_post = 'cSharp/c-sharp-challenges'
     data = create_test_data['data']
@@ -41,11 +41,11 @@ def test_repair_code_w_sintax_error(client, create_test_data):
     expected_response = {'Repair candidate': 'Sintax error'}
 
     #Act
-    resp_post = client.post(url_post, data=data)
+    resp_post = client.post(url_post, data=data, headers={'Authorization': f'JWT {auth}'})
     challenge_id = resp_post.json['challenge']['id'] 
 
     url_repair = 'cSharp/c-sharp-challenges/' + str(challenge_id) + '/repair'
-    resp_repair = client.post(url_repair, data=data_repair)
+    resp_repair = client.post(url_repair, data=data_repair, headers={'Authorization': f'JWT {auth}'})
 
     #Assert
     assert resp_repair.status_code == 409
