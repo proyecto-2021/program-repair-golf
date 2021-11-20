@@ -47,7 +47,7 @@ def test_post_with_sintax_error_in_code(client, auth):
     cleanup()
 
 
-def test_post_challenge_with_incorrect_complexity(client):
+def test_post_challenge_with_incorrect_complexity(client, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
     data = create_challenge('Example1', 'Example1Test', 'Testing', '0', 'BaseExample', 'BaseTest')
@@ -55,8 +55,8 @@ def test_post_challenge_with_incorrect_complexity(client):
     expected_response = {'Complexity': 'Must be between 1 and 5'}
 
     # Act
-    response = client.post(url, data=data)
-    response1 = client.post(url, data=data1)
+    response = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
+    response1 = client.post(url, data=data1, headers={'Authorization': f'JWT {auth}'})
 
     # Assert
     assert response.status_code == 409
