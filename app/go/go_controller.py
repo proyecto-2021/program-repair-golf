@@ -6,6 +6,7 @@ from .go_repair_candidate import RepairCandidate
 from .go_directory_management import DirectoryManagement
 from app import db
 import math
+from flask_jwt import jwt_required,current_identity
 
 dao = ChallengeDAO()
 
@@ -13,7 +14,7 @@ class Controller():
     def __init__(self):
 	    pass
 
-
+    @jwt_required()
     def get_all_challenges(self):
         challenges = dao.get_all_challenges()
         if not challenges:
@@ -29,7 +30,7 @@ class Controller():
         
         return jsonify({"challenges" : show})
 
-
+    @jwt_required()
     def get_challenge_by_id(self, id):
         if not dao.exists(id):
             return make_response(jsonify({'challenge' : 'not found'}), 404)
@@ -43,7 +44,7 @@ class Controller():
 
         return jsonify({"challenge" : show})
 
-
+    @jwt_required()
     def post_challenge(self):
         challenge_data = json.loads(request.form.get('challenge'))['challenge']
         
@@ -78,7 +79,7 @@ class Controller():
         new_challenge_to_dicc = new_challenge.get_content()
         return jsonify({"challenge": new_challenge_to_dicc})
 
-
+    @jwt_required()
     def post_repair(self, id):
         if not dao.exists(id):
             return make_response(jsonify({'challenge' : 'challenge does not exist'}), 404)
@@ -115,11 +116,12 @@ class Controller():
             challenge.set_best_score(score)
             dao.update_challenge(challenge.get_id(), challenge.get_content(id=False, tests_code=False))
 
-        show = repair_candidate.get_content(score)
+        print(current_identity)
+        show = repair_candidate.get_content(score,current_identity.username)
     
         return jsonify({"repair" : show})
 
-
+    @jwt_required()
     def update_a_go_challenge(self, id):
 
         if not dao.exists(id):
