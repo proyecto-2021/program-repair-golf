@@ -49,7 +49,7 @@ def test_get_non_existent_challenge(client, auth):
     cleanup()
 
 
-def test_get_all_challenges_after_post(client, create_test_data):
+def test_get_all_challenges_after_post(client, create_test_data, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
 
@@ -61,8 +61,8 @@ def test_get_all_challenges_after_post(client, create_test_data):
                                          }]
                          }
     # Act
-    client.post(url, data=create_test_data['data'])
-    resp = client.get(url)
+    client.post(url, data=create_test_data['data'], headers={'Authorization': f'JWT {auth}'})
+    resp = client.get(url, headers={'Authorization': f'JWT {auth}'})
     resp_json = resp.json
     print(resp_json)
 
