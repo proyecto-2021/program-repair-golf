@@ -4,7 +4,7 @@ from app import create_app, db
 from . import *
 import shutil
 
-def test_get_by_id(client, create_test_data):
+def test_get_by_id(client, create_test_data, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
     expected_response = {"Challenge": {"code": create_test_data['content_code'],
@@ -14,14 +14,14 @@ def test_get_by_id(client, create_test_data):
                                        "best_score": 0
                                        }
                          }
-    resp_post = client.post(url, data=create_test_data['data'])
+    resp_post = client.post(url, data=create_test_data['data'], headers={'Authorization': f'JWT {auth}'})
     resp_post_json = resp_post.json
     challenge_id = resp_post_json['challenge']['id']
     url += '/' + str(challenge_id)
     expected_response['Challenge']['id'] = challenge_id
 
     # Act
-    resp_get = client.get(url)
+    resp_get = client.get(url, headers={'Authorization': f'JWT {auth}'})
     resp_get_json = resp_get.json
 
     # Assert
@@ -32,13 +32,13 @@ def test_get_by_id(client, create_test_data):
     cleanup()
 
 
-def test_get_non_existent_challenge(client):
+def test_get_non_existent_challenge(client, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges/1'
     expected_response = {'Challenge': 'Not found'}
 
     # Act
-    resp = client.get(url)
+    resp = client.get(url, headers={'Authorization': f'JWT {auth}'})
     resp_json = resp.json
 
     # Assert
@@ -49,7 +49,7 @@ def test_get_non_existent_challenge(client):
     cleanup()
 
 
-def test_get_all_challenges_after_post(client, create_test_data):
+def test_get_all_challenges_after_post(client, create_test_data, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
 
@@ -61,8 +61,8 @@ def test_get_all_challenges_after_post(client, create_test_data):
                                          }]
                          }
     # Act
-    client.post(url, data=create_test_data['data'])
-    resp = client.get(url)
+    client.post(url, data=create_test_data['data'], headers={'Authorization': f'JWT {auth}'})
+    resp = client.get(url, headers={'Authorization': f'JWT {auth}'})
     resp_json = resp.json
     print(resp_json)
 
@@ -76,11 +76,13 @@ def test_get_all_challenges_after_post(client, create_test_data):
     cleanup()
 
 
-def test_get_none_load(client):
+def test_get_none_load(client, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
+
     # Act
-    resp = client.get(url)
+    resp = client.get(url, headers={'Authorization': f'JWT {auth}'})
+    
     # Assert
     assert resp.json == {'challenges': 'None Loaded'}
     assert len(resp.json) == 1
