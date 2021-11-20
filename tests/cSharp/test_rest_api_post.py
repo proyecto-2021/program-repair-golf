@@ -142,7 +142,7 @@ def test_post_challenge_not_found(client, auth):
     cleanup()
 
 
-def test_post_repeated_challenge(client):
+def test_post_repeated_challenge(client, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
     data = create_challenge('Example1', 'Example1Test', 'Testing', '5', 'BaseExample', 'BaseTest')
@@ -162,8 +162,8 @@ def test_post_repeated_challenge(client):
     expected_response1 = {'Challenge': 'Already exists'}
 
     # Act
-    response = client.post(url, data=data)
-    response1 = client.post(url, data=data1)
+    response = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
+    response1 = client.post(url, data=data1, headers={'Authorization': f'JWT {auth}'})
 
     # Assert
     assert response.status_code == 200
