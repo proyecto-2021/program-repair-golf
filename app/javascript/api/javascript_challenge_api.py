@@ -11,6 +11,7 @@ from ..exceptions.FileUploadException import FileUploadException
 from ..exceptions.FileReplaceException import FileReplaceException
 from ..exceptions.challenge_dao_exception import challenge_dao_exception
 from flask import jsonify, make_response,request
+from flask_jwt import current_identity
 
 class JavascriptChallengeAPI(MethodView):
     def get(self, id):
@@ -49,7 +50,8 @@ class JavascriptChallengeAPI(MethodView):
                 return make_response(jsonify({'Challenge': challenge}), 200) 
             else: 
                 code_files_new = request.files['source_code_file']
-                challenge_rep = ChallengeRepairController.repair(id, code_files_new)
+                challenge_rep = ChallengeRepairController.repair(id, code_files_new,current_identity)
+                
                 return make_response(jsonify({'Challenge': challenge_rep}), 200) 
         except CommandRunException as e: 
             return make_response(jsonify({'Error': e.msg }), e.HTTP_code)
