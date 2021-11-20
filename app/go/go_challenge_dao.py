@@ -2,7 +2,8 @@ import math
 from app import db
 from . import go
 from .models_go import GoChallenge
-class goChallengeDAO():
+
+class ChallengeDAO():
 	def __init__(self):
 		pass 
 
@@ -36,3 +37,6 @@ class goChallengeDAO():
 
 	def exists(self, id):
 		return self.get_challenge_by_id(id) is not None
+
+	def commit(self):
+		db.session.commit()

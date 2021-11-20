@@ -1,7 +1,6 @@
 import subprocess, os, re, shutil
 
-class Go_src:
-
+class SourceCode:
     def __init__(self, path=None):
         self.path = path
 
@@ -43,7 +42,7 @@ class Go_src:
 
     def get_content(self):
         with open(self.get_path(),'r') as f:
-            return f.readlines()
+            return f.read()
 
     def move(self, path):
         shutil.copy(path, self.get_path())
@@ -54,13 +53,8 @@ class Go_src:
     def remove_file(self):
         os.remove(self.get_path())
 
-    def rewrite_file(self, update_data):
-        with open(self.get_path(), 'w') as f:
-                with open(update_data, 'r') as g:
-                    for line in g:
-                        f.write(line)
-
-    def create_file_tmp(path, name, file):
-        path_to_file = Go_src(path = path.get_path() + name)
-        file.save(path_to_file.get_path())
-        return path_to_file
+    def rewrite_file(self, path):
+        with open(self.get_path(), 'r') as f:
+                with open(path, 'w') as g:
+                    for line in f:
+                        g.write(line)
