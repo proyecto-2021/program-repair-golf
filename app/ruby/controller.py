@@ -120,6 +120,7 @@ class Controller:
 
         old_challenge = RubyChallenge(**self.dao.get_challenge(id))
         new_challenge = RubyChallenge(**self.dao.get_challenge(id))
+        valid_values = ['source_code_file_name', 'test_suite_file_name', 'complexity', 'repair_objective']
 
         if json_challenge is not None:
             try:
@@ -129,6 +130,9 @@ class Controller:
             data = json.get('challenge')
             if data is None:
                 return make_response(jsonify({'challenge': 'the json has no challenge field'}), 400)
+            for k in data:
+                if k not in valid_values:
+                    return make_response(jsonify({'challenge': 'the json has invalid attributes'}), 400)
             #If files names are in the request, set new_code names to them. If not, take old_challenge name.
             nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data else old_challenge.get_code().get_file_name()
             nc_test_name = data['test_suite_file_name'] if 'test_suite_file_name' in data else old_challenge.get_tests_code().get_file_name()
