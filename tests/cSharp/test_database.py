@@ -78,3 +78,6 @@ def test_update(client, expected_challenge):
     # Cleanup
     db.session.query(CSharpChallengeModel).delete()   
 
+def test_remove(client, path):
+    # TODO 
+    pass
