@@ -122,7 +122,7 @@ class Controller():
             dao.update_challenge(challenge.get_id(), challenge.get_content(id=False, tests_code=False))
         
         show = repair_candidate.get_content(current_identity.username, dao.get_attempts_number(challenge.get_id(), current_identity.id), score)
-    
+
         return jsonify({"repair" : show})
 
     @jwt_required()
