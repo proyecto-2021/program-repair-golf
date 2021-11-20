@@ -1,4 +1,4 @@
-from flask import jsonify, request, make_response, json
+from flask import jsonify, request, make_response, json ,session
 from .go_challenge_dao import ChallengeDAO
 from .go_source_code import SourceCode
 from .go_challenge import Challenge
@@ -6,6 +6,10 @@ from .go_repair_candidate import RepairCandidate
 from .go_directory_management import DirectoryManagement
 from app import db
 import math
+from flask_jwt import jwt_required,current_identity
+
+from .models_go import go_attemps
+
 
 dao = ChallengeDAO()
 
@@ -13,7 +17,7 @@ class Controller():
     def __init__(self):
 	    pass
 
-
+    @jwt_required()
     def get_all_challenges(self):
         challenges = dao.get_all_challenges()
         if not challenges:
@@ -29,7 +33,7 @@ class Controller():
         
         return jsonify({"challenges" : show})
 
-
+    @jwt_required()
     def get_challenge_by_id(self, id):
         if not dao.exists(id):
             return make_response(jsonify({'challenge' : 'not found'}), 404)
@@ -43,7 +47,7 @@ class Controller():
 
         return jsonify({"challenge" : show})
 
-
+    @jwt_required()
     def post_challenge(self):
         challenge_data = json.loads(request.form.get('challenge'))['challenge']
         
@@ -78,7 +82,7 @@ class Controller():
         new_challenge_to_dicc = new_challenge.get_content()
         return jsonify({"challenge": new_challenge_to_dicc})
 
-
+    @jwt_required()
     def post_repair(self, id):
         if not dao.exists(id):
             return make_response(jsonify({'challenge' : 'challenge does not exist'}), 404)
@@ -99,6 +103,8 @@ class Controller():
 
         repair_candidate = RepairCandidate(challenge=challenge, dir_path=dir.get_path(), file_path=repair.code.get_path())
 
+        dao.add_attempt(challenge.get_id(), current_identity.id)
+
         if not repair_candidate.compiles():
             dir.remove_dir()
             return make_response(jsonify({"source_code_file" : "with sintax errors"}), 409)
@@ -114,12 +120,12 @@ class Controller():
         if score < challenge.get_best_score():
             challenge.set_best_score(score)
             dao.update_challenge(challenge.get_id(), challenge.get_content(id=False, tests_code=False))
+        
+        show = repair_candidate.get_content(current_identity.username, dao.get_attempts_number(challenge.get_id(), current_identity.id), score)
 
-        show = repair_candidate.get_content(score)
-    
         return jsonify({"repair" : show})
 
-
+    @jwt_required()
     def update_a_go_challenge(self, id):
 
         if not dao.exists(id):

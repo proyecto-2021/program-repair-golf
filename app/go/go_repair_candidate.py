@@ -11,14 +11,14 @@ class RepairCandidate:
 		self.tests_code = SourceCode(path=self.dir_path)
 		self.repair_code = SourceCode(path=self.file_path)
 
-	def get_content(self, score):
+	def get_content(self, user, attemps, score):
 		return {
 			'challenge':{
 				'repair_objective': self.challenge.get_repair_objective(),
 				'best_score': self.challenge.get_best_score(),
 			},
-			'player': {'username': 'Moli'},
-			'attempts': 1,
+			'player': {'username': user},
+			'attempts': attemps,
 			'score': score
 		}
 

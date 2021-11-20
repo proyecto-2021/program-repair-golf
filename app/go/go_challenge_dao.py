@@ -1,7 +1,9 @@
 import math
 from app import db
 from . import go
-from .models_go import GoChallenge
+from .models_go import GoChallenge, go_attemps
+from app.auth.userdao import get_user_by_id
+from app.auth.usermodel import User
 
 class ChallengeDAO():
 	def __init__(self):
@@ -38,5 +40,19 @@ class ChallengeDAO():
 	def exists(self, id):
 		return self.get_challenge_by_id(id) is not None
 
-	def commit(self):
+	def get_attempts(self, challenge_id, user_id):
+		return db.session.query(go_attemps).filter_by(challenge_id=challenge_id, user_id=user_id).first()
+
+	def get_attempts_number(self, challenge_id, user_id):
+		return self.get_attempts(challenge_id, user_id).attempts
+
+	def add_attempt(self, challenge_id, user_id):
+		go_attempts = self.get_attempts(challenge_id, user_id)
+		if not go_attempts:
+			challenge = db.session.query(GoChallenge).filter_by(id=challenge_id).first()
+			user = get_user_by_id(user_id)
+			challenge.attempts.append(user)
+			db.session.commit()
+		attempts = self.get_attempts_number(challenge_id, user_id)
+		db.session.query(go_attemps).filter_by(challenge_id=challenge_id, user_id=user_id).update({'attempts': attempts+1})
 		db.session.commit()
