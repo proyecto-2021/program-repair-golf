@@ -116,7 +116,6 @@ class Controller():
             challenge.set_best_score(score)
             dao.update_challenge(challenge.get_id(), challenge.get_content(id=False, tests_code=False))
 
-        print(current_identity)
         show = repair_candidate.get_content(score,current_identity.username)
     
         return jsonify({"repair" : show})
