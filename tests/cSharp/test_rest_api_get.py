@@ -32,13 +32,13 @@ def test_get_by_id(client, create_test_data, auth):
     cleanup()
 
 
-def test_get_non_existent_challenge(client):
+def test_get_non_existent_challenge(client, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges/1'
     expected_response = {'Challenge': 'Not found'}
 
     # Act
-    resp = client.get(url)
+    resp = client.get(url, headers={'Authorization': f'JWT {auth}'})
     resp_json = resp.json
 
     # Assert
