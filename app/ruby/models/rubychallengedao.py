@@ -26,10 +26,10 @@ class RubyChallengeDAO(object):
         """Create a new challenge in database.
         
         Parameters:
-            code (String): path where code is stored,
-            tests_code (String): path where test suite is stored,
-            repair_objective (String): objective of the challenge,
-            complexity (String): complexity of the challenge.
+            code (str): path where code is stored,
+            tests_code (str): path where test suite is stored,
+            repair_objective (str): objective of the challenge,
+            complexity (str): complexity of the challenge.
         """
         challenge = RubyChallengeModel(
             code=code,
