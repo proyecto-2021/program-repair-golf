@@ -7,11 +7,11 @@ class RubyChallenge:
 		"""Initialize challenge.
 
 		Parameters:
-			repair_objective (string): set the challenge repair objective,
-			complexity (string): set the challenge complexity,
+			repair_objective (str): set the challenge repair objective,
+			complexity (str): set the challenge complexity,
 			best_score (integer): set the challenge score by default is 0,
-			code (string): set the challenge file code,
-			tests_code (string): set the challenge tests suite,
+			code (str): set the challenge file code,
+			tests_code (str): set the challenge tests suite,
 			id (integer): set the challenge id.
 		"""
 		self.repair_objective = repair_objective
@@ -29,7 +29,7 @@ class RubyChallenge:
 		"""Obtain the challenge file code.
 
 			Returns:
-				code (RubyCode): the file code wanted
+				code (RubyCode): the file code wanted.
 		"""
 		return self.code
 
@@ -45,7 +45,7 @@ class RubyChallenge:
 		"""Obtain the challenge best score.
 
 		Returns:
-			best_score (integer): the score wanted.
+			best_score (int): the score wanted.
 		"""
 		return self.best_score
 
@@ -54,7 +54,7 @@ class RubyChallenge:
 
 		Parameters:
 			exclude (list): list of attributes to excluding,
-			for_db (Bool): condition to know how to get the challenge file code and/or tests suite.
+			for_db (bool): condition to know how to get the challenge file code and/or tests suite.
 
 		Returns:
 			dict (dict): a dictionary with the challenge attributes wanted.
@@ -77,12 +77,12 @@ class RubyChallenge:
 		"""Set the challenge file code.
 
 		Parameters:
-			files_path (string): the new path
-			file_name (string): the new code file name
-			file (FileStorage): the new code file
+			files_path (str): the new path,
+			file_name (str): the new code file name,
+			file (FileStorage): the new code file.
 
 		Attributes:
-			code (RubyCode): the challenge code file
+			code (RubyCode): the challenge code file.
 		"""
 		self.code.set_code(files_path, file_name, file)
 
@@ -90,12 +90,12 @@ class RubyChallenge:
 		"""Set the challenge test suite.
 
 		Parameters:
-			files_path (string): the new path
-			file_name (string): the new tests suite file name
-			file (FileStorage): the new tests suite file
+			files_path (str): the new path,
+			file_name (str): the new tests suite file name,
+			file (FileStorage): the new tests suite file.
 
 		Attributes:
-			tests_code (RubyTestsCode): the challenge tests suite
+			tests_code (RubyTestsCode): the challenge tests suite.
 		"""
 		self.tests_code.set_code(files_path, file_name, file)
 
@@ -103,10 +103,10 @@ class RubyChallenge:
 		"""Set the challenge score.
 
 		Parameters:
-			new_score (integer): the new best score to update.
+			new_score (int): the new best score to update.
 
 		Attributes:
-			best_score (integer): the challenge best score.
+			best_score (int): the challenge best score.
 		"""
 		self.best_score = new_score
 
@@ -124,7 +124,7 @@ class RubyChallenge:
 		"""Check if challenge attributes are not empty or wrong.
 
 		Returns:
-			Bool: reports that the repair objective is not empty and the complexity and file names are correct.
+			bool: reports that the repair objective is not empty and the complexity and file names are correct.
 		"""
 		return self.repair_objective and self.complexity_ok() and self.code.file_name_ok() and self.tests_code.file_name_ok()
 
@@ -132,6 +132,6 @@ class RubyChallenge:
 		"""Check that the complexity is correct.
 
 		Returns:
-			Bool: reports that the complexity is between 1 and 5.
+			bool: reports that the complexity is between 1 and 5.
 		"""
 		return self.complexity.isdigit() and int(self.complexity) in range(1, 6)
