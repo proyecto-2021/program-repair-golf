@@ -91,14 +91,14 @@ def test_update_code_passes_all_tests(client, create_test_data, auth):
     cleanup()
 
 
-def test_put_non_existent_challenge(client):
+def test_put_non_existent_challenge(client, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges/1'
     expected_response = {"challenge": "There is no challenge for this id"}
     data_put={}
 
     # Act
-    resp = client.put(url, data=data_put)
+    resp = client.put(url, data=data_put, headers={'Authorization': f'JWT {auth}'})
     resp_json = resp.json
 
     # Assert
