@@ -85,14 +85,14 @@ def test_post_challenge_with_sintax_error_in_test(client, auth):
     cleanup()
 
 
-def test_post_challenge_test_no_fails(client):
+def test_post_challenge_test_no_fails(client, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
     data = create_challenge('Example1', 'Example1Test', 'Testing', '1', 'ExampleNoFails', 'BaseTest')
     expected_response = {'Test': 'At least one has to fail'}
 
     # Act
-    response = client.post(url, data=data)
+    response = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
 
     # Assert
     assert response.status_code == 409
