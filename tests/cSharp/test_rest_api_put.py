@@ -67,7 +67,7 @@ def test_update_complexity_and_repair_objective(client, create_test_data, auth):
     assert resp_put_json == expected_response
     cleanup()
 
-def test_update_code_passes_all_tests(client, create_test_data):
+def test_update_code_passes_all_tests(client, create_test_data, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
 
@@ -75,11 +75,11 @@ def test_update_code_passes_all_tests(client, create_test_data):
     expected_response = {'Challenge': 'Must fail at least one test'}
 
     # Act
-    resp_post = client.post(url, data=create_test_data['data'])
+    resp_post = client.post(url, data=create_test_data['data'], headers={'Authorization': f'JWT {auth}'})
     ch_id = resp_post.json['challenge']['id']
     url += '/' + str(ch_id)
 
-    resp_put = client.put(url, data=data_put)
+    resp_put = client.put(url, data=data_put, headers={'Authorization': f'JWT {auth}'})
     resp_json = resp_put.json
     resp_code = resp_put.status_code
 
