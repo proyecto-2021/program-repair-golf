@@ -102,7 +102,7 @@ def test_post_challenge_test_no_fails(client, auth):
     cleanup()
 
 
-def test_post_challenge_not_found(client):
+def test_post_challenge_not_found(client, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
     data0 = {}
@@ -125,13 +125,13 @@ def test_post_challenge_not_found(client):
     responses = []
 
     # Act
-    responses.append(client.post(url, data=data0))
-    responses.append(client.post(url, data=data))
-    responses.append(client.post(url, data=data1))
-    responses.append(client.post(url, data=data2))
-    responses.append(client.post(url, data=data3))
-    responses.append(client.post(url, data=data4))
-    responses.append(client.post(url, data=data5))
+    responses.append(client.post(url, data=data0, headers={'Authorization': f'JWT {auth}'}))
+    responses.append(client.post(url, data=data, headers={'Authorization': f'JWT {auth}'}))
+    responses.append(client.post(url, data=data1, headers={'Authorization': f'JWT {auth}'}))
+    responses.append(client.post(url, data=data2, headers={'Authorization': f'JWT {auth}'}))
+    responses.append(client.post(url, data=data3, headers={'Authorization': f'JWT {auth}'}))
+    responses.append(client.post(url, data=data4, headers={'Authorization': f'JWT {auth}'}))
+    responses.append(client.post(url, data=data5, headers={'Authorization': f'JWT {auth}'}))
 
     # Assert
     for response in responses:
