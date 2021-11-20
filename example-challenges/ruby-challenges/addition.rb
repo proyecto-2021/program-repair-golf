@@ -1,4 +1,4 @@
 def addition(a,b)
-    return a - b
-  end
+  return a - b
+end
   
