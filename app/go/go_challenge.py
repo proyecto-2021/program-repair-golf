@@ -1,14 +1,14 @@
-from go_src import Go_src
+from .go_source_code import SourceCode
+from app import db
 
-class GoChallenge:
-
-    def __init__(self, id=None, path_code=None, path_tests_code=None, repair_objective=None, complexity=None):
+class Challenge:
+    def __init__(self, id=None, path_code=None, path_tests_code=None, repair_objective=None, complexity=None, best_score=None):
         self.id = id
-        self.code = Go_src(path = path_code)
-        self.tests_code = Go_src(path = path_tests_code)
+        self.code = SourceCode(path = path_code)
+        self.tests_code = SourceCode(path = path_tests_code)
         self.repair_objective = repair_objective
         self.complexity = complexity
-        self.best_score = 0
+        self.best_score = best_score
 
     def get_id(self):
         return self.id
@@ -34,40 +34,32 @@ class GoChallenge:
     def get_best_score(self):
         return self.best_score
 
-    def get_content_by_id_and_put(self):
-        return {
-            'code': self.code.get_content(),
-            'tests_code': self.tests_code.get_content(),
-            'repair_objective': self.repair_objective,
-            'complexity': self.complexity,
-            'best_score': self.best_score
-        }
+    def get_content(self, id=True, tests_code=True):
 
-    def get_content_all(self):
-        return {
+        challenge = {
             'id': self.id,
-            'code': self.code.get_content(),
+            'code': self.get_code_content(),
+            'tests_code': self.get_tests_code_content(), 
             'repair_objective': self.repair_objective,
             'complexity': self.complexity,
             'best_score': self.best_score
         }
 
-    def get_content_post(self):
-        return {
-            'id': self.id,
-            'code': self.code.get_content(),
-            'tests_code': self.tests_code.get_content(),
-            'repair_objective': self.repair_objective,
-            'complexity': self.complexity,
-            'best_score': self.best_score
-        }
+        if id and tests_code: 
+            return challenge
+        elif id and not tests_code:
+            del challenge['tests_code']
+            return challenge
+        elif not id and tests_code:
+            del challenge['id']
+            return challenge
+        
+        challenge['code'] = self.code.get_path()
+        challenge['tests_code'] = self.tests_code.get_path()
+        return challenge
 
-    def get_content_repair(self):
-        return {
-            'repair_objective': self.repair_objective,
-            'best_score': self.best_score
-        }
-
+    def set_id(self, id):
+        self.id = id
 
     def set_code(self, path_code):
         self.code.set_path(path_code)
@@ -84,20 +76,17 @@ class GoChallenge:
     def set_best_score(self, best_score):
         self.best_score = best_score
 
-    def codes_compiles(self):
-        return self.code.code_compiles() and self.tests_code.test_compiles()
-
     def code_compiles(self):
-        return self.code.code_compiles()
+        return self.code.compiles(is_code=True)
 
     def tests_compiles(self):
-        return self.tests_code.test_compiles()
+        return self.tests_code.compiles(is_code=False)
 
     def tests_fail(self):
         return self.tests_code.tests_fail()
 
-    def remove_dir(self):
-        self.code.remove_dir()
+    def rewrite_code(self, path):
+        return self.code.rewrite_file(path)
 
-    def remove_file(self, is_code):
-        self.code.remove_file() if is_code else self.tests_code.remove_file()
+    def rewrite_tests_code(self, path):
+        return self.tests_code.rewrite_file(path)

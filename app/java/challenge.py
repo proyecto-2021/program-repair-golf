@@ -1,4 +1,3 @@
-#from app.java.controller import controller
 from app.java.file_management import FileManagement
 from app.java.DAO_java_challenge import DAO_java_challenge
 import subprocess
@@ -20,12 +19,10 @@ class Challenge():
         code_file_name = dict['source_code_file_name']
         test_suite_file_name = dict['test_suite_file_name']
         FileManagement.upload_file_class(file, UPLOAD_FOLDER, dict)
-        #path_file_java = UPLOAD_FOLDER + file.filename
         path_file_java = UPLOAD_FOLDER + code_file_name + '.java'
         if Challenge.class_java_compile(path_file_java):
             # upload test suite java and compile
             FileManagement.upload_file_test(test_suite, UPLOAD_FOLDER, dict)
-            #path_test_java = UPLOAD_FOLDER + test_suite.filename
             path_test_java = UPLOAD_FOLDER + test_suite_file_name + '.java'
             # excute test suite java
             # excute_java_test return true if pass all test
@@ -36,11 +33,9 @@ class Challenge():
                     DAO_java_challenge.create_challenge(dict)
                     return True
             else:
-                return False
-                #return make_response(jsonify("Test suite not compile"))
+                return False       
         else:
             return False
-            #return make_response(jsonify("Class java not compile"))
 
     def class_java_compile(path_file_java):
         try:
@@ -111,7 +106,7 @@ class Challenge():
         code_file_name = dict['source_code_file_name']
         test_suite_file_name = dict['test_suite_file_name']
         FileManagement.upload_file_class(file, UPLOAD_FOLDER, dict)
-        #path_file_java = UPLOAD_FOLDER + file.filename
+        
         path_file_java = UPLOAD_FOLDER + code_file_name + '.java'
         if Challenge.class_java_compile(path_file_java):
             # upload test suite java and compile
@@ -124,13 +119,13 @@ class Challenge():
                 if Challenge.execute_test(test_suite_file_name, code_file_name):
                     return False
                 else:
-                    #DAO_java_challenge.create_challenge(dict)
+                    
                     return True
             else:
                 return False
-                #return make_response(jsonify("Test suite not compile"))
+               
         else:
             return False
-            #return make_response(jsonify("Class java not compile"))
+            
         
-############################
+

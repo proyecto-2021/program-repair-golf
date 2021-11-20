@@ -1,5 +1,12 @@
 from app import db
 
+c_sharp_attempts = db.Table('c_sharp_attempts',
+    db.Column('challenge_id', db.Integer, db.ForeignKey('c_sharp_challenge_model.id'), primary_key=True),
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('attempts', db.Integer, default=0)
+)
+
+
 class CSharpChallengeModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(256), unique=True, nullable=False)
@@ -17,23 +24,3 @@ class CSharpChallengeModel(db.Model):
             "complexity": self.complexity,
             "best_score": self.best_score
         }
-    
-def get_challenge_db(id, show_files_content=False):
-    challenge = db.session.query(CSharpChallengeModel).filter_by(id=id).first().__repr__()
-    if show_files_content:
-        challenge['code'] = open(challenge['code'], "r").read()
-        challenge['tests_code'] = open(challenge['tests_code'], "r").read() 
-    return challenge
-
-def exist(id):
-    return db.session.query(CSharpChallengeModel).filter_by(id=id).first() is not None
-
-def save_challenge(challenge_data, source_code_path, test_path):
-    new_challenge = CSharpChallengeModel(code = source_code_path, tests_code = test_path, repair_objective = challenge_data['repair_objective'], complexity = int(challenge_data['complexity']), best_score = 0)
-    db.session.add(new_challenge)
-    db.session.commit()
-    return new_challenge.id
-
-def update_challenge_data(id, data):
-    db.session.query(CSharpChallengeModel).filter_by(id=id).update(data)
-    db.session.commit()
