@@ -4,7 +4,7 @@ from app import create_app, db
 from . import *
 import shutil
 
-def test_post_challenge(client, create_test_data):
+def test_post_challenge(client, create_test_data, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
 
@@ -17,7 +17,7 @@ def test_post_challenge(client, create_test_data):
                           }
                          }
     # Act
-    response = client.post(url, data=create_test_data['data'])
+    response = client.post(url, data=create_test_data['data'], headers={'Authorization': f'JWT {auth}'})
     response_json = response.json
 
     # Assert
