@@ -41,7 +41,7 @@ def test_update_code_w_sintax_error(client,create_test_data, auth):
     assert resp_put.json == {'Source code': 'Sintax errors'}
     cleanup()
 
-def test_update_complexity_and_repair_objective(client, create_test_data):
+def test_update_complexity_and_repair_objective(client, create_test_data, auth):
     url_post = 'cSharp/c-sharp-challenges'
     data = create_test_data['data']
     data_put = create_challenge(repair_objective='Test this method', complexity='4')
@@ -53,11 +53,11 @@ def test_update_complexity_and_repair_objective(client, create_test_data):
                                        }
                         }
 
-    resp_post = client.post(url_post, data=data)
+    resp_post = client.post(url_post, data=data, headers={'Authorization': f'JWT {auth}'})
     challenge_id = resp_post.json['challenge']['id']
      
     url_put = 'cSharp/c-sharp-challenges/' + str(challenge_id) 
-    resp_put = client.put(url_put, data=data_put)
+    resp_put = client.put(url_put, data=data_put, headers={'Authorization': f'JWT {auth}'})
     resp_put_json = resp_put.json
     del resp_put_json['challenge']['id']
     print(resp_put.json)
