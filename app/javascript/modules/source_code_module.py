@@ -15,17 +15,17 @@ def stest_run(path_file):
     
     if not dependences_ok(folders_and_files.CHALLENGES_PATH):
         extract_dependences()
-    command_stest = f'cd {folders_and_files.CHALLENGES_PATH}; npm test {path_file}' 
-    stest_run = run_command(command_stest)
+    command_test = f'cd {folders_and_files.CHALLENGES_PATH}; npm test {path_file}' 
+    test_run = run_command(command_test)
 
     if not run_command_ok(stest_run) and not stest_run_ok(command_output(stest_run)): 
         install_dependece()
-        stests_run = run_command(command_stest)
+        test_run = run_command(command_test)
   
-    if not run_command_ok(stests_run) or not stest_is_from_to_code(path_file):
-        raise CommandRunException(f"The test not found {stests_run}", CommandRunException.HTTP_NOT_FOUND)
+    if not run_command_ok(test_run) or not stest_is_from_to_code(path_file):
+        raise CommandRunException(f"The test not found {test_run}", CommandRunException.HTTP_NOT_FOUND)
     
-    return command_output(stests_run)
+    return command_output(test_run)
 
 def stest_fail_run(path_file):
     test_out = ''
