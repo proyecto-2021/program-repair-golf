@@ -49,7 +49,7 @@ class RubyChallengeAPI(MethodView):
         json_challenge = request.form.get('challenge')
         return self.controller.modify_challenge(id, code, tests_code, json_challenge)
        
-class RubyChallengeRepairAPI(MethodView):
+class RubyRepairChallengeAPI(MethodView):
     """Manage repair attempts"""
     def __init__(self):
         """Initialize API. 
@@ -72,8 +72,8 @@ class RubyChallengeRepairAPI(MethodView):
         return self.controller.post_repair(id, current_identity, repair_candidate)
 
 ruby_challenge_view = RubyChallengeAPI.as_view('ruby_challenge_api')
-ruby_challenge_repair_view = RubyChallengeRepairAPI.as_view('ruby_challenge_repair_api')
+ruby_repair_challenge_view = RubyRepairChallengeAPI.as_view('ruby_repair_challenge_api')
 ruby.add_url_rule('/challenge', view_func=ruby_challenge_view, methods=['POST',])
 ruby.add_url_rule('/challenges', defaults={'id': None}, view_func=ruby_challenge_view, methods=['GET',])
 ruby.add_url_rule('/challenge/<int:id>', view_func=ruby_challenge_view, methods=['GET', 'PUT'])
-ruby.add_url_rule('/challenge/<int:id>/repair', view_func=ruby_challenge_repair_view, methods=['POST',])
+ruby.add_url_rule('/challenge/<int:id>/repair', view_func=ruby_repair_challenge_view, methods=['POST',])
