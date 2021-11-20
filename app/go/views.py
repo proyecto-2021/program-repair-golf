@@ -4,13 +4,11 @@ from app import db
 from . import go
 from .models_go import GoChallenge
 import os, subprocess, math, nltk, shutil
-from .go_challenge_dao import goChallengeDAO
-from .go_src import Go_src
 from .go_controller import Controller
+from flask_jwt import jwt_required,current_identity
 
-
-dao = goChallengeDAO()
 controller = Controller()
+user = "moli"
 
 @go.route('api/v1/go-challenges/<int:id>/repair', methods=['POST'])
 def repair_challenge_go(id):
@@ -31,3 +29,4 @@ def update_a_go_challenge(id):
 @go.route('/api/v1/go-challenges', methods=['POST'])
 def create_go_challenge():
     return controller.post_challenge()
+    

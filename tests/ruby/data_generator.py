@@ -8,8 +8,10 @@ def get_data(code_name=None, tests_name=None, repair_objective=None, complexity=
     data.update(get_json(code_name, tests_name, repair_objective, complexity))
     return data
 
+
 def get_json(code_name=None, tests_name=None, repair_objective=None, complexity=None):
-    dictionary = { 'source_code_file_name': code_name, 'test_suite_file_name': tests_name, 'repair_objective': repair_objective, 'complexity': complexity }
+    dictionary = {'source_code_file_name': code_name, 'test_suite_file_name': tests_name,
+                  'repair_objective': repair_objective, 'complexity': complexity}
     data = '{ "challenge": { '
     first = True
     for key in dictionary:

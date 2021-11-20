@@ -2,6 +2,7 @@ from . import python
 from .. import db
 from flask import request, make_response, jsonify
 from flask.views import MethodView
+from flask_jwt import jwt_required, current_identity
 from .models import PythonChallengeModel
 from .PythonController import PythonController
 from .PythonChallenge import PythonChallenge
@@ -10,6 +11,7 @@ from os import path
 
 class PythonViews(MethodView):
 
+    @jwt_required()
     def get(self, id): 
         if id is None:
             challenge_list = PythonController.get_all_challenges()
@@ -21,6 +23,7 @@ class PythonViews(MethodView):
 
             return jsonify({"challenge": response}) 
 
+    @jwt_required()
     def post(self):
         #gather data for post
         try:
@@ -36,6 +39,7 @@ class PythonViews(MethodView):
 
         return jsonify({"challenge": post_result})
 
+    @jwt_required()
     def put(self, id):
         challenge_data = request.form.get('challenge')
         if challenge_data != None: challenge_data = loads(challenge_data)['challenge']
@@ -52,6 +56,7 @@ class PythonViews(MethodView):
 
         return jsonify({"challenge" : update_result})
 
+    @jwt_required()
     def repair_challenge(id):
         
         #Repair candidate 
