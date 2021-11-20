@@ -1,4 +1,4 @@
-from flask import jsonify, request, make_response, json
+from flask import jsonify, request, make_response, json ,session
 from .go_challenge_dao import ChallengeDAO
 from .go_source_code import SourceCode
 from .go_challenge import Challenge
@@ -7,6 +7,9 @@ from .go_directory_management import DirectoryManagement
 from app import db
 import math
 from flask_jwt import jwt_required,current_identity
+
+from .models_go import go_attemps
+
 
 dao = ChallengeDAO()
 
@@ -115,8 +118,8 @@ class Controller():
         if score < challenge.get_best_score():
             challenge.set_best_score(score)
             dao.update_challenge(challenge.get_id(), challenge.get_content(id=False, tests_code=False))
-
-        show = repair_candidate.get_content(score,current_identity.username)
+        
+        show = repair_candidate.get_content(score,current_identity.username,attemps)
     
         return jsonify({"repair" : show})
 
