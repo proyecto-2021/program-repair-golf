@@ -2,18 +2,19 @@ from .rubychallengemodel import RubyChallengeModel, ruby_attempts
 from app.auth.userdao import get_user_by_id
 from app import db
 
+
 class RubyChallengeDAO(object):
     """Manage RubyChallenge in database."""
     def __init__(self):
         pass
 
-    def get_challenge(self, id):
+    def get_challenge(self, challenge_id):
         """Retrieve a challenge from database.
         
         Parameters:
-            id (int): id of the challenge that will be retrieved.
+            challenge_id (int): id of the challenge that will be retrieved.
         """
-        challenge = db.session.query(RubyChallengeModel).filter_by(id=id).first().get_dict()
+        challenge = db.session.query(RubyChallengeModel).filter_by(id=challenge_id).first().get_dict()
         del challenge['id']
         return challenge
 
@@ -31,36 +32,36 @@ class RubyChallengeDAO(object):
             complexity (String): complexity of the challenge.
         """
         challenge = RubyChallengeModel(
-            code = code,
-            tests_code = tests_code,
-            repair_objective = repair_objective,
-            complexity = complexity,
-            best_score = 0
+            code=code,
+            tests_code=tests_code,
+            repair_objective=repair_objective,
+            complexity=complexity,
+            best_score=0
         )
         db.session.add(challenge)
         db.session.commit()
         return challenge.get_dict()['id']
 
-    def update_challenge(self, id, changes):
+    def update_challenge(self, challenge_id, changes):
         """Update a challenge in the database.
         
         Parameters:
-            id (int): id of the challenge to update,
+            challenge_id (int): id of the challenge to update,
             changes (dict): dictionary containing all changes to be made.
         """
-        db.session.query(RubyChallengeModel).filter_by(id=id).update(changes)
+        db.session.query(RubyChallengeModel).filter_by(id=challenge_id).update(changes)
         db.session.commit()
 
-    def exists(self, id):
+    def exists(self, challenge_id):
         """Check if a challenge exists in the database.
         
         Parameters:
-            id (int): id of the challenge to check existence.
+            challenge_id (int): id of the challenge to check existence.
         """
-        return db.session.query(RubyChallengeModel).filter_by(id=id).first() is not None
+        return db.session.query(RubyChallengeModel).filter_by(id=challenge_id).first() is not None
 
     def add_attempt(self, challenge_id, user_id):
-        """Add a new attemp in the ruby_attempts table.
+        """Add a new attempt in the ruby_attempts table.
         
         Parameters:
             challenge_id (int): id of the challenge being attempted,

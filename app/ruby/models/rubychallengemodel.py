@@ -1,11 +1,13 @@
 from app import db
 from sqlalchemy.sql.schema import CheckConstraint
 
-ruby_attempts = db.Table('ruby_attempts',
-    db.Column('challenge_id', db.Integer, db.ForeignKey('ruby_challenge.id'), primary_key=True),
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+ruby_attempts = db.Table(
+	'ruby_attempts',
+	db.Column('challenge_id', db.Integer, db.ForeignKey('ruby_challenge.id'), primary_key=True),
+	db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
 	db.Column('count', db.Integer, default=0)
 )
+
 
 class RubyChallengeModel(db.Model):
 	"""Model to create a table in database."""
