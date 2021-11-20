@@ -103,6 +103,8 @@ class Controller():
 
         repair_candidate = RepairCandidate(challenge=challenge, dir_path=dir.get_path(), file_path=repair.code.get_path())
 
+        dao.add_attempt(challenge.get_id(), current_identity.id)
+
         if not repair_candidate.compiles():
             dir.remove_dir()
             return make_response(jsonify({"source_code_file" : "with sintax errors"}), 409)
@@ -119,7 +121,7 @@ class Controller():
             challenge.set_best_score(score)
             dao.update_challenge(challenge.get_id(), challenge.get_content(id=False, tests_code=False))
         
-        show = repair_candidate.get_content(score,current_identity.username,attemps)
+        show = repair_candidate.get_content(current_identity.username, dao.get_attempts_number(challenge.get_id(), current_identity.id), score)
     
         return jsonify({"repair" : show})
 
