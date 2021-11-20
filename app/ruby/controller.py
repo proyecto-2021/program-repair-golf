@@ -15,9 +15,9 @@ class Controller:
         """Initialize controller.
         
         Parameters:
-            files_path (string): set where the files are stored,
+            files_path (str): set where the files are stored,
             dao (RubyChallengeDAO): provide an object to manage database items,
-            ruby_tmp (string): set a temporary directory.
+            ruby_tmp (str): set a temporary directory.
         """
         self.files_path = files_path
         self.dao = RubyChallengeDAO()
@@ -238,7 +238,7 @@ class Controller:
             new_challenge_code (RubyCode): new challenge code being saved.
         
         Returns:
-            Bool: False if trying to replace a file related to another challenge. True if success.
+            bool: false if trying to replace a file related to another challenge. True if success.
         """
         if old_challenge_code.get_file_name() != new_challenge_code.get_file_name():
             if not new_challenge_code.move(self.files_path, names_match=False):
@@ -253,14 +253,14 @@ class Controller:
         """Set new challenge code.
         
         Parameters:
-            name (String): name with which the code is saved,
-            file (FileStorage/String): code to be saved. If it is a FileStorage, save it.
-                If it is a String, copy the file that the String references,
+            name (str): name with which the code is saved,
+            file (FileStorage/str): code to be saved. If it is a FileStorage, save it.
+                If it is a str, copy the file that the str references,
             old_challenge_code (RubyCode): original challenge code,
             new_challenge_code (RubyCode): new challenge code.
 
         Returns:
-            Bool: False if the new code fails to compile. True in other cases.
+            bool: false if the new code fails to compile. True in other cases.
         """
         if file is not None:
             new_challenge_code.set_code(self.ruby_tmp, name, file)
