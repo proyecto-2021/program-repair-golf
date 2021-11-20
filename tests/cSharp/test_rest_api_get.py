@@ -4,7 +4,7 @@ from app import create_app, db
 from . import *
 import shutil
 
-def test_get_by_id(client, create_test_data):
+def test_get_by_id(client, create_test_data, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
     expected_response = {"Challenge": {"code": create_test_data['content_code'],
@@ -14,14 +14,14 @@ def test_get_by_id(client, create_test_data):
                                        "best_score": 0
                                        }
                          }
-    resp_post = client.post(url, data=create_test_data['data'])
+    resp_post = client.post(url, data=create_test_data['data'], headers={'Authorization': f'JWT {auth}'})
     resp_post_json = resp_post.json
     challenge_id = resp_post_json['challenge']['id']
     url += '/' + str(challenge_id)
     expected_response['Challenge']['id'] = challenge_id
 
     # Act
-    resp_get = client.get(url)
+    resp_get = client.get(url, headers={'Authorization': f'JWT {auth}'})
     resp_get_json = resp_get.json
 
     # Assert
