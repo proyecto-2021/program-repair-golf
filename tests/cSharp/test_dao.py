@@ -1,5 +1,7 @@
 from . import client
-from app.cSharp.models import *
+from app import db
+from app.cSharp.models import CSharpChallengeModel
+from app.cSharp.c_sharp_challenge_DAO import CSharpChallengeDAO
 import pytest
 
 
@@ -32,8 +34,9 @@ def expected_challenge_w_f_contents(new_challenge):
 
 def test_get_challenge_from_db_without_files_contents(client, expected_challenge):
     # Test get_challenge_db method with show_files_content=False
+    dao = CSharpChallengeDAO()
     ch_id = expected_challenge['id']
-    challenge_from_get = get_challenge_db(ch_id)
+    challenge_from_get = dao.get_challenge_db(ch_id)
     assert challenge_from_get == expected_challenge
 
     # Cleanup
@@ -41,8 +44,9 @@ def test_get_challenge_from_db_without_files_contents(client, expected_challenge
 
 
 def test_get_challenge_from_db_with_files_contents(client, expected_challenge_w_f_contents):
+    dao = CSharpChallengeDAO()
     ch_id = expected_challenge_w_f_contents['id']
-    challenge_from_get = get_challenge_db(ch_id, show_files_content=True)
+    challenge_from_get = dao.get_challenge_db(ch_id, show_files_content=True)
     assert challenge_from_get == expected_challenge_w_f_contents
 
     # Cleanup
@@ -50,11 +54,12 @@ def test_get_challenge_from_db_with_files_contents(client, expected_challenge_w_
 
 def test_exist(client, expected_challenge):
     # Arrange
+    dao = CSharpChallengeDAO()
     ch_id = expected_challenge['id']
 
     # Act 
-    result_true = exist(ch_id)
-    result_false = exist(ch_id + 1)
+    result_true = dao.exist(ch_id)
+    result_false = dao.exist(ch_id + 1)
 
     #Assert
     assert result_true
@@ -65,11 +70,12 @@ def test_exist(client, expected_challenge):
 
 def test_update(client, expected_challenge):
     # Arrange
+    dao = CSharpChallengeDAO()
     ch_id = expected_challenge['id']
     data = {"complexity":2}
     
     #Act
-    update_challenge_data(ch_id, data)
+    dao.update_challenge_data(ch_id, data)
     ch_updated = db.session.query(CSharpChallengeModel).filter_by(id=ch_id).first().__repr__()
 
     #Assert
