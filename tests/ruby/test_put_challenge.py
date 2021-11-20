@@ -54,7 +54,8 @@ def test_put_code_not_compiles1(client, auth, generic_post):
     challenge_id = orig_json['id']
     orig_json.pop('id')
     url = f'/ruby/challenge/{challenge_id}'
-    data = get_data('example', 'example_test', 'Testing put code does not compiles', '3', 'example_not_compiles', 'example_test')
+    data = get_data('example', 'example_test', 'Testing put code does not compiles', '3',
+                    'example_not_compiles', 'example_test')
 
     # act
     r1 = client.put(url, data=data, headers={'Authorization': f'JWT {auth}'})
@@ -72,7 +73,8 @@ def test_put_code_not_compiles2(client, auth, generic_post):
     challenge_id = orig_json['id']
     orig_json.pop('id')
     url = f'/ruby/challenge/{challenge_id}'
-    data = get_data('example', 'example_test', 'Testing put code does not compiles', '2', 'example', 'example_test_not_compiles')
+    data = get_data('example', 'example_test', 'Testing put code does not compiles', '2',
+                    'example', 'example_test_not_compiles')
 
     # act
     r1 = client.put(url, data=data, headers={'Authorization': f'JWT {auth}'})
@@ -113,7 +115,8 @@ def test_put_new_tests_and_rename_code(client, auth):
     r1 = client.post(url1, data=data1, headers={'Authorization': f'JWT {auth}'})
     challenge_id = r1.json['challenge']['id']
     url2 = f'/ruby/challenge/{challenge_id}'
-    data2 = get_data('new_example6', 'example_test6', 'Testing put new tests and rename code', '4', tests_code='new_example_test6')
+    data2 = get_data('new_example6', 'example_test6', 'Testing put new tests and rename code', '4',
+                     tests_code='new_example_test6')
     with open('tests/ruby/tests-data/example.rb') as f:
         content_code = f.read()
     with open('tests/ruby/tests-data/new_example_test6.rb') as f:
@@ -257,6 +260,45 @@ def test_put_invalid_json_format(client, auth, generic_post):
     # assert
     assert r1.status_code == 400
     assert r1.json['challenge'] == 'the json is not in a valid format'
+    assert r2.json['challenge'] == orig_json
+
+
+def test_put_invalid_attributes1(client, auth, generic_post):
+    # arrange
+    orig_json = generic_post['challenge'].copy()
+    challenge_id = orig_json['id']
+    orig_json.pop('id')
+    data = get_data('example9', 'example_test9', 'Testing put invalid format', '3')
+    data['challenge'] = data['challenge'].replace('complexity', 'bad_attribute')
+    url = f'/ruby/challenge/{challenge_id}'
+
+    # act
+    r1 = client.put(url, data=data, headers={'Authorization': f'JWT {auth}'})
+    r2 = client.get(url, headers={'Authorization': f'JWT {auth}'})
+
+    # assert
+    assert r1.status_code == 400
+    assert r1.json['challenge'] == 'the json has invalid attributes'
+    assert r2.json['challenge'] == orig_json
+
+
+def test_put_invalid_attributes2(client, auth, generic_post):
+    # arrange
+    orig_json = generic_post['challenge'].copy()
+    challenge_id = orig_json['id']
+    orig_json.pop('id')
+    data = get_data('example9', 'example_test9', 'Testing put invalid format', '3')
+    # The best score can be updated in put, only in post repair
+    data['challenge'] = data['challenge'].replace('"complexity": "3"', '"best_score": 0')
+    url = f'/ruby/challenge/{challenge_id}'
+
+    # act
+    r1 = client.put(url, data=data, headers={'Authorization': f'JWT {auth}'})
+    r2 = client.get(url, headers={'Authorization': f'JWT {auth}'})
+
+    # assert
+    assert r1.status_code == 400
+    assert r1.json['challenge'] == 'the json has invalid attributes'
     assert r2.json['challenge'] == orig_json
 
 
