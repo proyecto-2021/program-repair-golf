@@ -6,7 +6,7 @@ from app.cSharp.models import CSharpChallengeModel
 import shutil
 
 
-def test_post_repair(client, create_test_data):
+def test_post_repair(client, create_test_data, auth):
     #Arrange
     url_post = 'cSharp/c-sharp-challenges'
     data = create_test_data['data']
@@ -21,11 +21,11 @@ def test_post_repair(client, create_test_data):
                         }
     
     #Act
-    resp_post = client.post(url_post, data=data)
+    resp_post = client.post(url_post, data=data, headers={'Authorization': f'JWT {auth}'})
     challenge_id = resp_post.json['challenge']['id'] 
 
     url_repair = 'cSharp/c-sharp-challenges/' + str(challenge_id) + '/repair'
-    resp_repair = client.post(url_repair, data=data_repair)
+    resp_repair = client.post(url_repair, data=data_repair, headers={'Authorization': f'JWT {auth}'})
 
     #Assert
     assert resp_repair.status_code == 200
