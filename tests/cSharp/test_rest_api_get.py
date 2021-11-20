@@ -76,11 +76,13 @@ def test_get_all_challenges_after_post(client, create_test_data, auth):
     cleanup()
 
 
-def test_get_none_load(client):
+def test_get_none_load(client, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
+
     # Act
-    resp = client.get(url)
+    resp = client.get(url, headers={'Authorization': f'JWT {auth}'})
+    
     # Assert
     assert resp.json == {'challenges': 'None Loaded'}
     assert len(resp.json) == 1
