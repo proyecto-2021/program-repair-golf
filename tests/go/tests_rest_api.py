@@ -33,6 +33,7 @@ def test_get_all_empty(client,auth):
     assert (ret_get_json=="not found")
     assert ret_get.status_code == 404
 
+
 def test_get_all_working(client,auth):
     # arrange
     for i in range(0,3):
@@ -58,11 +59,11 @@ def test_update_code_without_codename(client,auth):
     }
 
     # act
-    ret_update = client.put(f"go/api/v1/go-challenges/1", data=challengeupdate, headers={'Authorization': f'JWT {auth}'})
-    ret_update_json=ret_update.json["file name"]
+    ret_update = client.put(f"go/api/v1/go-challenges/1", data=challengeupdate)
+    ret_update_json=ret_update.json["source_code_file_name"]
     
     # assert
-    assert ret_update_json=="conflict"
+    assert ret_update_json=="not found"
     assert ret_update.status_code== 409
 
     # cleanup
@@ -79,11 +80,11 @@ def test_update_test_without_testname(client,auth):
     }
 
     # act
-    ret_update = client.put(f"go/api/v1/go-challenges/1", data=challengeupdate, headers={'Authorization': f'JWT {auth}'})
-    ret_update_json=ret_update.json["file name"]
+    ret_update = client.put(f"go/api/v1/go-challenges/1", data=challengeupdate)
+    ret_update_json=ret_update.json["test_suite_file_name"]
     
     # assert
-    assert ret_update_json=="conflict"
+    assert ret_update_json=="not found"
     assert ret_update.status_code== 409
 
     # cleanup
@@ -206,11 +207,10 @@ def test_update_code_with_syntax_error(client,auth):
     ret_post = client.post("go/api/v1/go-challenges",data=challenge, headers={'Authorization': f'JWT {auth}'})
     ret_post_json = ret_post.json["challenge"]
     postid=ret_post_json["id"]
-    ret_update = client.put(f"go/api/v1/go-challenges/{postid}", data=challengeupdate, headers={'Authorization': f'JWT {auth}'})
-    ret_update_json=ret_update.json["code_file"]
+    ret_update = client.put(f"go/api/v1/go-challenges/{postid}", data=challengeupdate)
+    ret_update_json = ret_update.json["source_code_file"]
     
-    # assert
-    assert ret_update_json=="code with sintax errors"
+    assert ret_update_json=="source code with sintax errors"
     assert ret_update.status_code== 409
 
     # cleanup
@@ -246,11 +246,11 @@ def test_update_test_code_with_syntax_error(client,auth):
     ret_post = client.post("go/api/v1/go-challenges",data=challenge, headers={'Authorization': f'JWT {auth}'})
     ret_post_json = ret_post.json["challenge"]
     postid=ret_post_json["id"]
-    ret_update = client.put(f"go/api/v1/go-challenges/{postid}", data=challengeupdate, headers={'Authorization': f'JWT {auth}'})
-    ret_update_json=ret_update.json["test_code_file"]
+    ret_update = client.put(f"go/api/v1/go-challenges/{postid}", data=challengeupdate)
+    ret_update_json=ret_update.json["test_suite_file"]
     
     # assert
-    assert ret_update_json=="test with sintax errors"
+    assert ret_update_json=="tests with sintax errors"
     assert ret_update.status_code== 409
 
     # cleanup
@@ -290,7 +290,7 @@ def test_update_with_a_passing_test(client,auth):
     ret_update_json=ret_update.json["error"]
     
     # assert
-    assert ret_update_json=="test must fails"
+    assert ret_update_json=="tests must fails"
     assert ret_update.status_code== 412
 
     # cleanup
@@ -328,7 +328,7 @@ def test_update_code_with_a_passing_test(client,auth):
     ret_update_json=ret_update.json["error"]
     
     # assert
-    assert ret_update_json=="test must fails"
+    assert ret_update_json=="source code must fails tests"
     assert ret_update.status_code== 412
 
     # cleanup
@@ -354,7 +354,7 @@ def test_update_test_with_a_passing_test(client,auth):
         'test_suite_file': open('tests/go/files-for-tests/medianpassing_test.go', 'rb'),
         'challenge': '{ \
                     "challenge": { \
-                        "test_suite_file_name" : "codepassingtestputtests.go" \
+                        "test_suite_file_name" : "codepassingtestput_test.go" \
                     } \
                 }'
     }
@@ -366,12 +366,90 @@ def test_update_test_with_a_passing_test(client,auth):
     ret_update_json=ret_update.json["error"]
     
     # assert
-    assert ret_update_json=="test must fails"
+    assert ret_update_json=="tests must fails"
     assert ret_update.status_code== 412
 
     # cleanup
     clean()
 
+def test_update_test_suite_code(client):
+     # arrange
+    challenge = {
+        'source_code_file': open('tests/go/files-for-tests/median.go', 'rb'),
+        'test_suite_file': open('tests/go/files-for-tests/median_test.go', 'rb'),
+        'challenge': '{ \
+                    "challenge": { \
+                        "source_code_file_name" : "updatingtestcode.go", \
+                        "test_suite_file_name" : "updatingtestcode_test.go", \
+                        "repair_objective" : "without error", \
+                        "complexity" : "100", \
+                        "best_score" : 100 \
+                    } \
+                }'
+    }
+
+    challengeupdate = {
+        'test_suite_file': open('tests/go/files-for-tests/median2_test.go', 'rb'),
+        'challenge': '{ \
+                    "challenge": { \
+                        "test_suite_file_name" : "median2_test.go" \
+                    } \
+                }'
+    }
+    # act
+    ret_post = client.post("go/api/v1/go-challenges",data=challenge)
+    ret_post_json = ret_post.json["challenge"]
+    postid=ret_post_json["id"]
+    ret_update = client.put(f"go/api/v1/go-challenges/{postid}", data=challengeupdate)
+    ret_get = client.get(f"/go/api/v1/go-challenges/{postid}")
+    ret_get_json=ret_get.json["challenge"]
+    
+    # assert
+    assert ret_post_json["tests_code"]!=ret_get_json["tests_code"]
+    assert ret_update.status_code== 200
+
+    # cleanup
+    clean()
+
+
+def test_update_source_code(client):
+     # arrange
+    challenge = {
+        'source_code_file': open('tests/go/files-for-tests/median.go', 'rb'),
+        'test_suite_file': open('tests/go/files-for-tests/median_test.go', 'rb'),
+        'challenge': '{ \
+                    "challenge": { \
+                        "source_code_file_name" : "updatingsourcecode.go", \
+                        "test_suite_file_name" : "updatingsourcecode_test.go", \
+                        "repair_objective" : "without error", \
+                        "complexity" : "100", \
+                        "best_score" : 100 \
+                    } \
+                }'
+    }
+
+    challengeupdate = {
+        'source_code_file': open('tests/go/files-for-tests/median2.go', 'rb'),
+        'challenge': '{ \
+                    "challenge": { \
+                        "source_code_file_name" : "median2.go" \
+                    } \
+                }'
+    }
+    # act
+    ret_post = client.post("go/api/v1/go-challenges",data=challenge)
+    ret_post_json = ret_post.json["challenge"]
+    postid=ret_post_json["id"]
+    ret_update = client.put(f"go/api/v1/go-challenges/{postid}", data=challengeupdate)
+    ret_get = client.get(f"/go/api/v1/go-challenges/{postid}")
+    ret_get_json=ret_get.json["challenge"]
+    
+    # assert
+    assert ret_post_json["code"]!=ret_get_json["code"]
+    assert ret_update.status_code== 200
+
+    # cleanup
+    clean()
 
 def test_post_code_with_error(client,auth):
     # arrange
@@ -498,7 +576,7 @@ def test_post_repeated(client,auth):
     }
     challenge2 = {
         'source_code_file': open('tests/go/files-for-tests/median_solution_3point.go', 'rb') ,
-        'test_suite_file': open('tests/go/files-for-tests/median_test2.go', 'rb'),
+        'test_suite_file': open('tests/go/files-for-tests/median2_test.go', 'rb'),
         'challenge': '{ \
                     "challenge": { \
                         "source_code_file_name" : "code10.go", \

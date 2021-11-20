@@ -1,22 +1,24 @@
 from nltk import edit_distance
-from .go_src import Go_src
-from .go_challenge import GoChallengeC
+from .go_source_code import SourceCode
+from .go_challenge import Challenge
 import os
 
-class GoRepairCandidate:
+class RepairCandidate:
 	def __init__(self, challenge=None, dir_path=None, file_path=None):
 		self.challenge = challenge
 		self.dir_path = dir_path
 		self.file_path = file_path
-		self.tests_code = Go_src(path=self.dir_path)
-		self.repair_code = Go_src(path=self.file_path)
+		self.tests_code = SourceCode(path=self.dir_path)
+		self.repair_code = SourceCode(path=self.file_path)
 
 	def get_content(self, score):
 		return {
-			'repair_objective': self.challenge.get_repair_objective(),
-			'best_score': self.challenge.get_best_score(),
+			'challenge':{
+				'repair_objective': self.challenge.get_repair_objective(),
+				'best_score': self.challenge.get_best_score(),
+			},
 			'player': {'username': 'Moli'},
-			'attemps': 1,
+			'attempts': 1,
 			'score': score
 		}
 
