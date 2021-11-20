@@ -6,22 +6,21 @@ from .c_sharp_challenge_DAO import CSharpChallengeDAO
 from json import loads
 from flask import jsonify, make_response, json, request
 import os
+from flask_jwt import jwt_required
 
 DAO = CSharpChallengeDAO()
 
-
-@cSharp.route('/login')
-def login():
-    return {'result': 'Ok'}
-
-
 @cSharp.route('/c-sharp-challenges/<int:id>', methods=['PUT'])
+@jwt_required()
 def put_csharp_challenges(id):
     update_request = {}
     update_request['source_code_file'] = request.files.get('source_code_file')
     update_request['test_suite_file'] = request.files.get('test_suite_file')
-    update_request['repair_objective'] = request.form.get('repair_objective')
-    update_request['complexity'] = request.form.get('complexity')
+    update_request['challenge'] = request.form.get('challenge')
+    if update_request['challenge'] is not None:
+        update_request['challenge'] = json.loads(update_request['challenge'])
+        update_request['challenge'] = update_request['challenge']['challenge']
+
 
     challenge = DAO.get_challenge_db(id)
     if not DAO.exist(id):
@@ -80,36 +79,41 @@ def put_csharp_challenges(id):
         if val_status != 1:
             return code_validation_response(val_status)
 
-    if update_request['repair_objective'] is not None:
-        DAO.update_challenge_data(id, {'repair_objective': update_request['repair_objective']})
+    if update_request['challenge'] is not None:
+        if 'repair_objective' in update_request['challenge']:
+            DAO.update_challenge_data(id, {'repair_objective': update_request['challenge']['repair_objective']})
 
-    if update_request['complexity'] is not None:
-        complexity = int(update_request['complexity'])
-        if complexity < 1 or complexity > 5 :
-            return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
-        else:
-            DAO.update_challenge_data(id, {'complexity': complexity})
+        if 'complexity' in update_request['challenge']:
+            complexity = int(update_request['challenge']['complexity'])
+            if complexity < 1 or complexity > 5 :
+                return make_response(jsonify({'Complexity': 'Must be between 1 and 5'}), 409)
+            else:
+                DAO.update_challenge_data(id, {'complexity': complexity})
     return make_response(jsonify({'challenge': DAO.get_challenge_db(id, show_files_content=True)}), 200)
 
 
 @cSharp.route('/c-sharp-challenges', methods=['POST'])
+@jwt_required()  
 def post_csharp_challenges():
     # Get new challenge data
     try:
         new_challenge = loads(request.form.get('challenge'))['challenge']
-        new_challenge['source_code_file'] = request.files['source_code_file']
-        new_challenge['test_suite_file'] = request.files['test_suite_file']
+        new_challenge['source_code_file'] = request.files.get('source_code_file')
+        new_challenge['test_suite_file'] = request.files.get('test_suite_file')
     except Exception:
         return make_response(jsonify({"challenge": "Data not found"}), 404)
-    finally:
-        if 'source_code_file' not in new_challenge or 'test_suite_file' not in new_challenge:
-            return make_response(jsonify({"challenge": "Data not found"}), 404)
+    keys_in_challenge = ('source_code_file_name',
+                         'test_suite_file_name',
+                         'complexity',
+                         'repair_objective')
+    if not all(key in new_challenge for key in keys_in_challenge):
+        return make_response(jsonify({"challenge": "Data not found"}), 404)
 
     # Validate challenge data
     required_keys = ('source_code_file_name', 'test_suite_file_name',
                      'source_code_file', 'test_suite_file',
                      'repair_objective', 'complexity')
-    if all(key in new_challenge for key in required_keys):
+    if all(new_challenge[key] is not None for key in required_keys):
         try:
             ch_dir = DAO.create_challenge_dir(new_challenge['source_code_file_name'])
         except FileExistsError:
@@ -155,6 +159,7 @@ def post_csharp_challenges():
 
 
 @cSharp.route('c-sharp-challenges/<int:id>/repair', methods=['POST'])
+@jwt_required()
 def repair_Candidate(id):
     # verify challenge's existence
     if DAO.exist(id):
@@ -197,8 +202,8 @@ def repair_Candidate(id):
     else:
         return make_response(jsonify({"challenge": "There is no challenge for this id"}), 404)
 
-
 @cSharp.route('/c-sharp-challenges/<int:id>', methods=['GET'])
+@jwt_required()
 def get_challenge(id):
     if DAO.exist(id):
         return jsonify({'Challenge': DAO.get_challenge_db(id, show_files_content=True)})
@@ -207,6 +212,7 @@ def get_challenge(id):
 
 
 @cSharp.route('/c-sharp-challenges', methods=['GET'])
+@jwt_required()
 def get_csharp_challenges():
     challenge = {'challenges': []}
     show = []

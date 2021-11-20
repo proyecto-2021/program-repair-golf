@@ -1,14 +1,14 @@
-from .go_src import Go_src
+from .go_source_code import SourceCode
+from app import db
 
-class GoChallengeC:
-
-    def __init__(self, id=None, path_code=None, path_tests_code=None, repair_objective=None, complexity=None):
+class Challenge:
+    def __init__(self, id=None, path_code=None, path_tests_code=None, repair_objective=None, complexity=None, best_score=None):
         self.id = id
-        self.code = Go_src(path = path_code)
-        self.tests_code = Go_src(path = path_tests_code)
+        self.code = SourceCode(path = path_code)
+        self.tests_code = SourceCode(path = path_tests_code)
         self.repair_objective = repair_objective
         self.complexity = complexity
-        self.best_score = 0
+        self.best_score = best_score
 
     def get_id(self):
         return self.id
@@ -58,6 +58,9 @@ class GoChallengeC:
         challenge['tests_code'] = self.tests_code.get_path()
         return challenge
 
+    def set_id(self, id):
+        self.id = id
+
     def set_code(self, path_code):
         self.code.set_path(path_code)
 
@@ -81,3 +84,9 @@ class GoChallengeC:
 
     def tests_fail(self):
         return self.tests_code.tests_fail()
+
+    def rewrite_code(self, path):
+        return self.code.rewrite_file(path)
+
+    def rewrite_tests_code(self, path):
+        return self.tests_code.rewrite_file(path)
