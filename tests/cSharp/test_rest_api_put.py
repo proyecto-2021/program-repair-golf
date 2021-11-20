@@ -23,18 +23,18 @@ def test_update_incorrect_complexity(client, create_test_data, auth):
     assert resp_put.json == {'Complexity': 'Must be between 1 and 5'}
     cleanup()
 
-def test_update_code_w_sintax_error(client,create_test_data):
+def test_update_code_w_sintax_error(client,create_test_data, auth):
     #Arrange
     url_post = 'cSharp/c-sharp-challenges'
     data = create_test_data['data']
     data_put = {'source_code_file': open('tests/cSharp/test-files/ExampleSintaxErrors.cs', 'rb')}
     
     #Act
-    resp_post = client.post(url_post, data=data)
+    resp_post = client.post(url_post, data=data, headers={'Authorization': f'JWT {auth}'})
     challenge_id = resp_post.json['challenge']['id'] 
 
     url_put = 'cSharp/c-sharp-challenges/' + str(challenge_id) 
-    resp_put = client.put(url_put, data=data_put)
+    resp_put = client.put(url_put, data=data_put, headers={'Authorization': f'JWT {auth}'})
     
     #Assert
     assert resp_put.status_code == 409
