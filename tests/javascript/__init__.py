@@ -1,5 +1,6 @@
 from app import create_app, db
 import pytest
+from app.javascript.controllers.files_controller import open_file
 
 @pytest.fixture(scope='module')
 def client():
@@ -20,3 +21,22 @@ def auth(client):
     r = client.post('/auth', json=user)
     token = r.json['access_token']
     return token
+
+#importar open file
+def createChallenge( code_name, test_name,objective,complexity):
+    code_path = f'example-challenges/javascript-challenges/{code_name}.js'
+    test_path = f'example-challenges/javascript-challenges/{test_name}.js'
+
+    challenge = {
+		'source_code_file': open_file(code_path),
+		'test_suite_file': open_file(test_path),
+		f'challenge':'{ \
+            "challenge":{\
+                "source_code_file_name":{code_name},\
+                "test_suite_file_name": {test_name},\
+                "repair_objective": {objective} ,\
+                "complexity": {complexity}\
+            }\
+        }'
+	}
+    return challenge
