@@ -7,11 +7,11 @@ def test_post_repair1(client, auth, generic_post):
     orig_json = generic_post['challenge'].copy()
     challenge_id = orig_json['id']
     url = f'/ruby/challenge/{challenge_id}/repair'
-    data = {'source_code_file': open('tests/ruby/tests-data/example_fixed.rb', 'rb')}
+    data = {'source_code_file': open('tests/ruby/tests-data/example_fixed1.rb', 'rb')}
 
     # act
     r = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
-    with open('tests/ruby/tests-data/example_fixed.rb') as f:
+    with open('tests/ruby/tests-data/example_fixed1.rb') as f:
         code_fixed_content = f.read()
 
     # assert
@@ -55,7 +55,7 @@ def test_post_repair2(client, auth, generic_post):
 def test_post_repair_invalid_challenge(client, auth):
     # arrange
     url = '/ruby/challenge/1000/repair'  # its probably that we dont post 1000 challenges for test
-    data = {'source_code_file': open('tests/ruby/tests-data/example_fixed.rb', 'rb')}
+    data = {'source_code_file': open('tests/ruby/tests-data/example_fixed1.rb', 'rb')}
 
     # act
     r = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
@@ -85,7 +85,7 @@ def test_post_repair_candidate_tests_fail(client, auth, generic_post):
     orig_json = generic_post['challenge'].copy()
     challenge_id = orig_json['id']
     url = f'/ruby/challenge/{challenge_id}/repair'
-    data = {'source_code_file': open('tests/ruby/tests-data/example.rb', 'rb')}
+    data = {'source_code_file': open('tests/ruby/tests-data/example_median.rb', 'rb')}
 
     # act
     r = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
