@@ -29,6 +29,19 @@ class RubyChallenge:
 		"""
 		return self.code
 
+	def set_code(self, files_path, file_name, file=None):
+		"""Set the challenge file code.
+
+		Parameters:
+			files_path (str): the new path,
+			file_name (str): the new code file name,
+			file (FileStorage): the new code file.
+
+		Attributes:
+			code (RubyCode): the challenge code file.
+		"""
+		self.code.set_code(files_path, file_name, file)
+
 	def get_tests_code(self):
 		"""Obtain the challenge tests suite.
 
@@ -36,6 +49,19 @@ class RubyChallenge:
 			tests_suite (RubyCode): the tests suite wanted.
 		"""
 		return self.tests_code
+
+	def set_tests_code(self, files_path, file_name, file=None):
+		"""Set the challenge test suite.
+
+		Parameters:
+			files_path (str): the new path,
+			file_name (str): the new tests suite file name,
+			file (FileStorage): the new tests suite file.
+
+		Attributes:
+			tests_code (RubyTestsCode): the challenge tests suite.
+		"""
+		self.tests_code.set_code(files_path, file_name, file)
 
 	def get_best_score(self):
 		"""Obtain the challenge best score.
@@ -68,32 +94,6 @@ class RubyChallenge:
 		for key in exclude:
 			del dictionary[key]
 		return dictionary
-
-	def set_code(self, files_path, file_name, file=None):
-		"""Set the challenge file code.
-
-		Parameters:
-			files_path (str): the new path,
-			file_name (str): the new code file name,
-			file (FileStorage): the new code file.
-
-		Attributes:
-			code (RubyCode): the challenge code file.
-		"""
-		self.code.set_code(files_path, file_name, file)
-
-	def set_tests_code(self, files_path, file_name, file=None):
-		"""Set the challenge test suite.
-
-		Parameters:
-			files_path (str): the new path,
-			file_name (str): the new tests suite file name,
-			file (FileStorage): the new tests suite file.
-
-		Attributes:
-			tests_code (RubyTestsCode): the challenge tests suite.
-		"""
-		self.tests_code.set_code(files_path, file_name, file)
 
 	def set_best_score(self, new_score):
 		"""Set the challenge score.
