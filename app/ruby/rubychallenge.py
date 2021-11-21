@@ -17,13 +17,9 @@ class RubyChallenge:
 		self.repair_objective = repair_objective
 		self.complexity = complexity
 		self.best_score = best_score
-		self.code = RubyCode()
-		self.tests_code = RubyTestsCode()
+		self.code = RubyCode() if code is None else RubyCode(full_name=code)
+		self.tests_code = RubyTestsCode() if tests_code is None else RubyTestsCode(full_name=tests_code)
 		self.id = id
-		if code is not None:
-			self.code = RubyCode(full_name=code)
-		if tests_code is not None:
-			self.tests_code = RubyTestsCode(full_name=tests_code)
 
 	def get_code(self):
 		"""Obtain the challenge file code.
