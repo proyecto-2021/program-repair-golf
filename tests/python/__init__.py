@@ -13,3 +13,18 @@ def client():
             db.create_all()
             # test will be executed on the test_client object
             yield test_client
+
+    public_path = "/home/nacho/Desktop/proyecto/program-repair-golf/public/challenges/"
+    for file in os.listdir(public_path):
+        print(f"\n{file}")
+        if file != 'README.md':
+            os.remove(os.path.join(public_path, file))
+
+@pytest.fixture(scope = 'module')
+def jwt_token(client):
+    #creating the user
+    user = {'username': 'el gran pepito', 'password': 'user'}
+    client.post('/users', json=user)
+    auth_result = client.post('/auth', json=user)
+    #getting a token
+    return auth_result.json['access_token']
