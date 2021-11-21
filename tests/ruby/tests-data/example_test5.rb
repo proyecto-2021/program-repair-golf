@@ -1,16 +1,20 @@
 require 'minitest/autorun'
 require_relative 'example5'
 
-class MedianTest < Minitest::Test
+class FibonacciTest < Minitest::Test
   def test_1
-    assert median(1,2,3) == 2
+    assert fibonacci(0) == 1
   end
 
   def test_2
-    assert median(2,1,3) == 2
+    assert fibonacci(1) == 1
   end
 
   def test_3
-    assert median(3,1,2) == 2
+    assert fibonacci(2) == 3      
+  end
+
+  def test_4
+    assert fibonacci(8) == 34
   end
 end

@@ -1,5 +1,5 @@
 require 'minitest/autorun'
-require_relative 'example8'
+require_relative 'example5'
 
 class MedianTest < Minitest::Test
   def test_1
@@ -12,5 +12,9 @@ class MedianTest < Minitest::Test
 
   def test_3
     assert median(3,1,2) == 2
+  end
+
+  def test_4
+    assert median(1,3,2) == 2
   end
 end
