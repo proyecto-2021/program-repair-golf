@@ -3,7 +3,7 @@ require_relative 'factorial'
 
 class FactorialTest < Minitest::Test
   def test_1
-    assert factorial(0) == 0
+    assert factorial(0) == 1
   end
 
   def test_2
