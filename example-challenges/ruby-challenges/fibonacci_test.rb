@@ -17,3 +17,4 @@ class FibonacciTest < Minitest::Test
   def test_4
     assert fibonacci(8) == 34
   end
+end
