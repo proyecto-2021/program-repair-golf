@@ -18,15 +18,10 @@ class RubyCode:
             file (FileStorage): content of the file,
             full_name (str): set the name of the code with its path.
         """
-        self.path = None
-        self.file_name = None
-        self.file = None
+        self.path = None if full_name is None else os.path.dirname(full_name) + '/'
+        self.file_name = None if full_name is None else os.path.basename(full_name).split('.')[0]
         self.full_name = full_name
-        if full_name is not None:
-            self.path = os.path.dirname(full_name) + '/'
-            self.file_name = os.path.basename(full_name).split('.')[0]
-            self.file = None
-            self.full_name = full_name
+        self.file = None
 
     def set_code(self, path, file_name, file=None):
         """Set the code attributes.
@@ -45,7 +40,8 @@ class RubyCode:
         self.path = path
         self.file_name = file_name
         self.file = file
-        self.full_name = path + file_name + '.rb'
+        if path and file_name:
+            self.full_name = path + file_name + '.rb'
 
     def get_path(self):
         """Obtain the file path.

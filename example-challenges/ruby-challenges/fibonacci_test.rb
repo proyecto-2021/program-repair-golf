@@ -1,5 +1,5 @@
 require 'minitest/autorun'
-require_relative 'example5'
+require_relative 'fibonacci'
 
 class FibonacciTest < Minitest::Test
   def test_1

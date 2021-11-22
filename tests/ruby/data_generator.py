@@ -17,10 +17,10 @@ def get_json(code_name=None, tests_name=None, repair_objective=None, complexity=
     for key in dictionary:
         if dictionary[key] is not None:
             if first:
-                data = data + f'"{key}" : "{dictionary[key]}"'
+                data = data + f'"{key}": "{dictionary[key]}"'
                 first = False
             else:
-                data = data + f', "{key}" : "{dictionary[key]}"'
+                data = data + f', "{key}": "{dictionary[key]}"'
 
     data = data + ' } }'
     return {'challenge': data}

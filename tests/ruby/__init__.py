@@ -34,6 +34,6 @@ def auth(client):
 
 @pytest.fixture(scope='module')
 def generic_post(client, auth):
-    data = get_data('example', 'example_test', 'Testing', '1', 'example', 'example_test')
+    data = get_data('example_median', 'example_median_test', 'Testing', '1', 'example_median', 'example_median_test')
     r = client.post('ruby/challenge', data=data, headers={'Authorization': f'JWT {auth}'})
     return r.json

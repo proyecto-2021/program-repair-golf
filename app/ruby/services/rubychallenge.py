@@ -17,13 +17,9 @@ class RubyChallenge:
 		self.repair_objective = repair_objective
 		self.complexity = complexity
 		self.best_score = best_score
-		self.code = RubyCode()
-		self.tests_code = RubyTestsCode()
+		self.code = RubyCode() if code is None else RubyCode(full_name=code)
+		self.tests_code = RubyTestsCode() if tests_code is None else RubyTestsCode(full_name=tests_code)
 		self.id = id
-		if code is not None:
-			self.code = RubyCode(full_name=code)
-		if tests_code is not None:
-			self.tests_code = RubyTestsCode(full_name=tests_code)
 
 	def get_code(self):
 		"""Obtain the challenge file code.
@@ -33,6 +29,19 @@ class RubyChallenge:
 		"""
 		return self.code
 
+	def set_code(self, files_path, file_name, file=None):
+		"""Set the challenge file code.
+
+		Parameters:
+			files_path (str): the new path,
+			file_name (str): the new code file name,
+			file (FileStorage): the new code file.
+
+		Attributes:
+			code (RubyCode): the challenge code file.
+		"""
+		self.code.set_code(files_path, file_name, file)
+
 	def get_tests_code(self):
 		"""Obtain the challenge tests suite.
 
@@ -40,6 +49,19 @@ class RubyChallenge:
 			tests_suite (RubyCode): the tests suite wanted.
 		"""
 		return self.tests_code
+
+	def set_tests_code(self, files_path, file_name, file=None):
+		"""Set the challenge test suite.
+
+		Parameters:
+			files_path (str): the new path,
+			file_name (str): the new tests suite file name,
+			file (FileStorage): the new tests suite file.
+
+		Attributes:
+			tests_code (RubyTestsCode): the challenge tests suite.
+		"""
+		self.tests_code.set_code(files_path, file_name, file)
 
 	def get_best_score(self):
 		"""Obtain the challenge best score.
@@ -72,32 +94,6 @@ class RubyChallenge:
 		for key in exclude:
 			del dictionary[key]
 		return dictionary
-
-	def set_code(self, files_path, file_name, file=None):
-		"""Set the challenge file code.
-
-		Parameters:
-			files_path (str): the new path,
-			file_name (str): the new code file name,
-			file (FileStorage): the new code file.
-
-		Attributes:
-			code (RubyCode): the challenge code file.
-		"""
-		self.code.set_code(files_path, file_name, file)
-
-	def set_tests_code(self, files_path, file_name, file=None):
-		"""Set the challenge test suite.
-
-		Parameters:
-			files_path (str): the new path,
-			file_name (str): the new tests suite file name,
-			file (FileStorage): the new tests suite file.
-
-		Attributes:
-			tests_code (RubyTestsCode): the challenge tests suite.
-		"""
-		self.tests_code.set_code(files_path, file_name, file)
 
 	def set_best_score(self, new_score):
 		"""Set the challenge score.
