@@ -23,7 +23,21 @@ def test_update_code_without_codename(client,auth):
                 }'
     }
 
+    challenge = {
+        'source_code_file': open('tests/go/files-for-tests/median.go', 'rb'),
+        'test_suite_file': open('tests/go/files-for-tests/median_test.go', 'rb'),
+        'challenge': '{ \
+                    "challenge": { \
+                        "source_code_file_name" : "code7.go", \
+                        "test_suite_file_name" : "code7_test.go", \
+                        "repair_objective" : "without error", \
+                        "complexity" : "100", \
+                        "best_score" : 100 \
+                    } \
+                }'
+    }
     # act
+    ret_post   = client.post(f"go/api/v1/go-challenges", data=challenge, headers={'Authorization': f'JWT {auth}'})
     ret_update = client.put(f"go/api/v1/go-challenges/1", data=challengeupdate, headers={'Authorization': f'JWT {auth}'})
     ret_update_json=ret_update.json["source_code_file_name"]
     
@@ -44,7 +58,22 @@ def test_update_test_without_testname(client,auth):
                 }'
     }
 
+    challenge = {
+        'source_code_file': open('tests/go/files-for-tests/median.go', 'rb'),
+        'test_suite_file': open('tests/go/files-for-tests/median_test.go', 'rb'),
+        'challenge': '{ \
+                    "challenge": { \
+                        "source_code_file_name" : "code7.go", \
+                        "test_suite_file_name" : "code7_test.go", \
+                        "repair_objective" : "without error", \
+                        "complexity" : "100", \
+                        "best_score" : 100 \
+                    } \
+                }'
+    }
+
     # act
+    ret_post   = client.post(f"go/api/v1/go-challenges", data=challenge, headers={'Authorization': f'JWT {auth}'})
     ret_update = client.put(f"go/api/v1/go-challenges/1", data=challengeupdate, headers={'Authorization': f'JWT {auth}'})
     ret_update_json=ret_update.json["test_suite_file_name"]
     
