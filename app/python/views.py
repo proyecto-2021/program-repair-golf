@@ -65,7 +65,7 @@ class PythonViews(MethodView):
         if code_repair is not None: code_repair = code_repair.read()
 
         #Result of validated rapair candidate
-        repair_result = PythonController.repair_challenge(id, user, code_repair)
+        repair_result = PythonController.repair_challenge(id, code_repair, user)
 
         if 'Error' in repair_result:
             return make_response(jsonify(repair_result), 409)
