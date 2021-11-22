@@ -31,24 +31,4 @@ def test_get_challenges(client):
     challenges = ChallengeController.get_challenges()
     assert challenges != []
 
-@pytest.mark.skip(reason="needs improvement")
-def test_create_challenge(client):
-    challenge = ChallengeController.create_challenge(
-        "tests/javascript/file_testing_folder/median.js",
-        "tests/javascript/file_testing_folder/median.test.js",
-        "repair_objective",
-        0,
-        "median",
-        "median.test"
-        )
-    
-    challenge_2 = ChallengeController.get_challenge(2)
-    assert challenge_2 == challenge
-
-@pytest.mark.skip(reason="needs improvement")
-def test_update_challenge(client):
-    challenge = ChallengeController.update_challenge(1,None,None,"yes",1,1)
-    
-
-    assert challenge != None
 

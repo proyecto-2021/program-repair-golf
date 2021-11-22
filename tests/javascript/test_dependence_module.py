@@ -1,7 +1,6 @@
-from _pytest.compat import ascii_escaped
+
 import pytest
 
-from . import client,auth
 from app.javascript.models_js import *
 from app.javascript.modules.dependences_module import *
 from app.javascript.exceptions.CommandRunException import CommandRunException

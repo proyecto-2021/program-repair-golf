@@ -38,16 +38,11 @@ def test_upload_file_1():
 
 def test_upload_file_2():
     with pytest.raises(Exception):
-        upload_file("median.js","tests/javascript/file_testing_folder/something_made_up/median.js")
+        upload_file("median.js","tests/javascript/file_testing_folder/file_testing_folder_3/median.js")
 
 def test_upload_file_3():
     with pytest.raises(Exception):
         upload_file("median.js","tests/javascript/file_testing_folder/median.js")
-
-@pytest.mark.skip
-def test_upload_file_4():
-    result = upload_file("mediana.js","tests/javascript/file_testing_folder/file_testing_folder_3/mediana.js")
-    assert result == True
 
 def test_open_file_1():
     result = open_file("")

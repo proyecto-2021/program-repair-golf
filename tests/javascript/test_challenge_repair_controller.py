@@ -47,20 +47,3 @@ def test_repair_2(client):
         db.session.commit()
         
         ChallengeRepairController.repair(1, "tests/javascript/file_testing_folder/file_testing_folder_2/median.js")
-
-
-@pytest.mark.skip(reason="module does not work")
-def test_repair_skip(client):
-    challenge = JavascriptChallenge(
-        code = "tests/javascript/file_testing_folder/file_testing_folder_2/median.js",
-        tests_code = "tests/javascript/file_testing_folder/file_testing_folder_2/median.test.js",
-        repair_objective = "something",
-        complexity = 0,
-        best_score = 0,
-    )
-    
-    db.session.add(challenge)
-    db.session.commit()
-
-    result = ChallengeRepairController.repair(2,"tests/javascript/file_testing_folder/file_testing_folder_2/median.js")
-    assert True
