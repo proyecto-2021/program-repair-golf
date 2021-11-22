@@ -1,6 +1,6 @@
 import os
 import pytest
-from app import create_app, db
+from app import db
 from . import client,auth
 from app.go.models_go import GoChallenge
 import glob
@@ -409,7 +409,6 @@ def test_update_test_suite_code(client, auth):
     # cleanup
     clean()
 
-
 def test_update_source_code(client, auth):
      # arrange
     challenge = {
@@ -502,8 +501,6 @@ def test_post_code_without_error(client,auth):
 
     # cleanup
     clean()
-
-
 
 def test_post_testscode_with_error(client,auth):
     # arrange
@@ -598,7 +595,6 @@ def test_post_repeated(client,auth):
 
     # cleanup
     clean()
-
 
 def test_getId_for_id_correct(client,auth):
     # arrange

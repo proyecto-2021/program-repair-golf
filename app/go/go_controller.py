@@ -215,7 +215,6 @@ class Controller():
 
         return jsonify({'challenge' : challenge.get_content(id=False)})
 
-
 def create_file_tmp(path, name, file):
     path_to_file = path + name
     file.save(path_to_file)
