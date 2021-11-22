@@ -36,3 +36,31 @@ def test_get_single_pythonChallenge(client, jwt_token):
         code             = dataChallenge['challenge']['code'] 
 
     assert result.status_code == 401
+
+# testing a invalid get multiple challenges
+def test_get_total_pythonChallenge(client, jwt_token):
+    jwt_token = None
+
+    #get challenge count before test
+    responsive = client.get(api_url, headers={'Authorization': f'JWT {jwt_token}'})
+    if responsive.status_code != 401:
+        initial_challenge_len = len(responsive.json['challenges'])
+    else:
+        assert responsive.status_code == 401
+
+    #--- start post challenges ---#
+    repair_objectiveParamOne = "probando test"
+    resultOne = send_post(client, jwt_token, "valid_code_6.py", "valid_atest_6.py", repair_objectiveParamOne, "1")
+
+    repair_objectiveParamTwo = "pruebita test"
+    resultTwo = send_post(client, jwt_token, "valid_code_7.py", "valid_atest_7.py", repair_objectiveParamTwo, "2")
+
+    #--- end post challenges ---#
+    responsive = client.get(api_url, headers={'Authorization': f'JWT {jwt_token}'})
+    
+    if responsive.status_code != 401:
+        data = responsive.json
+    
+    assert resultOne.status_code == 401
+    assert resultTwo.status_code == 401
+    assert responsive.status_code == 401
