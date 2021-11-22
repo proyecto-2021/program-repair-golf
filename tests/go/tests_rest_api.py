@@ -371,7 +371,7 @@ def test_update_test_with_a_passing_test(client,auth):
     # cleanup
     clean()
 
-def test_update_test_suite_code(client):
+def test_update_test_suite_code(client, auth):
      # arrange
     challenge = {
         'source_code_file': open('tests/go/files-for-tests/median.go', 'rb'),
@@ -396,11 +396,11 @@ def test_update_test_suite_code(client):
                 }'
     }
     # act
-    ret_post = client.post("go/api/v1/go-challenges",data=challenge)
+    ret_post = client.post("go/api/v1/go-challenges",data=challenge, headers={'Authorization': f'JWT {auth}'})
     ret_post_json = ret_post.json["challenge"]
     postid=ret_post_json["id"]
-    ret_update = client.put(f"go/api/v1/go-challenges/{postid}", data=challengeupdate)
-    ret_get = client.get(f"/go/api/v1/go-challenges/{postid}")
+    ret_update = client.put(f"go/api/v1/go-challenges/{postid}", data=challengeupdate, headers={'Authorization': f'JWT {auth}'})
+    ret_get = client.get(f"/go/api/v1/go-challenges/{postid}", headers={'Authorization': f'JWT {auth}'})
     ret_get_json=ret_get.json["challenge"]
     
     # assert
@@ -411,7 +411,7 @@ def test_update_test_suite_code(client):
     clean()
 
 
-def test_update_source_code(client):
+def test_update_source_code(client, auth):
      # arrange
     challenge = {
         'source_code_file': open('tests/go/files-for-tests/median.go', 'rb'),
@@ -436,11 +436,11 @@ def test_update_source_code(client):
                 }'
     }
     # act
-    ret_post = client.post("go/api/v1/go-challenges",data=challenge)
+    ret_post = client.post("go/api/v1/go-challenges",data=challenge, headers={'Authorization': f'JWT {auth}'})
     ret_post_json = ret_post.json["challenge"]
     postid=ret_post_json["id"]
-    ret_update = client.put(f"go/api/v1/go-challenges/{postid}", data=challengeupdate)
-    ret_get = client.get(f"/go/api/v1/go-challenges/{postid}")
+    ret_update = client.put(f"go/api/v1/go-challenges/{postid}", data=challengeupdate, headers={'Authorization': f'JWT {auth}'})
+    ret_get = client.get(f"/go/api/v1/go-challenges/{postid}", headers={'Authorization': f'JWT {auth}'})
     ret_get_json=ret_get.json["challenge"]
     
     # assert
