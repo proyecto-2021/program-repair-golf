@@ -170,7 +170,7 @@ def test_put_with_only_test(client, create_test_data, auth):
     # Cleanup
     cleanup()
 
-def test_update_test_with_sintax_error(client,create_test_data, auth):
+def test_update_test_with_sintax_error(client, create_test_data, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
 
@@ -189,6 +189,44 @@ def test_update_test_with_sintax_error(client,create_test_data, auth):
     # Assert
     assert resp_code == 409
     assert resp_json == expected_response
+
+    # Cleanup
+    cleanup()
+
+
+def test_update_code_and_test_not_valid(client, create_test_data, auth):
+    # Arrange
+    url = 'cSharp/c-sharp-challenges'
+    data_put_1 = create_challenge(code="ExampleSintaxErrors", tests_code="BaseTest")
+    data_put_2 = create_challenge(code="ExampleNoFails", tests_code="BaseTest")
+    data_put_3 = create_challenge(code="BaseExample", tests_code="TestSintaxErrors")
+
+    expected_response_1 = {'Source code': 'Sintax errors'}
+    expected_response_2 = {'Challenge': 'Must fail at least one test'}
+    expected_response_3 = {'Test': 'Sintax errors'}
+
+    resp_post = client.post(url, data=create_test_data['data'], headers={'Authorization': f'JWT {auth}'})
+    ch_id = resp_post.json['challenge']['id']
+    url += '/' + str(ch_id)
+
+    # Act
+    resp_put_1 = client.put(url, data=data_put_1, headers={'Authorization': f'JWT {auth}'})
+    resp_put_2 = client.put(url, data=data_put_2, headers={'Authorization': f'JWT {auth}'})
+    resp_put_3 = client.put(url, data=data_put_3, headers={'Authorization': f'JWT {auth}'})
+
+    resp_json_1 = resp_put_1.json
+    resp_json_2 = resp_put_2.json
+    resp_json_3 = resp_put_3.json
+
+    response_codes = (resp_put_1.status_code,
+                      resp_put_2.status_code,
+                      resp_put_3.status_code)
+
+    # Assert
+    assert all(response == 409 for response in response_codes)
+    assert resp_json_1 == expected_response_1
+    assert resp_json_2 == expected_response_2
+    assert resp_json_3 == expected_response_3
 
     # Cleanup
     cleanup()
