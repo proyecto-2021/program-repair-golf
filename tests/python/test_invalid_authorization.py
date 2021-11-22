@@ -87,24 +87,6 @@ def test_update_simple_fields(client, jwt_token):
     assert response.status_code == 401
     assert response_new.status_code == 401
 
-# testing a update all python challenge, without token
-def test_update_all(client, jwt_token):
-    jwt_token = None
-
-    post_info = send_post(client, jwt_token, "valid_code_13.py", "valid_atest_13.py", "Make all tests pass.", "1")
-    if post_info.status_code != 401:
-        challenge_id = post_info.json['challenge']['id']
-    else:
-        challenge_id = 10000000000
-
-    update_request = request_creator(code_path=examples_path + "code_change_my_name_4.py", 
-    test_path=examples_path + "atest_change_my_name_4.py", code_name="unique_code_1.py", test_name="unique_atest_1.py")
-
-    update_response = client.put(api_url + '/' + str(challenge_id), data=update_request, headers={'Authorization': f'JWT {jwt_token}'})
-
-    assert update_response.status_code == 401
-    assert post_info.status_code == 401
-
 # testing a post repair python challenge, without token
 def test_post_repair_challenge(client, jwt_token):
     jwt_token = None
@@ -123,27 +105,3 @@ def test_post_repair_challenge(client, jwt_token):
     assert response.status_code == 401
     assert post_info.status_code == 401
 
-# testing a post repair python challenge, updating best score, without token
-def test_post_repair_update_best_score(client, jwt_token):
-    jwt_token = None
-    repair_objectiveParam = "Test repair"
-    post_info = send_post(client, jwt_token, "valid_code_17.py", "valid_atest_17.py", repair_objectiveParam, '3')
-
-    if post_info.status_code != 401:
-        challenge_id = post_info.json['challenge']['id']
-    else:
-        challenge_id = 10000000000
-
-    repair_request = request_creator(code_path = examples_path + "code_repair_2.py")
-    repair_request_2 = request_creator(code_path = examples_path + "code_repair_2.py")
-
-    response_one = client.post(api_url + '/' + str(challenge_id) + '/repair', data = repair_request, headers={'Authorization': f'JWT {jwt_token}'})
-    
-    if response_one.status_code != 401:
-        old_best_score = response.json['repair']['challenge']['best_score']
-    
-    response_two = client.post(api_url + '/' + str(challenge_id) + '/repair', data = repair_request_2, headers={'Authorization': f'JWT {jwt_token}'})
-
-    assert response_one.status_code == 401
-    assert response_two.status_code == 401
-    assert post_info.status_code == 401
