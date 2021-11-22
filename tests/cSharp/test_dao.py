@@ -84,6 +84,15 @@ def test_update(client, expected_challenge):
     # Cleanup
     db.session.query(CSharpChallengeModel).delete()   
 
-def test_remove(client, path):
-    # TODO 
-    pass
+def test_remove(client):
+    #Arrange
+    path1 = "./tests/cSharp/test-files/remove_example"
+    path2 = "./tests/cSharp/test-files/remove_example.cs" 
+
+    #Act
+    dao.remove(path1)
+    dao.remove(path2)
+
+    #Assert
+    assert os.path.exists(path1) 
+    assert not os.path.exists(path1) 
