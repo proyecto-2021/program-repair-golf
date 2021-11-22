@@ -169,3 +169,7 @@ def test_put_with_only_test(client, create_test_data, auth):
     
     # Cleanup
     cleanup()
+
+def test_update_test_with_sintax_error(client,create_test_data, auth):
+    #todo implement
+    pass
