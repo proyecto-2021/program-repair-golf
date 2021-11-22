@@ -5,10 +5,11 @@ from .data_generator import get_data
 def test_post_challenge(client, auth):
     # arrange
     url = '/ruby/challenge'
-    data = get_data('example1', 'example_test1', 'Testing', '2', 'example', 'example_test1')
-    with open('tests/ruby/tests-data/example.rb') as f:
+    data = get_data('example_addition', 'example_addition_test', 'Testing', '2',
+                    'example_addition', 'example_addition_test')
+    with open('tests/ruby/tests-data/example_addition.rb') as f:
         code_content = f.read()
-    with open('tests/ruby/tests-data/example_test1.rb') as f:
+    with open('tests/ruby/tests-data/example_addition_test.rb') as f:
         tests_code_content = f.read()
 
     # act
@@ -30,9 +31,9 @@ def test_post_challenge(client, auth):
 def test_post_existent_challenge(client, auth):
     # arrange
     url = '/ruby/challenge'
-    data = get_data('example2', 'example_test2', 'Testing repeated post', '4', 'example', 'example_test2')
+    data = get_data('example1', 'example_test1', 'Testing repeated post', '4', 'example_median', 'example_test1')
     r1 = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
-    data = get_data('example2', 'example_test2', 'Testing repeated post', '4', 'example', 'example_test2')
+    data = get_data('example1', 'example_test1', 'Testing repeated post', '4', 'example_median', 'example_test1')
 
     # act
     r2 = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
@@ -46,8 +47,8 @@ def test_post_existent_challenge(client, auth):
 def test_post_code_not_compiles1(client, auth):
     # arrange
     url = '/ruby/challenge'
-    data = get_data('example3', 'example_test3', 'Testing compilation error', '4',
-                    'example_not_compiles', 'example_test')
+    data = get_data('example2', 'example_test2', 'Testing compilation error', '4',
+                    'example_not_compiles', 'example_test1')
 
     # act
     r = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
@@ -60,8 +61,8 @@ def test_post_code_not_compiles1(client, auth):
 def test_post_code_not_compiles2(client, auth):
     # arrange
     url = '/ruby/challenge'
-    data = get_data('example3', 'example_test3', 'Testing compilation error', '4',
-                    'example', 'example_test_not_compiles')
+    data = get_data('example2', 'example_test2', 'Testing compilation error', '4',
+                    'example_median', 'example_test_not_compiles')
 
     # act
     r = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
@@ -74,8 +75,8 @@ def test_post_code_not_compiles2(client, auth):
 def test_post_bad_dependencies1(client, auth):
     # arrange
     url = '/ruby/challenge'
-    data = get_data('example3', 'example_test3', 'Testing dependencies error', '4', 'example',
-                    'example_test_bad_dependencies1')
+    data = get_data('example2', 'example_test2', 'Testing dependencies error', '4',
+                    'example_median', 'example_test_bad_dependencies1')
 
     # act
     r = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
@@ -88,8 +89,9 @@ def test_post_bad_dependencies1(client, auth):
 def test_post_bad_dependencies2(client, auth):
     # arrange
     url = '/ruby/challenge'
-    data = get_data('example3', 'example_test3', 'Testing dependencies error', '4',
-                    'example', 'example_test_bad_dependencies2')
+    # 0 dependencies
+    data = get_data('example2', 'example_test2', 'Testing dependencies error', '4',
+                    'example_median', 'example_test_bad_dependencies2')
 
     # act
     r = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
@@ -102,8 +104,9 @@ def test_post_bad_dependencies2(client, auth):
 def test_post_bad_dependencies3(client, auth):
     # arrange
     url = '/ruby/challenge'
-    data = get_data('example3', 'example_test3', 'Testing dependencies error', '4',
-                    'example', 'example_test_bad_dependencies3')
+    # More than 1 require_relative
+    data = get_data('example2', 'example_test2', 'Testing dependencies error', '4',
+                    'example_median', 'example_test_bad_dependencies3')
 
     # act
     r = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
@@ -116,7 +119,8 @@ def test_post_bad_dependencies3(client, auth):
 def test_post_no_tests_fail(client, auth):
     # arrange
     url = '/ruby/challenge'
-    data = get_data('example3', 'example_test3', 'Testing not errors to repair', '2', 'example_fixed', 'example_test3')
+    data = get_data('example2', 'example_test2', 'Testing not errors to repair', '2',
+                    'example_fixed1', 'example_test_fixed')
 
     # act
     r = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
@@ -126,10 +130,10 @@ def test_post_no_tests_fail(client, auth):
     assert r.json['challenge'] == 'the challenge has no errors to repair'
 
 
-def test_post_invalid_data(client, auth):
+def test_post_invalid_data1(client, auth):
     # arrange
     url = '/ruby/challenge'
-    data = get_data(' ', ' ', ' ', '7', 'example', 'example_test')
+    data = get_data(' ', ' ', ' ', '7', 'example_median', 'example_median_test')
 
     # act
     r = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
@@ -142,7 +146,7 @@ def test_post_invalid_data(client, auth):
 def test_post_invalid_data2(client, auth):
     # arrange
     url = '/ruby/challenge'
-    data = get_data('example', 'example_test', 'Testing post data', '2', 'example', 'example_test')
+    data = get_data('example', 'example_test', 'Testing post data', '2', 'example_median', 'example_median_test')
     data['challenge'] = data['challenge'].replace('challenge', 'challenges')
 
     # act
@@ -156,7 +160,7 @@ def test_post_invalid_data2(client, auth):
 def test_post_without_data(client, auth):
     # arrange
     url = '/ruby/challenge'
-    data = get_data(code='example', tests_code='example_test')
+    data = get_data(code='example_median', tests_code='example_median_test')
     data.pop('challenge')
 
     # act
@@ -170,7 +174,7 @@ def test_post_without_data(client, auth):
 def test_post_without_code(client, auth):
     # arrange
     url = '/ruby/challenge'
-    data = get_data('example', 'example_test', 'Testing post without code', '4', tests_code='example_test')
+    data = get_data('example', 'example_test', 'Testing post without code', '4', tests_code='example_median_test')
 
     # act
     r = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
@@ -183,7 +187,7 @@ def test_post_without_code(client, auth):
 def test_post_without_tests_code(client, auth):
     # arrange
     url = '/ruby/challenge'
-    data = get_data('example', 'example_test', 'Testing post without tests code', '4', 'example')
+    data = get_data('example', 'example_test', 'Testing post without tests code', '4', 'example_median')
 
     # act
     r = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
@@ -196,7 +200,8 @@ def test_post_without_tests_code(client, auth):
 def test_post_invalid_json_format(client, auth):
     # arrange
     url = '/ruby/challenge'
-    data = get_data('example', 'example_test', 'Testing post invalid format', '2', 'example', 'example_test')
+    data = get_data('example', 'example_test', 'Testing post invalid format', '2',
+                    'example_median', 'example_median_test')
     data['challenge'] = data['challenge'].replace('challenge":', 'challenge')
 
     # act

@@ -1,5 +1,5 @@
 require 'minitest/autorun'
-require_relative 'example3'
+require_relative 'max'
 
 class MaxTest < Minitest::Test
   def test_1
