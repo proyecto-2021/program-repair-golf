@@ -1,4 +1,4 @@
-from .. import folders_and_files
+from ..folders_and_files import CHALLENGES_PATH
 from ..exceptions.CommandRunException import CommandRunException
 from .dependences_module import dependences_ok, extract_dependences, install_dependece 
 from .command_module import run_command, command_output, run_command_ok
@@ -12,19 +12,18 @@ def compile_js(path_file):
     return command_output(run_compile) 
 
 def stest_run(path_file):
-    
-    if not dependences_ok(folders_and_files.CHALLENGES_PATH):
-        extract_dependences()
-    command_test = f'cd {folders_and_files.CHALLENGES_PATH}; npm test {path_file}' 
-    test_run = run_command(command_test)
 
-    if not run_command_ok(stest_run) and not stest_run_ok(command_output(stest_run)): 
-        install_dependece()
-        test_run = run_command(command_test)
-  
-    if not run_command_ok(test_run) or not stest_is_from_to_code(path_file):
-        raise CommandRunException(f"The test not found {test_run}", CommandRunException.HTTP_NOT_FOUND)
+    if not dependences_ok(CHALLENGES_PATH):
+        extract_dependences(CHALLENGES_PATH)
+    command_test = f'cd {CHALLENGES_PATH}; npm test {path_file}' 
+    test_run = run_command(command_test)
     
+    if not run_command_ok(test_run) and not stest_run_ok(command_output(test_run)): 
+        install_dependece(CHALLENGES_PATH)
+        test_run = run_command(command_test)
+    
+    if not run_command_ok(test_run) or not stest_is_from_to_code(path_file):
+        raise CommandRunException(f"The Test not found {test_run}", CommandRunException.HTTP_NOT_FOUND)
     return command_output(test_run)
 
 def stest_fail_run(path_file):
@@ -33,11 +32,11 @@ def stest_fail_run(path_file):
         test_out = stest_run(path_file)
     except CommandRunException as e:
         if not stest_fail(e.msg): 
-            raise CommandRunException(f"The test Not Fail {e.msg}", CommandRunException.HTTP_NOT_FOUND)
+            raise CommandRunException(f"The Test Not Fail {e.msg}", CommandRunException.HTTP_NOT_FOUND)
     return test_out
 
 def stest_run_ok(sh_output):
-    return str(sh_output).find("test Suites:") != -1
+    return str(sh_output).find("Test Suites:") != -1
 
 def stest_is_from_to_code(path_file_test): 
     
