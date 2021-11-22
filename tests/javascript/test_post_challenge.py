@@ -43,3 +43,22 @@ def test_file_not_compile(client,auth):
     #assert
     assert result.status_code == 404
 
+
+def test_token_not_valid(client):
+    #arrange
+    data = createChallenge('median','median.test','Objective is hshshs', '3')
+    auth = 'Token not valid'
+    #act
+    result = client.post('javascript/javascript-challenges', headers={'Authorization': f'JWT {auth}'}, data=data)
+    #assert
+    assert result.status_code == 401
+
+
+def test_authentication_required(client):
+    #arrange
+    url = '/javascript/javascript-challenges'
+    data = createChallenge('median','median.test', 'Objective is hshshs', '3')
+    #act
+    result = client.post(url,data=data)
+    #assert
+    assert result.status_code == 401
