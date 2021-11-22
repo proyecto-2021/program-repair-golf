@@ -18,7 +18,6 @@ class ChallengeCandidate():
         path_destino = UPLOAD_TMP + challenge['tests_code'] + '.java'
         os.replace(path_actual, path_destino)
         FileManagement.upload_file_repair(file_repair, UPLOAD_TMP, challenge)
-        #path_file_repair = UPLOAD_TMP + file_repair.filename
         path_file_repair = UPLOAD_TMP + challenge['code'] + '.java'
         if ChallengeCandidate.compile_repair(path_file_repair): 
             if ChallengeCandidate.compile_test_repair(path_destino):
@@ -27,18 +26,14 @@ class ChallengeCandidate():
                     os.replace(path_destino, path_actual)
                     return True
                 else:
-                    print("no pasa test")
                     os.replace(path_destino, path_actual)
                     return False
             else:
-                print("no compila test")
                 os.replace(path_destino, path_actual)
                 return False
         else:
-            print("No compila clase")
             return False
 
-    # given an challenge return an dict for show
     def create_desafio(challenge):
         aux = Challenge_java.__repr__(challenge)
         desafio = {
@@ -47,7 +42,6 @@ class ChallengeCandidate():
         }
         return desafio
 
-    ##
     def compile_repair(path_file_java):
         try:
             ChallengeCandidate.compile(path_file_java)
@@ -57,9 +51,7 @@ class ChallengeCandidate():
     
     def compile(java_file):
         subprocess.check_call(['javac', java_file])
-    ##
 
-    ##
     def compile_test_repair(path_test_java):
         try:
             ChallengeCandidate.compile_test(path_test_java)
@@ -69,9 +61,7 @@ class ChallengeCandidate():
 
     def compile_test(java_file):
         subprocess.check_call(['javac', '-cp', RUTALIBREPAIR, java_file])
-    ##
 
-    ##
     def execute_test_repair(name):
         if ChallengeCandidate.execute_test(name):
             return True
@@ -88,4 +78,4 @@ class ChallengeCandidate():
             return True
         else:
             return False        
-    ##
+
