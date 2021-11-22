@@ -1,6 +1,6 @@
 import nltk
 from flask import make_response,jsonify,request
-from .files_controller import open_file, exist_file, to_temp_file, replace_file,upload_file
+from .files_controller import open_file, exist_file, to_temp_file, replace_file,upload_file, remove_files
 from ..modules.source_code_module import compile_js, stest_run
 from ..exceptions.ChallengeRepairException import ChallengeRepairException
 from ..dao.challenge_dao import ChallengeDAO
@@ -13,9 +13,17 @@ class ChallengeRepairController():
             raise ChallengeRepairException(f'The file does not exists{challenge.code}', ChallengeRepairException.HTTP_NOT_FOUND)
     
         file_path_new = to_temp_file(challenge.code)  
-        upload_file(code_files_new, file_path_new)
-        compile_js(file_path_new)
-        stest_run(challenge.tests_code)
+        replace_file(challenge.code,file_path_new)
+        upload_file(code_files_new, challenge.code)
+
+        try: 
+            compile_js(challenge.code)
+            stest_run(challenge.tests_code)
+            
+        except CommandRunException as e: 
+            remove_files(challenge.code)
+            replace_file(file_path_new, challenge.code)
+            raise CommandRunException(e.msg, e.HTTP_code)
 
         score = ChallengeRepairController.calculate_score(challenge.code,file_path_new)
         if not ChallengeRepairController.score_ok(score,challenge.best_score):

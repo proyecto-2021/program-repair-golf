@@ -1,7 +1,7 @@
 from ..models_js import JavascriptChallenge
 from ..folders_and_files import CODES_PATH, FILE_JS_EXTENSION
 from ..exceptions.CommandRunException import CommandRunException
-from .files_controller import upload_file, open_file, to_temp_file, replace_file, remove_files 
+from .files_controller import upload_file, open_file, to_temp_file, replace_file, remove_files, exist_file
 from ..modules.source_code_module import compile_js, stest_fail_run
 from ..dao.challenge_dao import ChallengeDAO   
 
