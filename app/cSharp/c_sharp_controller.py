@@ -156,13 +156,6 @@ class CSharpController:
                     self.DAO.update_challenge_data(id, {'complexity': complexity})
         return make_response(jsonify({'challenge': self.DAO.get_challenge_db(id, show_files_content=True)}), 200)
 
-    def code_validation_response(self,val_status):
-        if val_status == -1:
-            return make_response(jsonify({'Source code': 'Sintax errors'}), 409)
-        elif val_status == 0:
-            return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
-        elif val_status == 2:
-            return make_response(jsonify({'Test': 'Sintax errors'}), 409)
 
     def post_repair_candidate(self, id, repair_candidate, user):
         if self.DAO.exist(id):
@@ -210,3 +203,11 @@ class CSharpController:
                                                          'score': score}}), 200)
         else:
             return make_response(jsonify({"challenge": "There is no challenge for this id"}), 404)
+
+    def code_validation_response(self, val_status):
+        if val_status == -1:
+            return make_response(jsonify({'Source code': 'Sintax errors'}), 409)
+        elif val_status == 0:
+            return make_response(jsonify({'Challenge': 'Must fail at least one test'}), 409)
+        else:
+            return make_response(jsonify({'Test': 'Sintax errors'}), 409)
