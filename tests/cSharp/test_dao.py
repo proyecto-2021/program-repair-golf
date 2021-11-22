@@ -86,6 +86,7 @@ def test_update(client, expected_challenge):
 
 def test_remove(client):
     #Arrange
+    dao = CSharpChallengeDAO()
     path1 = "./tests/cSharp/test-files/remove_example" 
 
     #Act
