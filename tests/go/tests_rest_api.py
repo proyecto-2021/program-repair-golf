@@ -6,7 +6,6 @@ from app.go.models_go import GoChallenge
 import glob
 
 path='public/challenges*'
-
 def clean():
     path="public/challenges"
     for file in os.listdir(path):
