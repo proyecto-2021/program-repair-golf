@@ -70,12 +70,12 @@ class PythonController:
     response = challenge_update.to_json(best_score=True)
     return response
 
-  def repair_challenge(id, code_repair):
+  def repair_challenge(challenge_id, code_repair, user):
     
     if code_repair is None:
       return {"Error": "No repair provided"}
     
-    req_challenge = PythonChallengeDAO.get_challenge(id)
+    req_challenge = PythonChallengeDAO.get_challenge(challenge_id)
 
     if req_challenge is None:
       return {"Error": "Challenge not found"}
@@ -86,18 +86,22 @@ class PythonController:
     validation_result = PythonController.perform_validation(repair_challenge)
     if 'Error' in validation_result:
       return validation_result
-
+    #increase attempts of the user
+    PythonChallengeDAO.increase_attempts(user.id, challenge_id)
+      
     #compute score
     score = repair_challenge.compute_repair_score()
     
     #update best score
-    PythonChallengeDAO.update_best_score(id, score)
+    PythonChallengeDAO.update_best_score(challenge_id, score)
+    
+    attempts = PythonChallengeDAO.get_repair_attempts(user.id, challenge_id) 
 
     #Creating response to return
     challenge_response = repair_challenge.return_content()
     response = {'challenge': challenge_response, 
-                'player': {'username': "Elon Musk"}, 
-                'attempts': 1, 
+                'player': {'username': user.username}, 
+                'attempts': attempts, 
                 'score': score
                 }
 
