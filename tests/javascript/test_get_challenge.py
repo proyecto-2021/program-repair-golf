@@ -1,6 +1,6 @@
 import pytest
 from . import client, auth 
-from . __init__ import createChallenge, post_generator,remove_files, ChallengeDAO
+from . __init__ import createChallenge, remove_files, ChallengeDAO
 from . import db
 from app.javascript.models_js import JavascriptChallenge
 
