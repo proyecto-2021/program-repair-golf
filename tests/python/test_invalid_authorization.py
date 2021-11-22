@@ -87,6 +87,7 @@ def test_update_simple_fields(client, jwt_token):
     assert response.status_code == 401
     assert responseNew.status_code == 401
 
+# testing a update all python challenge, without token
 def test_update_all(client, jwt_token):
     jwt_token = None
 
@@ -104,7 +105,7 @@ def test_update_all(client, jwt_token):
     assert update_response.status_code == 401
     assert post_info.status_code == 401
 
-
+# testing a post repair python challenge, without token
 def test_post_repair_challenge(client, jwt_token):
     jwt_token = None
     repair_objectiveParam = "Test repair"
@@ -122,6 +123,7 @@ def test_post_repair_challenge(client, jwt_token):
     assert response.status_code == 401
     assert post_info.status_code == 401
 
+# testing a post repair python challenge, updating best score, without token
 def test_post_repair_update_best_score(client, jwt_token):
     jwt_token = None
     repair_objectiveParam = "Test repair"
