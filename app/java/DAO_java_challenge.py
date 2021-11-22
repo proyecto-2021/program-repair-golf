@@ -17,13 +17,16 @@ class DAO_java_challenge():
     def create_challenge(dict):
         challenge = DAO_java_challenge.get_challenge_by_code(dict['source_code_file_name'])
         if challenge is None:
-            new_chan = Challenge_java(code = dict['source_code_file_name'],
-                tests_code = dict['test_suite_file_name'],
-                repair_objective = dict['repair_objective'],
-                complexity = dict['complexity'],
-                score = 500)
-            db.session.add(new_chan)
-            db.session.commit()
+            if int(dict['complexity']) <= 5:
+                new_chan = Challenge_java(code = dict['source_code_file_name'],
+                    tests_code = dict['test_suite_file_name'],
+                    repair_objective = dict['repair_objective'],
+                    complexity = dict['complexity'],
+                    score = 500)
+                db.session.add(new_chan)
+                db.session.commit()
+            else:
+                raise Exception("The complexity is greater than 5, it must be less than equal to 5")
         else:
            raise Exception("Name of the code exist")
 

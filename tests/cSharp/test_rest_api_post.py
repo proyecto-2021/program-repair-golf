@@ -4,7 +4,7 @@ from app import create_app, db
 from . import *
 import shutil
 
-def test_post_challenge(client, create_test_data):
+def test_post_challenge(client, create_test_data, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
 
@@ -17,7 +17,7 @@ def test_post_challenge(client, create_test_data):
                           }
                          }
     # Act
-    response = client.post(url, data=create_test_data['data'])
+    response = client.post(url, data=create_test_data['data'], headers={'Authorization': f'JWT {auth}'})
     response_json = response.json
 
     # Assert
@@ -29,14 +29,14 @@ def test_post_challenge(client, create_test_data):
     cleanup()
 
 
-def test_post_with_sintax_error_in_code(client):
+def test_post_with_sintax_error_in_code(client, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
     data = create_challenge('Example1', 'Example1Test', 'Testing', '5', 'ExampleSintaxErrors', 'BaseTest')
     expected_response = {'Challenge': 'Sintax errors'}
 
     # Act
-    response = client.post(url, data=data)
+    response = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
 
     # Assert
     assert response.status_code == 409
@@ -47,7 +47,7 @@ def test_post_with_sintax_error_in_code(client):
     cleanup()
 
 
-def test_post_challenge_with_incorrect_complexity(client):
+def test_post_challenge_with_incorrect_complexity(client, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
     data = create_challenge('Example1', 'Example1Test', 'Testing', '0', 'BaseExample', 'BaseTest')
@@ -55,8 +55,8 @@ def test_post_challenge_with_incorrect_complexity(client):
     expected_response = {'Complexity': 'Must be between 1 and 5'}
 
     # Act
-    response = client.post(url, data=data)
-    response1 = client.post(url, data=data1)
+    response = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
+    response1 = client.post(url, data=data1, headers={'Authorization': f'JWT {auth}'})
 
     # Assert
     assert response.status_code == 409
@@ -68,14 +68,14 @@ def test_post_challenge_with_incorrect_complexity(client):
     cleanup()
 
 
-def test_post_challenge_with_sintax_error_in_test(client):
+def test_post_challenge_with_sintax_error_in_test(client, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
     data = create_challenge('Example1', 'Example1Test', 'Testing', '3', 'BaseExample', 'TestSintaxErrors')
     expected_response = {'Test': 'Sintax errors'}
 
     # Act
-    response = client.post(url, data=data)
+    response = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
 
     # Assert
     assert response.status_code == 409
@@ -85,14 +85,14 @@ def test_post_challenge_with_sintax_error_in_test(client):
     cleanup()
 
 
-def test_post_challenge_test_no_fails(client):
+def test_post_challenge_test_no_fails(client, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
     data = create_challenge('Example1', 'Example1Test', 'Testing', '1', 'ExampleNoFails', 'BaseTest')
     expected_response = {'Test': 'At least one has to fail'}
 
     # Act
-    response = client.post(url, data=data)
+    response = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
 
     # Assert
     assert response.status_code == 409
@@ -102,26 +102,36 @@ def test_post_challenge_test_no_fails(client):
     cleanup()
 
 
-def test_post_challenge_not_found(client):
+def test_post_challenge_not_found(client, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
-    data = create_challenge('codeDoesNotExist', 'Example1Test', 'Testing', '4', 'BaseTest')
-    data1 = create_challenge('Example1', 'TestDoesNotExist', 'Testing', '1', 'BaseExample')
-    data2 = create_challenge('codeDoesNotExist', 'TestDoesNotExist', 'Testing', '4')
-    data3 = create_challenge('Example1', 'Example1Test', 'Testing', 'BaseExample', 'BaseTest')
-    data4 = create_challenge('Example1', 'Example1Test', '2', 'BaseExample', 'BaseTest')
-    data5 = create_challenge('Example1', 'Example1Test', 'BaseExample', 'BaseTest')
+    data0 = {}
+    data = create_challenge(tests_name='Example1Test',
+                            repair_objective='Testing',
+                            complexity='4', tests_code='BaseTest')
+    data1 = create_challenge(code_name='Example1', repair_objective='Testing',
+                             complexity='1', code='BaseExample')
+    data2 = create_challenge(repair_objective='Testing', complexity='4')
+    data3 = create_challenge(code_name='Example1', tests_name='Example1Test',
+                             repair_objective='Testing', code='BaseExample',
+                             tests_code='BaseTest')
+    data4 = create_challenge(code_name='Example1', tests_name='Example1Test',
+                             complexity='2', code='BaseExample',
+                             tests_code='BaseTest')
+    data5 = create_challenge(code_name='Example1', tests_name='Example1Test',
+                             code='BaseExample', tests_code='BaseTest')
 
     expected_response = {"challenge": "Data not found"}
     responses = []
 
     # Act
-    responses.append(client.post(url, data=data))
-    responses.append(client.post(url, data=data1))
-    responses.append(client.post(url, data=data2))
-    responses.append(client.post(url, data=data3))
-    responses.append(client.post(url, data=data4))
-    responses.append(client.post(url, data=data5))
+    responses.append(client.post(url, data=data0, headers={'Authorization': f'JWT {auth}'}))
+    responses.append(client.post(url, data=data, headers={'Authorization': f'JWT {auth}'}))
+    responses.append(client.post(url, data=data1, headers={'Authorization': f'JWT {auth}'}))
+    responses.append(client.post(url, data=data2, headers={'Authorization': f'JWT {auth}'}))
+    responses.append(client.post(url, data=data3, headers={'Authorization': f'JWT {auth}'}))
+    responses.append(client.post(url, data=data4, headers={'Authorization': f'JWT {auth}'}))
+    responses.append(client.post(url, data=data5, headers={'Authorization': f'JWT {auth}'}))
 
     # Assert
     for response in responses:
@@ -132,7 +142,7 @@ def test_post_challenge_not_found(client):
     cleanup()
 
 
-def test_post_repeated_challenge(client):
+def test_post_repeated_challenge(client, auth):
     # Arrange
     url = 'cSharp/c-sharp-challenges'
     data = create_challenge('Example1', 'Example1Test', 'Testing', '5', 'BaseExample', 'BaseTest')
@@ -152,8 +162,8 @@ def test_post_repeated_challenge(client):
     expected_response1 = {'Challenge': 'Already exists'}
 
     # Act
-    response = client.post(url, data=data)
-    response1 = client.post(url, data=data1)
+    response = client.post(url, data=data, headers={'Authorization': f'JWT {auth}'})
+    response1 = client.post(url, data=data1, headers={'Authorization': f'JWT {auth}'})
 
     # Assert
     assert response.status_code == 200
