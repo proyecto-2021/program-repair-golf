@@ -1,7 +1,8 @@
-from app.cSharp.models import CSharpChallengeModel
+from app.cSharp.models import CSharpChallengeModel, c_sharp_attempts
 from app import db
 import os
 import shutil
+from app.auth.userdao import get_user_by_id
 
 
 class CSharpChallengeDAO:
@@ -95,3 +96,18 @@ class CSharpChallengeDAO:
 
     def get_all_challenges(self):
         return db.session.query(CSharpChallengeModel).all()
+
+    def get_attempts(self, usr_id, ch_id):
+        user_info = db.session.query(c_sharp_attempts).filter_by(challenge_id=ch_id, user_id=usr_id).first()
+        return user_info.attempts
+    
+    def add_attempt(self, usr_id, ch_id):
+        attempt_row = db.session.query(c_sharp_attempts).filter_by(challenge_id=ch_id, user_id=usr_id).first()
+        if not attempt_row:
+            challenge = db.session.query(CSharpChallengeModel).filter_by(id=ch_id).first()
+            user = get_user_by_id(usr_id)
+            challenge.users_attempts.append(user)
+            db.session.commit()
+        attempts = self.get_attempts(usr_id, ch_id)
+        db.session.query(c_sharp_attempts).filter_by(challenge_id=ch_id, user_id=usr_id).update({'attempts': attempts+1})
+        db.session.commit()

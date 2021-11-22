@@ -16,6 +16,10 @@ def test_post_repair(client, create_test_data, auth):
                                                 'repair_objective': 'Testing',
                                                 'best_score': 2 
                                                 },
+                                    'player':{
+                                            'username': "cSharp"
+                                            },
+                                    'attempts': 1, 
                                     'score': 2
                                     }
                         }
@@ -136,6 +140,7 @@ def test_post_better_repair(client, create_test_data, auth):
     #Assert
     assert resp_repair_1.json['Repair']['challenge']['best_score'] == resp_repair_2.json['Repair']['challenge']['best_score']
     assert resp_repair_1.json['Repair']['score'] < resp_repair_2.json['Repair']['score']
+    assert resp_repair_2.json['Repair']['attempts'] == resp_repair_1.json['Repair']['attempts']+1
 
     #CleanUp
     cleanup()
