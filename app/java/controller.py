@@ -113,7 +113,8 @@ class controller():
             if challenge is None:
                 file = request.files['source_code_file']
                 test_suite = request.files['test_suite_file']
-                if Challenge.isValid(file, test_suite, dict_final):
+                if Challenge.is_Valid(file, test_suite, dict_final):
+                    DAO_java_challenge.create_challenge(dict_final)
                     return FileManagement.show_codes(code_file_name)
                 else:
                     raise Exception("Some file does not compile or pass all tests, some test must fail to load")

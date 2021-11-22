@@ -93,7 +93,7 @@ def test_PUT_all_tests(client):
 	data_for_tests.delete_db()
 	db.session.query(Challenge_java).delete()
 	data = data_for_tests.createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
-	data2 = data_for_tests.createChallenge('example-challenges/java-challenges/Passalltest.java','example-challenges/java-challenges/Passalltesttest.java','Pasalltest','Passaalltesttest', 'pass', '1')
+	data2 = data_for_tests.createChallenge('tests/java/example_java/Passalltest.java','tests/java/example_java/Passalltesttest.java', 'Passalltest', 'Passalltesttest', 'pass', '1')
 	
 	token=data_for_tests.get_token(client)	
 	url = 'http://localhost:5000/java/java-challenges'
@@ -110,8 +110,6 @@ def test_PUT_all_tests(client):
 	#assert
 	assert r1.status_code == 200
 	
-
-
 def test_PUT_fails_complexity(client):
 	#arrange
 	data_for_tests.delete_db()

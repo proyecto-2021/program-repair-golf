@@ -14,29 +14,24 @@ RUTALIBREPAIR = 'app/java/lib/junit-4.13.2.jar:/tmp/'
 
 class Challenge():
 
-    def isValid(file, test_suite, dict):
-        # upload class java and compile
+    def is_Valid(file, test_suite, dict):
         code_file_name = dict['source_code_file_name']
         test_suite_file_name = dict['test_suite_file_name']
         FileManagement.upload_file_class(file, UPLOAD_FOLDER, dict)
         path_file_java = UPLOAD_FOLDER + code_file_name + '.java'
         if Challenge.class_java_compile(path_file_java):
-            # upload test suite java and compile
             FileManagement.upload_file_test(test_suite, UPLOAD_FOLDER, dict)
             path_test_java = UPLOAD_FOLDER + test_suite_file_name + '.java'
-            # excute test suite java
-            # excute_java_test return true if pass all test
             if Challenge.file_compile(path_test_java, path_file_java):
                 if Challenge.execute_test(test_suite_file_name, code_file_name):
                     return False
                 else:
-                    DAO_java_challenge.create_challenge(dict)
                     return True
             else:
-                return False       
+                return False
         else:
             return False
-
+    
     def class_java_compile(path_file_java):
         try:
             Challenge.compile_java(path_file_java)
@@ -98,24 +93,3 @@ class Challenge():
             return True
         else:
             return False
-
-    def is_Valid(file, test_suite, dict):
-        code_file_name = dict['source_code_file_name']
-        test_suite_file_name = dict['test_suite_file_name']
-        FileManagement.upload_file_class(file, UPLOAD_FOLDER, dict)
-        path_file_java = UPLOAD_FOLDER + code_file_name + '.java'
-        if Challenge.class_java_compile(path_file_java):
-            FileManagement.upload_file_test(test_suite, UPLOAD_FOLDER, dict)
-            path_test_java = UPLOAD_FOLDER + test_suite_file_name + '.java'
-            if Challenge.file_compile(path_test_java, path_file_java):
-                if Challenge.execute_test(test_suite_file_name, code_file_name):
-                    return False
-                else:
-                    return True
-            else:
-                return False
-        else:
-            return False
-            
-        
-
