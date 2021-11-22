@@ -38,7 +38,7 @@ def upload_file(file,file_path):
     if not is_file_suffix(file, FILE_JS_EXTENSION):
         raise FileUploadException(f'the file is null or does not have a .js extension', FileUploadException.HTTP_NOT_FOUND)
         
-    if not os.path.lexists(directory) and os.path.isdir(directory):
+    if not exist_folder(directory):
         os.makedirs(directory)
    
     if exist_file(file_path) and os.path.isfile(file_path):

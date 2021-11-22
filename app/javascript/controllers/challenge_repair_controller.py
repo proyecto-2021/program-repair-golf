@@ -1,7 +1,7 @@
 import nltk
 from flask import make_response,jsonify,request
 from .files_controller import open_file, exist_file, to_temp_file, replace_file,upload_file, remove_files
-from ..modules.source_code_module import compile_js, test_run
+from ..modules.source_code_module import compile_js, stest_run
 from ..exceptions.ChallengeRepairException import ChallengeRepairException
 from ..exceptions.CommandRunException import CommandRunException
 from ..dao.challenge_dao import ChallengeDAO
@@ -23,13 +23,12 @@ class ChallengeRepairController():
 
         try: 
             compile_js(challenge.code)
-            test_run(challenge.tests_code)
-            
+            stest_run(challenge.tests_code)
         except CommandRunException as e: 
             remove_files(challenge.code)
             replace_file(file_path_new, challenge.code)
             raise CommandRunException(e.msg, e.HTTP_code)
-       
+
         score = ChallengeRepairController.calculate_score(challenge.code,file_path_new)
         if not ChallengeRepairController.score_ok(score,challenge.best_score):
             raise ChallengeRepairException(f'The proposed score{score} is not less than the current score{challenge.best_score}', ChallengeRepairException.HTTP_NOT_FOUND)
