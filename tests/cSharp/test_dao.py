@@ -3,6 +3,7 @@ from app import db
 from app.cSharp.models import CSharpChallengeModel
 from app.cSharp.c_sharp_challenge_DAO import CSharpChallengeDAO
 import pytest
+import os
 
 
 @pytest.fixture
@@ -83,4 +84,15 @@ def test_update(client, expected_challenge):
 
     # Cleanup
     db.session.query(CSharpChallengeModel).delete()   
+
+def test_remove(client):
+    #Arrange
+    dao = CSharpChallengeDAO()
+    path1 = "./tests/cSharp/test-files/remove_example" 
+
+    #Act
+    dao.remove(path1)
+
+    #Assert
+    assert os.path.exists(path1) 
 
