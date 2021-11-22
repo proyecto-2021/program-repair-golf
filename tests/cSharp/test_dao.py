@@ -86,13 +86,11 @@ def test_update(client, expected_challenge):
 
 def test_remove(client):
     #Arrange
-    path1 = "./tests/cSharp/test-files/remove_example"
-    path2 = "./tests/cSharp/test-files/remove_example.cs" 
+    path1 = "./tests/cSharp/test-files/remove_example" 
 
     #Act
     dao.remove(path1)
-    dao.remove(path2)
 
     #Assert
     assert os.path.exists(path1) 
-    assert not os.path.exists(path1) 
+
