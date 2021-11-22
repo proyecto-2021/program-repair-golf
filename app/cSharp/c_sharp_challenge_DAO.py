@@ -1,4 +1,4 @@
-from app.cSharp.models import CSharpChallengeModel
+from app.cSharp.models import CSharpChallengeModel, c_sharp_attempts
 from app import db
 import os
 import shutil
@@ -95,3 +95,9 @@ class CSharpChallengeDAO:
 
     def get_all_challenges(self):
         return db.session.query(CSharpChallengeModel).all()
+
+    def get_attempts(self, usr_id, ch_id):
+        user_info = db.session.query(c_sharp_attempts).filter_by(challenge_id=ch_id, user_id=usr_id).first()
+        return user_info.attempts
+      
+
