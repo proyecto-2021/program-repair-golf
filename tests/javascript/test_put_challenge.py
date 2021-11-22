@@ -101,20 +101,20 @@ def test_put_pass_test(client, auth):
     # assert
     assert update.status_code == 404 
 
-def test_token_not_valid(client):
+def test_token_not_valid(client,auth):
     #arrange
-    data = createChallenge('median','median.test','Objective is hshshs', '3')
-    auth = 'Token not valid'
+    challeng_new = createChallenge("median", "median.test", "test", '1')
+    authNot = "TokenNotValid"
+    create = client.post('javascript/javascript-challenges', data=challeng_new, headers={'Authorization': f'JWT {auth}'})
+    challenge_json = create.json['Challenge']
+    challenge_id = challenge_json['id']
+    challenge_json.pop('id')
+    challenge = ChallengeDAO.get_challenge(challenge_id)
+    challenge_upd = create_challenge_update("median", "median.test", "test update", 'Testing','3')
     #act
-    result = client.post('javascript/javascript-challenges', headers={'Authorization': f'JWT {auth}'}, data=data)
+    update = client.put(f"javascript/javascript-challenges/{challenge_id}",data=challenge_upd,headers={'Authorization': f'JWT {authNot}'})
+    remove_files(challenge.code, challenge.tests_code)
     #assert
-    assert result.status_code == 401
+    assert update.status_code == 401    
 
-
-def test_authentication_required(client):
-    #arrange
-    data = createChallenge('median','median.test', 'Objective is hshshs', '3')
-    #act
-    result = client.post('/javascript/javascript-challenges',data=data)
-    #assert
-    assert result.status_code == 401
+ 
