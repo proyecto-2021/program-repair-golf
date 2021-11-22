@@ -10,7 +10,7 @@ class PythonChallengeRepair:
         self.challenge = challenge
         self.code_repair = PythonSourceCode(code = code_repair, name = self.challenge.code.name)
         
-    def is_valid_repair(self): 
+    def is_valid(self): 
         return valid_python_challenge(self.code_repair.path, self.challenge.test.path,  True)
     
     def compute_repair_score(self):
@@ -23,15 +23,14 @@ class PythonChallengeRepair:
                             }
         return challenge_reponse
 
-    def delete_temp(self):
+    def delete(self):
         delete_file(self.challenge.test.path)
         delete_file(self.code_repair.path)
 
     #Save temporary code repair and test code
-    def temporary_save(self, path):
+    def save_at(self, path):
         #Save code repair
         self.code_repair.move_code(path)
     
         #Save test code 
         self.challenge.test.move_code(path)        
-

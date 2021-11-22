@@ -83,15 +83,9 @@ class PythonController:
     challenge = PythonChallenge(challenge_data= req_challenge)
     repair_challenge = PythonChallengeRepair(challenge, code_repair)
 
-    path_temporary = "public/temp/"
-    #save temporary codes
-    repair_challenge.temporary_save(path_temporary)
-
-    #validate repair
-    result = repair_challenge.is_valid_repair()
-    
-    if 'Error' in result:
-      return result
+    validation_result = PythonController.perform_validation(repair_challenge)
+    if 'Error' in validation_result:
+      return validation_result
 
     #compute score
     score = repair_challenge.compute_repair_score()
@@ -99,9 +93,6 @@ class PythonController:
     #update best score
     PythonChallengeDAO.update_best_score(id, score)
 
-    #delete files 
-    repair_challenge.delete_temp()
-    
     #Creating response to return
     challenge_response = repair_challenge.return_content()
     response = {'challenge': challenge_response, 
