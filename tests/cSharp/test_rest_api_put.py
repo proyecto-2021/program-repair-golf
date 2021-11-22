@@ -232,41 +232,33 @@ def test_update_code_and_test_not_valid(client, create_test_data, auth):
     cleanup()
 
 
-def test_update_invalid_code(client, create_test_data, auth):
-     # Arrange
+def test_update_valid_code(client, create_test_data, auth):
+    # Arrange
     url = 'cSharp/c-sharp-challenges'
 
-    data_put_1 = create_challenge(code='ExampleSintaxErrors')
-    data_put_2 = create_challenge(code='ExampleNoFails')
-    data_put_3 = create_challenge(code='BaseExample3')
-
-    expected_response_1 = {'Source code': 'Sintax errors'}
-    expected_response_2 = {'Challenge': 'Must fail at least one test'}
-    expected_response_3 = {'Test': 'Sintax errors'}
+    data_put = create_challenge(code='BaseExample')
+  
+    expected_response = {"challenge": { "best_score": 0,
+                                        "code":create_test_data['content_code'],
+                                        "complexity": 5,
+                                        "repair_objective": "Testing",
+                                        "tests_code":create_test_data['content_tests_code']                                                  
+                                       }
+                        }
+    
 
     # Act
     resp_post = client.post(url, data=create_test_data['data'], headers={'Authorization': f'JWT {auth}'})
     ch_id = resp_post.json['challenge']['id']
     url += '/' + str(ch_id)
 
-    # Act
-    resp_put_1 = client.put(url, data=data_put_1, headers={'Authorization': f'JWT {auth}'})
-    resp_put_2 = client.put(url, data=data_put_2, headers={'Authorization': f'JWT {auth}'})
-    resp_put_3 = client.put(url, data=data_put_3, headers={'Authorization': f'JWT {auth}'})
-
-    resp_json_1 = resp_put_1.json
-    resp_json_2 = resp_put_2.json
-    resp_json_3 = resp_put_3.json
-
-    response_codes = (resp_put_1.status_code,
-                      resp_put_2.status_code,
-                      resp_put_3.status_code)
-
-    # Assert
-    assert all(response == 409 for response in response_codes)
-    assert resp_json_1 == expected_response_1
-    assert resp_json_2 == expected_response_2
-    assert resp_json_3 == expected_response_3
+    resp_put = client.put(url, data=data_put, headers={'Authorization': f'JWT {auth}'})
+    resp_put_json = resp_put.json
+    del resp_put_json ['challenge']['id']
+    
+    #Assert
+    assert resp_put.status_code == 200
+    assert resp_put_json == expected_response
 
     # Cleanup
     cleanup()
