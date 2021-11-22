@@ -9,9 +9,9 @@ class ChallengeController():
 
     def get_challenge(id):
         challenge = ChallengeDAO.get_challenge(id)
-        challenge.code = open_file(challenge.code)
-        challenge.tests_code = open_file(challenge.tests_code)
         challenge_dict = challenge.to_dict()
+        challenge_dict["code"] = open_file(challenge.code)
+        challenge_dict["tests_code"] = open_file(challenge.tests_code)
         del challenge_dict['id']
         return challenge_dict
 
@@ -21,20 +21,17 @@ class ChallengeController():
         challenge_all = []
         
         for x in challenges['challenge']:
-            x.code = open_file(x.code)
             challenge_dict = x.to_dict()
+            challenge_dict['code'] = open_file(x.code)
             del challenge_dict['tests_code']
             challenge_all.append(challenge_dict)
         return challenge_all
         
     def update_challenge(id, source_code_file_upd, test_suite_file_upd, repair_objective, complexity, best_score):
         challenge = ChallengeDAO.get_challenge(id)
-        print(challenge.code)
-        print(challenge.tests_code)
         file_code_path_upd = to_temp_file(challenge.code)
         file_test_path_upd = to_temp_file(challenge.tests_code)
-        print(challenge.code)
-        print(challenge.tests_code)
+        
         try: 
             if source_code_file_upd:
                 upload_file(source_code_file_upd,file_code_path_upd)
@@ -50,8 +47,9 @@ class ChallengeController():
 
         ChallengeDAO.update_challenge(id, None, None, repair_objective, complexity, best_score)
 
-        challenge.code = open_file(challenge.code)
-        challenge.tests_code = open_file(challenge.tests_code)
+        challenge_dict = challenge.to_dict()
+        challenge_dict["code"] = open_file(challenge.code)
+        challenge_dict["tests_code"] = open_file(challenge.tests_code)
         return challenge.to_dict()
    
     def create_challenge(source_code_file, test_suite_file, repair_objective, complexity, code_file_name, test_file_name):
@@ -69,6 +67,7 @@ class ChallengeController():
         
         challenge = ChallengeDAO.save_challenge(code_file_path, test_file_path, repair_objective, complexity, 0)
 
-        challenge.code = open_file(challenge.code)
-        challenge.tests_code = open_file(challenge.tests_code)
-        return challenge.to_dict()
+        challenge_dict = challenge.to_dict()
+        challenge_dict["code"] = open_file(challenge.code)
+        challenge_dict["tests_code"] = open_file(challenge.tests_code)
+        return challenge_dict

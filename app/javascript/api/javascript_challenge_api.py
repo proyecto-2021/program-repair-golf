@@ -39,8 +39,8 @@ class JavascriptChallengeAPI(MethodView):
                 data_requ = request.form
                 if not data_requ:
                     return make_response(jsonify({'Challenge': 'Data not found'}), 404)
-                    
-                challenge_json = json.loads(data_requ.get('challenge'))['challenge']
+                
+                challenge_json = json.loads(data_requ.get('challenge')).get('challenge')
                 source_code_file = request.files['source_code_file']
                 test_suite_file = request.files['test_suite_file']
                 
