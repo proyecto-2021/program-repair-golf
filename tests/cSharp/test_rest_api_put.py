@@ -171,5 +171,24 @@ def test_put_with_only_test(client, create_test_data, auth):
     cleanup()
 
 def test_update_test_with_sintax_error(client,create_test_data, auth):
-    #todo implement
-    pass
+    # Arrange
+    url = 'cSharp/c-sharp-challenges'
+
+    data_put = create_challenge(tests_name='Example1Test', tests_code='TestSintaxErrors')
+    expected_response = {'Test': 'Sintax errors'}
+
+    # Act
+    resp_post = client.post(url, data=create_test_data['data'], headers={'Authorization': f'JWT {auth}'})
+    ch_id = resp_post.json['challenge']['id']
+    url += '/' + str(ch_id)
+
+    resp_put = client.put(url, data=data_put, headers={'Authorization': f'JWT {auth}'})
+    resp_json = resp_put.json
+    resp_code = resp_put.status_code
+
+    # Assert
+    assert resp_code == 409
+    assert resp_json == expected_response
+
+    # Cleanup
+    cleanup()
