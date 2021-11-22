@@ -95,7 +95,7 @@ class PythonController:
     #update best score
     PythonChallengeDAO.update_best_score(challenge_id, score)
     
-    attempts = PythonChallengeDAO.get_repair_attempts(user.id, challenge_id) 
+    attempts = PythonChallengeDAO.get_repair_attempts(user.id, challenge_id).attempts
 
     #Creating response to return
     challenge_response = repair_challenge.return_content()
