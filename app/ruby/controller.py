@@ -4,9 +4,9 @@ from os.path import isdir
 from json import loads, JSONDecodeError
 from tempfile import gettempdir
 from shutil import rmtree
-from .rubychallenge import RubyChallenge
+from .services.rubychallenge import RubyChallenge
 from .models.rubychallengedao import RubyChallengeDAO
-from .repaircandidate import RepairCandidate
+from .services.repaircandidate import RepairCandidate
 
 
 class Controller:
