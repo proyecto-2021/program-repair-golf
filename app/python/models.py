@@ -1,5 +1,4 @@
 from .. import db
-from sqlalchemy.sql.schema import CheckConstraint
 
 python_repair_attempt = db.Table('python_repair_attempt',
   db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
@@ -14,7 +13,7 @@ class PythonChallengeModel(db.Model):
   repair_objective = db.Column(db.String(120), nullable=False)
   complexity = db.Column(db.Integer, nullable=False)
   best_score = db.Column(db.Integer, nullable=True)
-  rapair_attempt = db.relationship("User", secondary=python_repair_attempt)
+  repair_attempts = db.relationship("User", secondary=python_repair_attempt)
 
 
   #takes a row and returns it as a dictionary
