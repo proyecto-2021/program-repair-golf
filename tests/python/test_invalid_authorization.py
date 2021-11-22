@@ -121,3 +121,27 @@ def test_post_repair_challenge(client, jwt_token):
 
     assert response.status_code == 401
     assert post_info.status_code == 401
+
+def test_post_repair_update_best_score(client, jwt_token):
+    jwt_token = None
+    repair_objectiveParam = "Test repair"
+    post_info = send_post(client, jwt_token, "valid_code_17.py", "valid_atest_17.py", repair_objectiveParam, '3')
+
+    if post_info.status_code != 401:
+        challenge_id = post_info.json['challenge']['id']
+    else:
+        challenge_id = 10000000000
+
+    repair_request = request_creator(code_path = examples_path + "code_repair_2.py")
+    repair_request_2 = request_creator(code_path = examples_path + "code_repair_2.py")
+
+    response_one = client.post(api_url + '/' + str(challenge_id) + '/repair', data = repair_request, headers={'Authorization': f'JWT {jwt_token}'})
+    
+    if response_one.status_code != 401:
+        old_best_score = response.json['repair']['challenge']['best_score']
+    
+    response_two = client.post(api_url + '/' + str(challenge_id) + '/repair', data = repair_request_2, headers={'Authorization': f'JWT {jwt_token}'})
+
+    assert response_one.status_code == 401
+    assert response_two.status_code == 401
+    assert post_info.status_code == 401
