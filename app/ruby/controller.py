@@ -4,9 +4,9 @@ from os.path import isdir
 from json import loads, JSONDecodeError
 from tempfile import gettempdir
 from shutil import rmtree
-from .rubychallenge import RubyChallenge
+from .services.rubychallenge import RubyChallenge
 from .models.rubychallengedao import RubyChallengeDAO
-from .repaircandidate import RepairCandidate
+from .services.repaircandidate import RepairCandidate
 
 
 class Controller:
@@ -170,9 +170,9 @@ class Controller:
         """
         if not self.dao.exists(challenge_id):
             return make_response(jsonify({'challenge': 'the id does not exist'}), 404)
-
         old_challenge = RubyChallenge(**self.dao.get_challenge(challenge_id))
         new_challenge = RubyChallenge(**self.dao.get_challenge(challenge_id))
+        valid_values = ['source_code_file_name', 'test_suite_file_name', 'complexity', 'repair_objective']
 
         if json_challenge is not None:
             try:
@@ -182,6 +182,9 @@ class Controller:
             data = json.get('challenge')
             if data is None:
                 return make_response(jsonify({'challenge': 'the json has no challenge field'}), 400)
+            for k in data:
+                if k not in valid_values:
+                    return make_response(jsonify({'challenge': 'the json has invalid attributes'}), 400)
             # If files names are in the request, set new_code names to them. If not, take old_challenge name.
             nc_code_name = data['source_code_file_name'] if 'source_code_file_name' in data \
                 else old_challenge.get_code().get_file_name()

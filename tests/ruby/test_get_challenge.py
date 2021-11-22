@@ -35,7 +35,8 @@ def test_get_all_after_post(client, auth):
     r1 = client.get(url1, headers={'Authorization': f'JWT {auth}'})
     list1 = r1.json['challenges']
     url2 = '/ruby/challenge'
-    data = get_data('example3', 'example_test3', 'Testing', '4', 'example', 'example_test3')
+    data = get_data('example_fibonacci', 'example_fibonacci_test', 'Testing', '4',
+                    'example_fibonacci', 'example_fibonacci_test')
     r2 = client.post(url2, data=data, headers={'Authorization': f'JWT {auth}'})
     post_result = r2.json['challenge']
     post_result.pop('tests_code')

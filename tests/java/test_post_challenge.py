@@ -94,7 +94,7 @@ def test_file_not_compile_class(client):
 	try:
 		resp = client.post(url, headers={'Authorization': f'JWT {token}'}, data=data)
 	except Exception as e:
-		assert str(e) == "Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar"
+		assert str(e) == "Some file does not compile or pass all tests, some test must fail to load"
 	assert resp.status_code == 404
 	
 # insert java test suite that does not compile
@@ -106,7 +106,7 @@ def test_file_not_compile_test(client):
 	try:
 		resp = client.post(url, headers={'Authorization': f'JWT {token}'}, data=data)
 	except Exception as e:
-		assert str(e) == "Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar"		
+		assert str(e) == "Some file does not compile or pass all tests, some test must fail to load"		
 	assert resp.status_code == 404
 
 # insert valid challenge that pass all test
@@ -118,5 +118,5 @@ def test_pass_all_test(client):
 	try:
 		resp = client.post(url, headers={'Authorization': f'JWT {token}'}, data=data)
 	except Exception as e:
-		assert str(e) == "Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar"
+		assert str(e) == "Some file does not compile or pass all tests, some test must fail to load"
 	assert resp.status_code == 404
