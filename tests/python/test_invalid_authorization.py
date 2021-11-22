@@ -64,3 +64,25 @@ def test_get_total_pythonChallenge(client, jwt_token):
     assert resultOne.status_code == 401
     assert resultTwo.status_code == 401
     assert responsive.status_code == 401
+
+# testing a update python challenge
+def test_update_simple_fields(client, jwt_token):
+    jwt_token = None
+
+    #make a post and save id
+    post_info = send_post(client, jwt_token, "valid_code_8.py", "valid_atest_8.py", "Make all tests pass.", "1")
+    if post_info.status_code != 401:
+        challenge_id = post_info.json['challenge']['id']
+    else:
+        challenge_id = 10000000000
+
+    #send an update request
+    update_request = request_creator(repair_objective="updated", complexity="3")
+    response = client.put(api_url + '/' + str(challenge_id), data=update_request, headers={'Authorization': f'JWT {jwt_token}'})
+
+    update_expected_response = create_expected_response(0, "valid_code_1.py", "3", 'updated', "valid_atest_8.py")
+
+    responseNew = client.get(api_url + '/' + str(challenge_id), headers={'Authorization': f'JWT {jwt_token}'})
+
+    assert response.status_code == 401
+    assert responseNew.status_code == 401
