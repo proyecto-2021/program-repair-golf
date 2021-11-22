@@ -262,3 +262,33 @@ def test_update_valid_code(client, create_test_data, auth):
 
     # Cleanup
     cleanup()
+
+def test_update_nothing(client, create_test_data, auth):
+    #Arrange
+    url = 'cSharp/c-sharp-challenges'
+
+    data_put = {}
+  
+    expected_response = {"challenge": { "best_score": 0,
+                                        "code":create_test_data['content_code'],
+                                        "complexity": 5,
+                                        "repair_objective": "Testing",
+                                        "tests_code":create_test_data['content_tests_code']                                                  
+                                       }
+                        }
+
+    #Act
+    resp_post = client.post(url, data=create_test_data['data'], headers={'Authorization': f'JWT {auth}'})
+    ch_id = resp_post.json['challenge']['id']
+    url += '/' + str(ch_id)
+
+    resp_put = client.put(url, data=data_put, headers={'Authorization': f'JWT {auth}'})
+    resp_put_json = resp_put.json
+    del resp_put_json ['challenge']['id']
+
+    #Assert
+    assert resp_put.status_code == 200
+    assert resp_put_json == expected_response
+
+    #Cleanup
+    cleanup()
