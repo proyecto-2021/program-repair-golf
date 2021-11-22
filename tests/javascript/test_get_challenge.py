@@ -4,7 +4,7 @@ from . __init__ import createChallenge, post_generator,remove_files, ChallengeDA
 from . import db
 from app.javascript.models_js import JavascriptChallenge
 
-#Test de hacer un get luego de hacer un post
+
 
 #Test de id de challenge invalido
 def test_challenge_id_not_valid(client,auth):
@@ -25,16 +25,47 @@ def test_get_javascript(client,auth):
 	#assert
 	assert resp.status_code == 404
 
-def test_get_after_post(client, auth, post_generator):
-    # arrange
-    orig_json = post_generator['Challenge'].copy()
-    challenge_id = orig_json['id']
-    orig_json.pop('id')
-    challenge = ChallengeDAO.get_challenge(challenge_id)
+def test_get_after_post(client, auth):
+    #arrange
+    data = createChallenge('median', 'median.test', 'Testing', '3')
+    result = client.post('javascript/javascript-challenges', headers={'Authorization': f'JWT {auth}'}, data=data)
     
-    # act
-    r = client.get(f'javascript/javascript-challenges/{challenge_id}', headers={'Authorization': f'JWT {auth}'})
+    challenge_json = result.json['Challenge']
+    challenge_id = challenge_json['id']
+    challenge_json.pop('id')
+    challenge = ChallengeDAO.get_challenge(challenge_id)
+    #act
+    res = client.get(f'javascript/javascript-challenges/{challenge_id}', headers={'Authorization': f'JWT {auth}'})
     remove_files(challenge.code, challenge.tests_code)
+    #assert
+    assert res.status_code == 200 
+    
+def test_token_not_valid_id(client):
+    #arrange
+    authNot = 'Tokennotvalid'
+    #act
+    result = client.get(f'javascript/javascript-challenges/1', headers={'Authorization': f'JWT {authNot}'})
+    #assert
+    assert result.status_code == 401
 
-    # assert
-    assert r.status_code == 200
+def test_token_not_valid_all(client):
+    #arrange
+    authNot = 'Tokennotvalid'
+    #act
+    result = client.get(f'javascript/javascript-challenges/', headers={'Authorization': f'JWT {authNot}'})
+    #assert
+    assert result.status_code == 401 
+
+def test_authentication_required(client, auth):
+    #arrange
+    data = createChallenge('median', 'median.test', 'Testing', '1')
+    result = client.post('javascript/javascript-challenges', headers={'Authorization': f'JWT {auth}'}, data=data)
+    challenge_json = result.json['Challenge']
+    challenge_id = challenge_json['id']
+    challenge_json.pop('id')
+    challenge = ChallengeDAO.get_challenge(challenge_id)
+    remove_files(challenge.code, challenge.tests_code)
+    #act
+    res = client.get(f'javascript/javascript-challenges/{challenge_id}')
+    #assert
+    assert res.status_code == 401 
