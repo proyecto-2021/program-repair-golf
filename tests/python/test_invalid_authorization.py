@@ -30,10 +30,10 @@ def test_get_single_pythonChallenge(client, jwt_token):
 
     #data obtained through the get ready for manipulation
     if result.status_code != 401:
-        dataChallenge = result.json
+        data_challenge = result.json
         #I get each value within the dictionary
-        repair_objective = dataChallenge['challenge']['repair_objective']
-        code             = dataChallenge['challenge']['code'] 
+        repair_objective = data_challenge['challenge']['repair_objective']
+        code             = data_challenge['challenge']['code'] 
 
     assert result.status_code == 401
 
@@ -50,10 +50,10 @@ def test_get_total_pythonChallenge(client, jwt_token):
 
     #--- start post challenges ---#
     repair_objectiveParamOne = "probando test"
-    resultOne = send_post(client, jwt_token, "valid_code_6.py", "valid_atest_6.py", repair_objectiveParamOne, "1")
+    result_one = send_post(client, jwt_token, "valid_code_6.py", "valid_atest_6.py", repair_objectiveParamOne, "1")
 
     repair_objectiveParamTwo = "pruebita test"
-    resultTwo = send_post(client, jwt_token, "valid_code_7.py", "valid_atest_7.py", repair_objectiveParamTwo, "2")
+    result_two = send_post(client, jwt_token, "valid_code_7.py", "valid_atest_7.py", repair_objectiveParamTwo, "2")
 
     #--- end post challenges ---#
     responsive = client.get(api_url, headers={'Authorization': f'JWT {jwt_token}'})
@@ -61,8 +61,8 @@ def test_get_total_pythonChallenge(client, jwt_token):
     if responsive.status_code != 401:
         data = responsive.json
     
-    assert resultOne.status_code == 401
-    assert resultTwo.status_code == 401
+    assert result_one.status_code == 401
+    assert result_two.status_code == 401
     assert responsive.status_code == 401
 
 # testing a update python challenge
@@ -82,10 +82,10 @@ def test_update_simple_fields(client, jwt_token):
 
     update_expected_response = create_expected_response(0, "valid_code_1.py", "3", 'updated', "valid_atest_8.py")
 
-    responseNew = client.get(api_url + '/' + str(challenge_id), headers={'Authorization': f'JWT {jwt_token}'})
+    response_new = client.get(api_url + '/' + str(challenge_id), headers={'Authorization': f'JWT {jwt_token}'})
 
     assert response.status_code == 401
-    assert responseNew.status_code == 401
+    assert response_new.status_code == 401
 
 # testing a update all python challenge, without token
 def test_update_all(client, jwt_token):
