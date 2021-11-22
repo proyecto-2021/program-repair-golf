@@ -3,6 +3,7 @@ import pytest
 from app.javascript.controllers.files_controller import open_file, remove_files
 from app.javascript.dao.challenge_dao import ChallengeDAO
 
+
 @pytest.fixture(scope='module')
 def client():
     # Arrange
@@ -23,14 +24,6 @@ def auth(client):
     token = r.json['access_token']
     return token
 
-
-@pytest.fixture(scope='module')
-def post_generator(client, auth,name_code,name_test):
-    data = createChallenge(name_code, name_test, 'Testing', '1')
-    r = client.post('javascript/javascript-challenges', data=data, headers={'Authorization': f'JWT {auth}'})
-    return r.json
-
-#importar open file
 def createChallenge( code_name, test_name,objective,complexity):
     code_path = f'example-challenges/javascript-challenges/{code_name}.js'
     test_path = f'example-challenges/javascript-challenges/{test_name}.js'
@@ -55,7 +48,6 @@ def createChallenge( code_name, test_name,objective,complexity):
 
 
     return challenge
-
 
 def create_challenge_update(code_name, test_name, objective, complexity,score):
     

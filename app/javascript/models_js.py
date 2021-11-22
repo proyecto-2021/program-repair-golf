@@ -25,4 +25,3 @@ class JavascriptChallenge(db.Model):
             "complexity": self.complexity,
             "best_score": self.best_score
         }
-
