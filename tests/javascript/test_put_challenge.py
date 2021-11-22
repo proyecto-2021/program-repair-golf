@@ -117,4 +117,19 @@ def test_token_not_valid(client,auth):
     #assert
     assert update.status_code == 401    
 
+
+def test_authentication_required(client, auth):
+    #arrange
+    challeng_new = createChallenge("median", "median.test", "test", '1')
+    create = client.post('javascript/javascript-challenges', data=challeng_new, headers={'Authorization': f'JWT {auth}'})
+    challenge_json = create.json['Challenge']
+    challenge_id = challenge_json['id']
+    challenge_json.pop('id')
+    challenge = ChallengeDAO.get_challenge(challenge_id)
+    challenge_upd = create_challenge_update("median", "median.test", "test update", 'Testing','2')
+    #act
+    update = client.put(f"javascript/javascript-challenges/{challenge_id}",data=challenge_upd)
+    remove_files(challenge.code, challenge.tests_code)
+    #assert
+    assert update.status_code == 401 
  
