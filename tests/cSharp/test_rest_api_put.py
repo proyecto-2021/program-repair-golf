@@ -139,3 +139,33 @@ def test_put_with_code_and_test_and_without_challenge(client, create_test_data, 
     
     # Cleanup
     cleanup()
+
+def test_put_with_only_test(client, create_test_data, auth):
+    # Arrange
+    url = 'cSharp/c-sharp-challenges'
+
+    data_post = create_test_data['data']
+    data_put = create_challenge(tests_name='Example1Test', tests_code="BaseTest")
+    with open('tests/cSharp/test-files/BaseTest.cs') as f:
+        new_content_tests_code = f.read()
+    expected_response = {"challenge": { "best_score": 0,
+                                        "code":create_test_data['content_code'],
+                                        "complexity": 5,
+                                        "repair_objective": "Testing",
+                                        "tests_code":new_content_tests_code                                                  
+                                       }
+                        }
+    # Act
+    resp_post = client.post(url, data=data_post, headers={'Authorization': f'JWT {auth}'})
+    challenge_id = resp_post.json["challenge"]["id"]
+    url_put = 'cSharp/c-sharp-challenges/' + str(challenge_id)
+    resp_put = client.put(url_put, data=data_put, headers={'Authorization': f'JWT {auth}'})
+    # Assert
+    resp_put_json = resp_put.json
+    del resp_put_json ['challenge']['id']
+    
+    assert resp_put.status_code == 200
+    assert resp_put_json == expected_response
+    
+    # Cleanup
+    cleanup()
