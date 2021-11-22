@@ -25,8 +25,8 @@ def auth(client):
 
 
 @pytest.fixture(scope='module')
-def post_generator(client, auth):
-    data = createChallenge('example0', 'example0.test', 'Testing', '1')
+def post_generator(client, auth,name_code,name_test):
+    data = createChallenge(name_code, name_test, 'Testing', '1')
     r = client.post('javascript/javascript-challenges', data=data, headers={'Authorization': f'JWT {auth}'})
     return r.json
 
@@ -42,7 +42,7 @@ def createChallenge( code_name, test_name,objective,complexity):
             "challenge":{\
                 "source_code_file_name": "median",\
                 "test_suite_file_name": "median.test",\
-                "repair_objective": "objective",\
+                "repair_objective": "rep_obj",\
                 "complexity": "number"\
             }\
         }'
@@ -50,9 +50,36 @@ def createChallenge( code_name, test_name,objective,complexity):
 
     challenge['challenge'] = challenge['challenge'].replace('median', code_name)
     challenge['challenge'] = challenge['challenge'].replace('median.test', test_name)
-    challenge['challenge'] = challenge['challenge'].replace('objetive', objective)
+    challenge['challenge'] = challenge['challenge'].replace('rep_obj', objective)
     challenge['challenge'] = challenge['challenge'].replace('number', complexity)
 
 
     return challenge
 
+
+def create_challenge_update(code_name, test_name, objective, complexity,score):
+    
+    code_path = f'example-challenges/javascript-challenges/{code_name}.js'
+    test_path = f'example-challenges/javascript-challenges/{test_name}.js'
+    
+    challenge = {
+		'source_code_file': open(code_path, 'rb'),
+		'test_suite_file': open(test_path, 'rb'),
+		'challenge':'{ \
+            "challenge":{\
+                "source_code_file_name": "median",\
+                "test_suite_file_name": "median.test",\
+                "repair_objective": "rep_obj",\
+                "complexity": "number",\
+                "best_score": "b_score"\
+            }\
+        }'
+	}
+
+    challenge['challenge'] = challenge['challenge'].replace('median', code_name)
+    challenge['challenge'] = challenge['challenge'].replace('median.test', test_name)
+    challenge['challenge'] = challenge['challenge'].replace('rep_obj', objective)
+    challenge['challenge'] = challenge['challenge'].replace('number', complexity)
+    challenge['challenge'] = challenge['challenge'].replace('b_score', score)
+
+    return challenge

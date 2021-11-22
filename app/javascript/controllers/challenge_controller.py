@@ -1,7 +1,7 @@
 from ..models_js import JavascriptChallenge
 from ..folders_and_files import CODES_PATH, FILE_JS_EXTENSION
 from ..exceptions.CommandRunException import CommandRunException
-from .files_controller import upload_file, open_file, to_temp_file, replace_file, remove_files 
+from .files_controller import upload_file, open_file, to_temp_file, replace_file, remove_files, exist_file
 from ..modules.source_code_module import compile_js, test_fail_run
 from ..dao.challenge_dao import ChallengeDAO   
 
@@ -29,6 +29,9 @@ class ChallengeController():
         
     def update_challenge(id, source_code_file_upd, test_suite_file_upd, repair_objective, complexity, best_score):
         challenge = ChallengeDAO.get_challenge(id)
+        if not exist_file(challenge.code) or not exist_file(challenge.tests_code):
+            raise FileReplaceException(f'file does not exist', FileReplaceException.HTTP_NOT_FOUND)
+            
         file_code_path_upd = to_temp_file(challenge.code)
         file_test_path_upd = to_temp_file(challenge.tests_code)
         
