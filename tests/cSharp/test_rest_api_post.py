@@ -120,7 +120,6 @@ def test_post_challenge_not_found(client, auth):
                              tests_code='BaseTest')
     data5 = create_challenge(code_name='Example1', tests_name='Example1Test',
                              code='BaseExample', tests_code='BaseTest')
-
     expected_response = {"challenge": "Data not found"}
     responses = []
 
@@ -132,7 +131,7 @@ def test_post_challenge_not_found(client, auth):
     responses.append(client.post(url, data=data3, headers={'Authorization': f'JWT {auth}'}))
     responses.append(client.post(url, data=data4, headers={'Authorization': f'JWT {auth}'}))
     responses.append(client.post(url, data=data5, headers={'Authorization': f'JWT {auth}'}))
-
+    
     # Assert
     for response in responses:
         assert response.status_code == 404

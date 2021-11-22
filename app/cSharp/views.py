@@ -21,7 +21,6 @@ def post_csharp_challenges():
                                      request.files.get('test_suite_file'),
                                      request.form.get('challenge'))
 
-
 @cSharp.route('c-sharp-challenges/<int:id>/repair', methods=['POST'])
 @jwt_required()
 def repair_candidate(id):
