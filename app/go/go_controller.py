@@ -1,15 +1,10 @@
-from flask import jsonify, request, make_response, json ,session
+from flask import jsonify, request, make_response, json 
 from .go_challenge_dao import ChallengeDAO
-from .go_source_code import SourceCode
 from .go_challenge import Challenge
 from .go_repair_candidate import RepairCandidate
 from .go_directory_management import DirectoryManagement
-from app import db
-import math
 from flask_jwt import jwt_required,current_identity
-
-from .models_go import go_attemps
-
+import math
 
 dao = ChallengeDAO()
 

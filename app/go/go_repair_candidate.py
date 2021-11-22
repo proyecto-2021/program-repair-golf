@@ -1,7 +1,5 @@
 from nltk import edit_distance
 from .go_source_code import SourceCode
-from .go_challenge import Challenge
-import os
 
 class RepairCandidate:
 	def __init__(self, challenge=None, dir_path=None, file_path=None):
