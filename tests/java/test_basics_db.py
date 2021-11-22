@@ -99,25 +99,6 @@ def test_post_many_loads(client):
     assert p1['code'] == code4
     assert t1['repair_objective'] == repair3
 
-def test_post_same_name(client):
-    code1 = "code1"
-    test1 = "test1"
-    repair = "repair"
-    complexity = "1"
-    dict = create_dict(code1, test1, repair, complexity)
-
-    code2 = "code1"
-    test2 = "test1"
-    repair2 = "repair"
-    complexity2 = "1"
-    dict2 = create_dict(code2, test2, repair2, complexity2)
-
-    DAO_java_challenge.create_challenge(dict)
-    try:
-        DAO_java_challenge.create_challenge(dict2)
-    except Exception as e:
-        assert str(e) == "Name of the code exist"
-
 def test_put_ok(client):
     code = "code"
     test = "test"
@@ -181,11 +162,28 @@ def test_put_notOK(client):
         challenge_upd = DAO_java_challenge.challenges_id_java(2)
     except Exception as e:
         assert str(e) == "Challenge not found"
-    
-   
+
     db.session.delete(challenge_old)
     db.session.commit()
 
     assert challenge_upd is None
     assert resp is not None
    
+def test_post_same_name(client):
+    code1 = "code1"
+    test1 = "test1"
+    repair = "repair"
+    complexity = "1"
+    dict = create_dict(code1, test1, repair, complexity)
+
+    code2 = "code1"
+    test2 = "test1"
+    repair2 = "repair"
+    complexity2 = "1"
+    dict2 = create_dict(code2, test2, repair2, complexity2)
+
+    DAO_java_challenge.create_challenge(dict)
+    try:
+        DAO_java_challenge.create_challenge(dict2)
+    except Exception as e:
+        assert str(e) == "Name of the code exist"
