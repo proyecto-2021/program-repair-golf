@@ -145,7 +145,7 @@ def test_put_with_only_test(client, create_test_data, auth):
     url = 'cSharp/c-sharp-challenges'
 
     data_post = create_test_data['data']
-    data_put = create_challenge(test_name='Example1Test', tests_code="BaseTest")
+    data_put = create_challenge(tests_name='Example1Test', tests_code="BaseTest")
     with open('tests/cSharp/test-files/BaseTest.cs') as f:
         new_content_tests_code = f.read()
     expected_response = {"challenge": { "best_score": 0,
