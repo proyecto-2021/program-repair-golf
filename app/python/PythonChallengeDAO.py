@@ -21,7 +21,7 @@ class PythonChallengeDAO:
     db.session.commit()
     return new_challenge.id
 
-  def get_repair_attempts(user_id, chellenge_id):
+  def get_repair_attempts(user_id, challenge_id):
     return db.session.query(python_repair_attempt).filter_by(user_id = user_id, challenge_id = challenge_id).first()
 
   def increase_attempts(user_id, challenge_id):
