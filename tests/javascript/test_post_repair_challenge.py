@@ -125,3 +125,4 @@ def test_authentication_required(client,auth):
     remove_files(challenge.code, challenge.tests_code)
     #assert
     assert resp_repair.status_code == 401 
+
