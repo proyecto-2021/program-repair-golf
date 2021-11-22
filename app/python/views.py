@@ -61,10 +61,11 @@ class PythonViews(MethodView):
         
         #Repair candidate 
         code_repair = request.files.get('source_code_file')
+        user = current_identity
         if code_repair is not None: code_repair = code_repair.read()
 
         #Result of validated rapair candidate
-        repair_result = PythonController.repair_challenge(id, code_repair)
+        repair_result = PythonController.repair_challenge(id, code_repair, user)
 
         if 'Error' in repair_result:
             return make_response(jsonify(repair_result), 409)

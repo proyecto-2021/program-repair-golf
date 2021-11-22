@@ -14,10 +14,12 @@ def client():
             # test will be executed on the test_client object
             yield test_client
 
-    public_path = "/home/nacho/Desktop/proyecto/program-repair-golf/public/challenges/"
+    #get path where challenges are stored
+    public_path = "public/challenges/"
+    public_path = os.path.abspath(public_path)
+    #delete all challenges
     for file in os.listdir(public_path):
-        print(f"\n{file}")
-        if file != 'README.md':
+        if file != 'README.md': #don't delete readme
             os.remove(os.path.join(public_path, file))
 
 @pytest.fixture(scope = 'module')
