@@ -31,6 +31,14 @@ def create_test_data():
             'content_tests_code': content_tests_code
             }
 
+@pytest.fixture(scope='module')
+def auth(client):
+    user = {'username': 'cSharp', 'password': 'cSharp'}
+    client.post('/users', json=user)
+    resp = client.post('/auth', json=user)
+    token = resp.json['access_token']
+    return token
+
 def challenge_json(dic_data):
     json_dic = '{ "challenge": { '
     first_key = True

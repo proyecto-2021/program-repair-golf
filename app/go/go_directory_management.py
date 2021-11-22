@@ -1,6 +1,6 @@
 import os, shutil
 
-class GoDirectoryManagement:
+class DirectoryManagement:
 	def __init__(self, path=None):
 		self.path = path
 
