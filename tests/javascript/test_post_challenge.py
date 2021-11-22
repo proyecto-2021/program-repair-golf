@@ -56,9 +56,8 @@ def test_token_not_valid(client):
 
 def test_authentication_required(client):
     #arrange
-    url = '/javascript/javascript-challenges'
     data = createChallenge('median','median.test', 'Objective is hshshs', '3')
     #act
-    result = client.post(url,data=data)
+    result = client.post('/javascript/javascript-challenges',data=data)
     #assert
     assert result.status_code == 401
