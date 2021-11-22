@@ -68,7 +68,10 @@ class JavascriptChallengeAPI(MethodView):
     @jwt_required()
     def put(self, id):
         try:
-            challenge_json = json.loads(request.form.get('challenge'))['challenge']
+            data_requ = request.form
+            if not data_requ:
+                return make_response(jsonify({'Challenge': 'Data not found'}), 404)
+            challenge_json = json.loads(data_requ.get('challenge')).get('challenge')
             source_code_file_upd = request.files['source_code_file'] or None
             test_suite_file_upd = request.files['test_suite_file'] or None
             repair_objective = challenge_json['repair_objective'] or None
@@ -86,7 +89,7 @@ class JavascriptChallengeAPI(MethodView):
             return make_response(jsonify({'Error sqlite3': e.msg}), e.HTTP_code)
         except Exception as e:
             return make_response(jsonify({'Error App': str(traceback.format_exc())}), 404)
-       
+
 javascript_challenge_view = JavascriptChallengeAPI.as_view('javascript_challenge_api')
 javascript.add_url_rule('/javascript-challenges', defaults={'id': None}, 
 view_func=javascript_challenge_view, methods=['POST',])
