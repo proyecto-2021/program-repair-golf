@@ -3,7 +3,7 @@ from .c_sharp_challenge import CSharpChallenge
 from .c_sharp_repair_candidate import CSharpRepairCandidate
 from .c_sharp_challenge_DAO import CSharpChallengeDAO
 from json import loads
-from flask import jsonify, make_response, json, request
+from flask import jsonify, make_response, json
 import os
 
 class CSharpController:
@@ -18,6 +18,18 @@ class CSharpController:
             return jsonify({'Challenge': self.DAO.get_challenge_db(id, show_files_content=True)})
         else:
             return make_response(jsonify({'Challenge': 'Not found'}), 404)
+
+    def get_challenges(self):
+        challenge = {'challenges': []}
+        show = []
+        challenge['challenges'] = self.DAO.get_all_challenges()
+        for i in challenge['challenges']:
+            show.append(self.DAO.get_challenge_db(i.__repr__()['id'],
+                                                  show_files_content=True))
+        if show != []:
+            return jsonify({'challenges': show})
+        else:
+            return jsonify({'challenges': 'None Loaded'})
 
     def post_challenge(self, code_file, test_file, challenge_data):
         try:

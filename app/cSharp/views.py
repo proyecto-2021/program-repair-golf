@@ -1,14 +1,8 @@
-from posixpath import basename
 from . import cSharp
-from .c_sharp_challenge import CSharpChallenge
-from .c_sharp_repair_candidate import CSharpRepairCandidate
-from .c_sharp_challenge_DAO import CSharpChallengeDAO
 from json import loads
-from flask import jsonify, make_response, json, request
+from flask import request
 from .c_sharp_controller import CSharpController
-import os
 
-DAO = CSharpChallengeDAO()
 controller = CSharpController()
 
 @cSharp.route('/login')
@@ -41,14 +35,5 @@ def get(id):
 
 @cSharp.route('/c-sharp-challenges', methods=['GET'])
 def get_csharp_challenges():
-    challenge = {'challenges': []}
-    show = []
-    challenge['challenges'] = DAO.get_all_challenges()
-    for i in challenge['challenges']:
-        show.append(DAO.get_challenge_db(i.__repr__()['id'],
-                                         show_files_content=True))
-    if show != []:
-        return jsonify({'challenges': show})
-    else:
-        return jsonify({'challenges': 'None Loaded'})
+    return controller.get_challenges()
 
