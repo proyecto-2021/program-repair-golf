@@ -1,10 +1,4 @@
-
 import pytest
-
-<<<<<<< HEAD
-=======
-from . import client, auth 
->>>>>>> 04fe0e8cbe8c710118905ce80c961645524b2013
 from app.javascript.models_js import *
 from app.javascript.modules.dependences_module import *
 from app.javascript.exceptions.CommandRunException import CommandRunException
