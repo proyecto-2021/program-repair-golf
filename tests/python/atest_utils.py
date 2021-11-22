@@ -58,5 +58,8 @@ def send_post(client, jwt_token, code_name, test_name, repair_objective, complex
     
     dataChallengePost = request_creator(code_path=code_path, test_path=test_path, code_name=code_name,
     test_name=test_name, repair_objective=repair_objective, complexity=complexity)
-
-    return client.post(api_url, headers={'Authorization': f'JWT {jwt_token}'}, data=dataChallengePost)
+    
+    if jwt_token is not None:
+        return client.post(api_url, headers={'Authorization': f'JWT {jwt_token}'}, data=dataChallengePost)
+    else:
+        return client.post(api_url, headers={'Authorization': f'empty'}, data=dataChallengePost)
