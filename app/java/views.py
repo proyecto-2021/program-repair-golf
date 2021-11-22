@@ -16,6 +16,7 @@ def ViewAllChallenges():
         return make_response(jsonify(str(e)), 404)
     return make_response(jsonify({"challenges": output}))
     
+
 @java.route('/java-challenges/<int:id>',methods=['GET'])
 @jwt_required()
 def View_Challenges(id):
@@ -24,7 +25,8 @@ def View_Challenges(id):
     except Exception as e:
         return make_response(jsonify(str(e)), 404)
     return make_response(jsonify({"challenge": output}))
-    
+
+
 @java.route('/java-challenges/<int:id>', methods=['PUT'])
 @jwt_required()
 def UpdateChallenge(id):
@@ -34,6 +36,7 @@ def UpdateChallenge(id):
                 return make_response(jsonify(str(e)), 404)
     return make_response(jsonify({"challenge": output}))
    
+
 @java.route('/java-challenges', methods=['POST'])
 @jwt_required()
 def create_challenge():
@@ -42,6 +45,7 @@ def create_challenge():
     except Exception as e:
         return make_response(jsonify(str(e)), 404)
     return make_response(jsonify({"challenge": output}), 200)
+
 
 @java.route('/java-challenges/<int:id>/repair', methods=['POST'])
 @jwt_required()
