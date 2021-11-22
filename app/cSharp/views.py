@@ -108,8 +108,7 @@ def post_csharp_challenges():
                          'repair_objective')
     if not all(key in new_challenge for key in keys_in_challenge):
         return make_response(jsonify({"challenge": "Data not found"}), 404)
-
-   
+           
     try:
         ch_dir = DAO.create_challenge_dir(new_challenge['source_code_file_name'])
     except FileExistsError:
