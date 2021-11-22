@@ -36,12 +36,11 @@ class controller():
             aux_challenge.pop('tests_code',None)
             all_challenges.append(aux_challenge)
         return all_challenges
-
     
     def challenges_id_java(id):
         challenge=DAO_java_challenge.challenges_id_java(id)
         if challenge is None:
-            raise Exception('ERROR NOT EXIST THIS ID')
+            raise Exception('Error not exist it id')
         challengeaux=Challenge_java.__repr__(challenge)
         if (challengeaux is None):
             return make_response(jsonify({"challenge":"Not found prueba"}),404)   
@@ -96,11 +95,11 @@ class controller():
                             challenge.tests_code=test_suite_upd_name
                             code_file_name=code_file_upd_name
                         else:
-                            raise Exception("Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar")
+                            raise Exception("Some file does not compile or pass all tests, some test must fail to load")
                     else: 
-                        raise Exception("FileName orCode not Exist")
+                        raise Exception("FileName not Exist")
                 else:
-                    raise Exception("FileName orCode not Exist")
+                    raise Exception("File orCode not Exist")
             DAO_java_challenge.updatechallenge(challenge)
             return FileManagement.show_codes(code_file_name)    
             
@@ -117,11 +116,11 @@ class controller():
                 if Challenge.isValid(file, test_suite, dict_final):
                     return FileManagement.show_codes(code_file_name)
                 else:
-                    raise Exception("Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar")
+                    raise Exception("Some file does not compile or pass all tests, some test must fail to load")
             else:
-                raise Exception("Nombre de archivo existente, cargue nuevamente")
+                raise Exception("Name of existing file")
         else:
-            raise Exception("No ingreso los datos de los archivos java")
+            raise Exception("I do not enter data from java files")
 
     def repair_file(id):
         file_repair = request.files['source_code_file']
@@ -140,9 +139,9 @@ class controller():
                     DAO_java_challenge.update(challenge)
                     return {"repair": {"challenge": ChallengeCandidate.create_desafio(challenge),"player":{"username": User.to_dict(current_identity)['username']} ,"attempts": intentos, "score": value_dist}}
                 else:
-                    raise Exception(f'La distancia de edicion es mayor o igual a la existente, tu puntuacion es: {value_dist}')
+                    raise Exception(f'The editing distance is greater than or equal to the existing one, your score is: {value_dist}')
             else:
-                raise Exception("Error")
+                raise Exception("Some file does not compile or pass all tests, some test must fail to load")
         else:
-            raise Exception("No existe id")
+            raise Exception("Challenge not found")
                    

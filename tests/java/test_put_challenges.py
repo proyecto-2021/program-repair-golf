@@ -41,9 +41,6 @@ def test_PUT_parameters_tokenOK(client):
 	objetive=json2['repair_objective']
 	complexity=json2['complexity']
 
-	#fileClass = open(data_for_tests.urlClass, 'rb')
-	#fileTest = open(data_for_tests.urlTest, 'rb')
-	
 	#assert
 	assert r1.status_code == 200
 	assert r2.status_code == 200
@@ -61,6 +58,7 @@ def test_PUT_parameters_Error_token(client):
 	r1 = client.post(url,headers={'Authorization': f'JWT {token}'}, data=data)
 	id = r1.json['challenge']['id']	
 	url2 = f'http://localhost:5000/java/java-challenges/{id}'
+	
 	#act
 	r2 = client.put(url2,headers={'Authorization': f'JWT {token1}'},data=data2)
 
@@ -85,9 +83,34 @@ def test_PUT_fails_parameters(client):
 	try:
 		r2 = client.put(url2, headers={'Authorization': f'JWT {token}'}, data=data2)
 	except Exception as e:
-		assert str(e) == "FileName orCode not Exist"		
+		assert str(e) == "FileName not Exist"		
+	
 	#assert
 	assert r1.status_code == 200
+
+def test_PUT_all_tests(client):
+	#arrange
+	data_for_tests.delete_db()
+	db.session.query(Challenge_java).delete()
+	data = data_for_tests.createChallenge('example-challenges/java-challenges/Median.java','example-challenges/java-challenges/MedianTest.java','Median','MedianTest', 'pass', '1')
+	data2 = data_for_tests.createChallenge('example-challenges/java-challenges/Passalltest.java','example-challenges/java-challenges/Passalltesttest.java','Pasalltest','Passaalltesttest', 'pass', '1')
+	
+	token=data_for_tests.get_token(client)	
+	url = 'http://localhost:5000/java/java-challenges'
+	r1 = client.post(url,headers={'Authorization': f'JWT {token}'}, data=data)
+	id = r1.json['challenge']['id']
+	url2 = f'http://localhost:5000/java/java-challenges/{id}'
+
+	#act
+	try:
+		r2 = client.put(url2, headers={'Authorization': f'JWT {token}'}, data=data2)
+	except Exception as e:
+		assert str(e) == "Some file does not compile or pass all tests, some test must fail to load"		
+	
+	#assert
+	assert r1.status_code == 200
+	
+
 
 def test_PUT_fails_complexity(client):
 	#arrange
@@ -101,13 +124,12 @@ def test_PUT_fails_complexity(client):
 	url2 = f'http://localhost:5000/java/java-challenges/{id}'
 	
 	#act
-	r2 = client.put(url2,headers={'Authorization': f'JWT {token}'}, data=data2)
-	#json2 = r2.json['challenge']
-	#complexity=json2['complexity']
-
+	try:
+		r2 = client.put(url2,headers={'Authorization': f'JWT {token}'}, data=data2)
+	except Exception as e:
+    		assert str(e) == ("The complexity is greater than 5, it must be less than equal to 5")
 	#assert
 	assert r1.status_code == 200
-	assert r2.status_code == 404
 	
 	
 def test_PUT_pass_all_test(client):
@@ -120,12 +142,14 @@ def test_PUT_pass_all_test(client):
 	r1 = client.post(url, headers={'Authorization': f'JWT {token}'},data=data)
 	id = r1.json['challenge']['id']
 	url2 = f'http://localhost:5000/java/java-challenges/{id}'
+	
 	#act
 	try:
 		resp = client.put(url2,headers={'Authorization': f'JWT {token}'}, data=data2)
 	except Exception as e:
+	
 	#assert
-		assert str(e) == "Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar"
+		assert str(e) == "Some file does not compile or pass all tests, some test must fail to load"
 	assert resp.status_code == 404
 	assert r1.status_code==200
 
@@ -139,12 +163,14 @@ def test_file_PUT_not_compile_class(client):
 	r1 = client.post(url,headers={'Authorization': f'JWT {token}'}, data=data)
 	id = r1.json['challenge']['id']
 	url2 = f'http://localhost:5000/java/java-challenges/{id}'
+	
 	#act
 	try:
 		resp = client.put(url,headers={'Authorization': f'JWT {token}'}, data=data2)
 	except Exception as e:
+	
 	#assert
-		assert str(e) == "Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar"
+		assert str(e) == "Some file does not compile or pass all tests, some test must fail to load"
 
 
 # update java test suite that does not compile
@@ -159,10 +185,12 @@ def PUT_test_file_not_compile_test(client):
 	id = r1.json['challenge']['id']
     
 	url2 = f'http://localhost:5000/java/java-challenges/{id}'
+	
 	#act
 	try:
 		resp = client.put(url,headers={'Authorization': f'JWT {token}'}, data=data2)
 	except Exception as e:
+	
 	#assert
-		assert str(e) == "Algun archivo no compila o pasa todos los test, debe fallar algun test para cargar"		
+		assert str(e) == "Some file does not compile or pass all tests, some test must fail to load"		
 	assert resp.status_code == 404	
