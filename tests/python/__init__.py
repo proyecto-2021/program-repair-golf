@@ -19,7 +19,6 @@ def client():
     public_path = os.path.abspath(public_path)
     #delete all challenges
     for file in os.listdir(public_path):
-        print(f"\n{file}")
         if file != 'README.md': #don't delete readme
             os.remove(os.path.join(public_path, file))
 
