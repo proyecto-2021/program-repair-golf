@@ -1,15 +1,15 @@
-from flask import jsonify, request, make_response, json ,session
+from flask import jsonify, request, make_response, json 
 from .go_challenge_dao import ChallengeDAO
-from .go_source_code import SourceCode
 from .go_challenge import Challenge
 from .go_repair_candidate import RepairCandidate
 from .go_directory_management import DirectoryManagement
-from app import db
-import math
 from flask_jwt import jwt_required,current_identity
+import math
 
-from .models_go import go_attemps
-
+TEMP_DIR  = "public/challenges/tmp/"
+CHALL_DIR = "public/challenges/"
+TEMP_CODE_FILE = "code.go"
+TEMP_TEST_FILE = "code_test.go"
 
 dao = ChallengeDAO()
 
@@ -52,7 +52,7 @@ class Controller():
         challenge_data = json.loads(request.form.get('challenge'))['challenge']
         
         code_file = request.files["source_code_file"]
-        code_path = 'public/challenges/' + challenge_data['source_code_file_name']
+        code_path = CHALL_DIR + challenge_data['source_code_file_name']
         
         all_the_challenges = dao.get_all_challenges()
         for every_challenge in all_the_challenges:
@@ -61,7 +61,7 @@ class Controller():
         
         code_file.save(code_path)
         test_suite_file = request.files["test_suite_file"]
-        test_suite_path = 'public/challenges/' + challenge_data['test_suite_file_name']
+        test_suite_path = CHALL_DIR + challenge_data['test_suite_file_name']
         test_suite_file.save(test_suite_path)
 
         repair_obj = challenge_data['repair_objective']
@@ -92,8 +92,8 @@ class Controller():
             repair_objective=c.repair_objective,complexity=c.complexity,best_score=c.best_score)
 
         repair_code = request.files['source_code_file']
-        dir = DirectoryManagement(path='public/challenges/solution/')
-        repair = Challenge(path_code='public/challenges/solution/code.go', path_tests_code='public/challenges/solution/code_test.go')
+        dir = DirectoryManagement(path=TEMP_DIR)
+        repair = Challenge(path_code= dir.get_path() + TEMP_CODE_FILE , path_tests_code= dir.get_path() + TEMP_TEST_FILE)
 
         if not (dir.is_dir()):
             dir.create_dir()
@@ -137,7 +137,7 @@ class Controller():
         old_code  = challenge.get_code()
         old_tests = challenge.get_tests_code()
 
-        temporary_directory = DirectoryManagement(path='example-challenges/go-challenges/tmp/')
+        temporary_directory = DirectoryManagement(path = TEMP_DIR)
         if request.files and not(temporary_directory.is_dir()):
             temporary_directory.create_dir()
 
@@ -162,7 +162,7 @@ class Controller():
             challenge.set_tests_code(path_to_tests)    
 
             if not new_code and new_test:
-                temp_code_file = temporary_directory.get_path() + 'temp.go'
+                temp_code_file = temporary_directory.get_path() + TEMP_CODE_FILE
                 challenge.rewrite_code(temp_code_file)
                 challenge.set_code(temp_code_file)
 
@@ -182,7 +182,7 @@ class Controller():
                 return make_response(jsonify({'error' : 'tests must fails'}), 412)  
     
         elif new_code and not new_test:
-            temp_test_file = temporary_directory.get_path() + 'temp_test.go'
+            temp_test_file = temporary_directory.get_path() + TEMP_TEST_FILE
             challenge.rewrite_tests_code(temp_test_file)
             challenge.set_tests_code(temp_test_file)
             
@@ -214,7 +214,6 @@ class Controller():
         dao.update_challenge(challenge.get_id(), challenge.get_content(id=False, tests_code=False))
 
         return jsonify({'challenge' : challenge.get_content(id=False)})
-
 
 def create_file_tmp(path, name, file):
     path_to_file = path + name
