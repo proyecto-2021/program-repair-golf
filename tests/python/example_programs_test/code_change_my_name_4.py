@@ -1,0 +1,11 @@
+
+def median(a,b,c):
+    res = 0
+    if ((a>=b and a<=c) or (a>=c and a<=b)):
+        res = a
+    if ((b>=a and b<=c) or (b>=c and b<=a)):
+        res = 100
+    else:
+        res = c
+    return res
+
