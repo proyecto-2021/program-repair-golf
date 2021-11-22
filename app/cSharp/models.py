@@ -14,6 +14,7 @@ class CSharpChallengeModel(db.Model):
     repair_objective = db.Column(db.String(120), nullable=False)
     complexity = db.Column(db.Integer, nullable=False)
     best_score = db.Column(db.Integer, nullable=False)
+    users_attempts = db.relationship('User', secondary=c_sharp_attempts)
 
     def __repr__(self):
         return {

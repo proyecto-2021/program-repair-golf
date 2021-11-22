@@ -171,7 +171,7 @@ class CSharpController:
         elif val_status == 2:
             return make_response(jsonify({'Test': 'Sintax errors'}), 409)
 
-    def post_repair_candidate(self, id, repair_candidate):
+    def post_repair_candidate(self, id, repair_candidate, user):
         if self.DAO.exist(id):
             challenge = self.DAO.get_challenge_db(id)
             challenge_name = os.path.basename(challenge['code'])
@@ -185,6 +185,7 @@ class CSharpController:
                                                   challenge_name, test_name, challenge['code'], 
                                                   challenge['tests_code'])
             repair = CSharpRepairCandidate(challenge_to_repair, file, challenge_name, repair_path)
+            self.DAO.add_attempt(user.id, id)
             validation_result = repair.validate()
             if validation_result == -1:
                 self.DAO.remove(repair.code.path)
@@ -205,8 +206,14 @@ class CSharpController:
                     "repair_objective": challenge['repair_objective'],
                     "best_score": challenge['best_score']
                 }
+                player = {
+                    "username": user.username
+                }
                 self.DAO.remove(repair.code.path)
                 self.DAO.remove(repair.code.path.replace('.cs', '.exe'), repair.challenge.test.path.replace(".cs", ".dll"))
-                return make_response(jsonify({'Repair': {'challenge': challenge_data, 'score': score}}), 200)
+                return make_response(jsonify({'Repair': {'challenge': challenge_data,
+                                                         'player': player,
+                                                         'attempts': self.DAO.get_attempts(user.id, id),
+                                                         'score': score}}), 200)
         else:
             return make_response(jsonify({"challenge": "There is no challenge for this id"}), 404)

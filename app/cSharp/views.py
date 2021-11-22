@@ -2,7 +2,8 @@ from . import cSharp
 from json import loads
 from flask import request
 from .c_sharp_controller import CSharpController
-from flask_jwt import jwt_required
+from flask_jwt import jwt_required, current_identity
+
 
 controller = CSharpController()
 
@@ -25,7 +26,7 @@ def post_csharp_challenges():
 @cSharp.route('c-sharp-challenges/<int:id>/repair', methods=['POST'])
 @jwt_required()
 def repair_candidate(id):
-    return controller.post_repair_candidate(id,request.files.get('source_code_file'))
+    return controller.post_repair_candidate(id,request.files.get('source_code_file'), current_identity)
 
 
 @cSharp.route('/c-sharp-challenges/<int:id>', methods=['GET'])
