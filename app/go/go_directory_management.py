@@ -7,9 +7,6 @@ class DirectoryManagement:
 	def get_path(self):
 		return self.path
 
-	def set_path(self, path):
-		self.path = path
-
 	def create_dir(self):
 		os.makedirs(self.get_path())
 

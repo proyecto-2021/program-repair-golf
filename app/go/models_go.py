@@ -16,11 +16,3 @@ class GoChallenge(db.Model):
     complexity = db.Column(db.String(3))
     best_score = db.Column(db.Integer())
     attempts = db.relationship('User', secondary=go_attemps)
-
-    def convert_dict(self):
-        return {"id": self.id,
-                "code": self.code,
-                "tests_code": self.tests_code,
-                "repair_objective": self.repair_objective,
-                "complexity": self.complexity,
-                "best_score": self.best_score}
