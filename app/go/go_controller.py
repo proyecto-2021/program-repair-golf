@@ -70,8 +70,8 @@ class Controller():
         new_challenge = Challenge(path_code=code_path, path_tests_code=test_suite_path, repair_objective=repair_obj, complexity=comp)
         if not new_challenge.code_compiles():
         	return make_response(jsonify({"code_file": "The code has syntax errors"}), 412)
-        #elif not new_challenge.tests_compiles():
-        #	return make_response(jsonify({"test_code_file": "The test code has syntax errors"}), 412)
+        elif not new_challenge.tests_compiles():
+        	return make_response(jsonify({"test_code_file": "The test code has syntax errors"}), 412)
         elif not new_challenge.tests_fail():
         	return make_response(jsonify({"ERROR: tests": "There must be at least one test that fails"}), 412)
 
