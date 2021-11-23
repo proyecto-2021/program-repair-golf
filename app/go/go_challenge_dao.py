@@ -30,9 +30,6 @@ class ChallengeDAO():
 		db.session.query(GoChallenge).filter_by(id=id).update(challenge)
 		db.session.commit()
 
-	def delete_challenge(self, challenge):
-		db.session.delete(challenge)
-		db.session.commit()
 
 	def exists(self, id):
 		return self.get_challenge_by_id(id) is not None

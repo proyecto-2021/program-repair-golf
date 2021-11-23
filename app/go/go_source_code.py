@@ -35,23 +35,12 @@ class SourceCode:
         f = open(self.get_path(), 'x')
         f.close()
 
-    def write_file(self, string):
-        with open(self.get_path(), 'w') as f:
-            f.write(string)
-            f.close()
-
     def get_content(self):
         with open(self.get_path(),'r') as f:
             return f.read()
 
     def move(self, path):
         shutil.copy(path, self.get_path())
-
-    def save(self, file): 
-        file.save(self.get_path())
-    
-    def remove_file(self):
-        os.remove(self.get_path())
 
     def rewrite_file(self, path):
         with open(self.get_path(), 'r') as f:
