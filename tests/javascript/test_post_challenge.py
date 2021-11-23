@@ -61,3 +61,25 @@ def test_authentication_required(client):
     result = client.post('/javascript/javascript-challenges',data=data)
     #assert
     assert result.status_code == 401
+
+
+def test_post_challenge_not_code_file(client, auth):
+    #arrange
+    data = createChallenge('median', 'median.test', 'Testing', '1')
+    data['source_code_file'] = None
+    
+    #act
+    result = client.post('javascript/javascript-challenges', headers={'Authorization': f'JWT {auth}'}, data=data)
+    #assert
+    assert result.status_code == 404
+
+def test_post_challenge_not_code_test_file(client, auth):
+    #arrange
+    data = createChallenge('median', 'median.test', 'Testing', '1')
+    data['test_suite_file'] = None
+    print(data)
+    #act
+    result = client.post('javascript/javascript-challenges', headers={'Authorization': f'JWT {auth}'}, data=data)
+    
+    #assert
+    assert result.status_code == 404
