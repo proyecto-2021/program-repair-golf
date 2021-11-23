@@ -26,9 +26,6 @@ def error_extract(output):
     return str(output).find(error_open) != -1 
 
 def dependences_ok(directory): 
-    print(f' modules {directory + DEP_MODULES_FOLDER}')
-    print(f' package {directory + DEP_PACKAGE_JSON_FILE}')
-    print(f' lock {directory + DEP_PACKAGE_LOCK_JSON_FILE}')
     return os.path.lexists(directory + DEP_MODULES_FOLDER) and os.path.lexists(directory + DEP_PACKAGE_JSON_FILE) and os.path.lexists(directory + DEP_PACKAGE_LOCK_JSON_FILE)
 
 

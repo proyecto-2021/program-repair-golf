@@ -48,12 +48,11 @@ class ChallengeController():
             remove_files(file_code_path_upd,file_test_path_upd)
             raise CommandRunException(e.msg, e.HTTP_code)
 
-        ChallengeDAO.update_challenge(id, None, None, repair_objective, complexity, best_score)
-
-        challenge_dict = challenge.to_dict()
+        challenge_upd = ChallengeDAO.update_challenge(id, None, None, repair_objective, complexity, best_score)
+        challenge_dict = challenge_upd.to_dict()
         challenge_dict["code"] = open_file(challenge.code)
         challenge_dict["tests_code"] = open_file(challenge.tests_code)
-        return challenge.to_dict()
+        return challenge_dict
    
     def create_challenge(source_code_file, test_suite_file, repair_objective, complexity, code_file_name, test_file_name):
         code_file_path = CODES_PATH + code_file_name + FILE_JS_EXTENSION 

@@ -28,6 +28,3 @@ class RepairCandidate:
 
 	def tests_fail(self):
 		return self.tests_code.tests_fail()
-
-	def save(self):
-		self.repair_code.save()
