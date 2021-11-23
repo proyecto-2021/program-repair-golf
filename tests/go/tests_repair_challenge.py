@@ -68,10 +68,6 @@ def test_repair_for_incorrect_file(client,auth):
     ret_post_json = ret_post.json["challenge"]
 
     ret_repair = client.post(f"go/api/v1/go-challenges/{ret_post_json['id']}/repair", data=challenge_repair, headers={'Authorization': f'JWT {auth}'})
-    # downgrade
-    for file in glob.glob(os.path.abspath(path)):
-        if os.path.isfile(file):
-            os.remove(file)
     # Assert
     assert ret_repair.status_code == 409
 
@@ -135,11 +131,6 @@ def test_repair_for_check_calculate_edit_distance(client,auth):
 
     ret_repair = client.post(f"go/api/v1/go-challenges/{ret_post_json['id']}/repair", data=challenge_repair, headers={'Authorization': f'JWT {auth}'})
     ret_repair_json = ret_repair.json["repair"]
-    # downgrade
-    for file in glob.glob(os.path.abspath(path)):
-        if os.path.isfile(file):
-            os.remove(file)
-    # Assert
     assert ret_repair_json["score"] == 3
 
     #cleanup

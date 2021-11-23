@@ -13,10 +13,6 @@ def client():
             db.create_all()
             # Tests will be executed on the test_client object
             yield test_client
-    #Cleanup
-    for file in os.listdir(path):
-        if (file.endswith(".go")):
-            os.remove(os.path.join(path, file))
    
 @pytest.fixture(scope='module')
 def auth(client):
