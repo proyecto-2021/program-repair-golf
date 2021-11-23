@@ -33,7 +33,7 @@ class ChallengeDAO():
         if repair_objective:
             challenge.repair_objective = repair_objective
         if complexity:
-            challenge.complexity = repair_objective
+            challenge.complexity = complexity
         if best_score:
             challenge.best_score = best_score
         db.session.commit()
