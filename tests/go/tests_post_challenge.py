@@ -92,7 +92,7 @@ def test_post_testscode_with_error(client,auth):
     # cleanup
     clean()
 
-def test_post_testscode_with_error(client,auth):
+def test_post_testscode_passing(client,auth):
     # arrange
     challenge = {
         'source_code_file': open('tests/go/files-for-tests/median.go', 'rb'),
