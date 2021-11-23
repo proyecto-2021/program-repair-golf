@@ -1,4 +1,5 @@
-from os.path import isfile
+from os.path import isfile, exists
+from os import makedirs
 
 def read_file(path, mode):
 	file = open(path, mode)
@@ -40,3 +41,7 @@ def save_changes(new_name, file_content, old_file_path, base_path):
 
 def file_exists(path):
 	return isfile(path)
+
+def create_directory(path):
+	if not exists(path):
+		makedirs(path)

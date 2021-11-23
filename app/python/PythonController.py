@@ -1,7 +1,8 @@
 from .PythonChallengeDAO import PythonChallengeDAO
 from .PythonChallenge import PythonChallenge
 from .PythonChallengeRepair import PythonChallengeRepair
-from .file_utils import file_exists
+from .file_utils import file_exists, create_directory
+from tempfile import gettempdir
 
 class PythonController:
   
@@ -110,7 +111,9 @@ class PythonController:
   #takes the challenge to a temp location and checks if it's valid
   @staticmethod
   def perform_validation(challenge):
-    temp_path = "public/temp/"      #path to temp directory
+    temp_path = gettempdir() + "/python/"      #path to temp directory
+    create_directory(temp_path)
+
     challenge.save_at(temp_path)
 
     validation_result = challenge.is_valid()
